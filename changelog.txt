@@ -1,0 +1,124 @@
+_____________________________________________
+24/07/2019
+
+Started ShoeboxRoomSim implementation
+- TEST_SCRIPT_SH.m
+- find_abs_coeffs_from_rt.m
+- room_stats.m
+- compute_echograms_sh.m
+- ims_corMtx.m
+
+
+Notes:
+
+- function naming convention?
+
+- room_stats() is redundant with get_rt_sabine().
+-- maybe reimplement get_rt_sabine() to accept matrices
+-- create separate functions rt60sagine, critical distance, mean free path
+
+- TEST_SCRIPT_SH.m, l52 seems odd...
+-- limits looks like it should be 1D, but l52 states ` else limits(nb,1) = maxlim;`
+-- I would say it should be rather ` else limits(nb) = maxlim;`
+
+- room_stats(), compute_echograms_sh(): optional verbose parameter/mode
+
+- Error handling?
+
+_____________________________________________
+25/07/2019
+
+- rec_module_sh.m
+- apply_absorption.m
+- render_sh_rirs.m
+- render_rirs.m
+
+Notes:
+
+- rec_module_sh(): rec_orders should be either scalar (integer) or array...
+- render_sh_rirs(): check comment about rir duration
+- render_sh_rirs(): due to numerical precission (higher in python),
+    the length of the rirs diverges (48000 vs 47997)...
+- render_sh_rirs(): hardcoded filterbank length
+- render_sh_rirs(): fractional as an argument? (remove hardcoding)
+- "" lagrange for numpy?
+
+
+_____________________________________________
+29/07/2019
+
+- filter.rir.m
+- TEST_SCRIPT_MICS
+- compute_echograms_mics.m
+- rec_module_mic.m
+
+Notes:
+
+- filter_rir(): parametrize order (related with fixed filter length), parametrize min_f filter band
+- TEST_SCRIPT_MICS, l53: same as note from TEST_SCRIPT_SH.m, l52
+- rec_module_mic, rec_module_sh: naming convention?
+
+_____________________________________________
+29/07/2019
+
+- render_mic_rirs.m
+- TEST_SCRIPT_ARRAYS
+- TEST_SCRIPT_BIN_MOVING
+- 'milk_cow_blues_4ch.wav'
+- apply_source_signals_mics
+- apply_source_signals_sh
+- apply_source_signals_arrays
+
+Notes:
+
+- merge render_mic_*, rec_module_* into same file
+- '4src_samples_voice_handclaps_fountain_piano.wav' does not exist...
+- ims_coreMtx docstring is outdated
+
+
+_____________________________________________
+REFACTOR
+
+
+MATLAB FILE - matlab method --- python file --- python method
+findAbsCoeffsFromRT.m   findAbsCoeffsFromRT acoustics.py    find_abs_coeffs_from_rt
+findAbsCoeffsFromRT.m   getRTsabine acoustics.py    get_rt_sabine
+room_stats.m    room_stats   acoustics.py   room_stats
+apply_source_signals_arrays.m   apply_source_signals_arrays apply_source_signals.py    apply_source_signals_array
+apply_source_signals_mics.m   apply_source_signals_mics  apply_source_signals.py    apply_source_signals_mic
+apply_source_signals_sh.m   apply_source_signals_sh  apply_source_signals.py    apply_source_signals_sh
+compute_echograms_arrays.m  compute_echograms_arrays compute_echograms.py compute_echograms_array
+compute_echograms_mics.m  compute_echograms_mics compute_echograms.py compute_echograms_mic
+compute_echograms_sh.m  compute_echograms_sh compute_echograms.py compute_echograms_sh
+ims_coreMtx.m   ims_coreMtx image_source_method.py ims_coreMtx
+ims_coreMtx.m   ims_coreN image_source_method.py ims_coreN
+ims_coreMtx.m   ims_coreT image_source_method.py ims_coreT
+rec_moduleMic.m rec_moduleMic   rec_module.py   rec_module_mic
+rec_moduleSH.m rec_moduleSH   rec_module.py   rec_module_sh
+render_rirs.m    render_rirs  render_rirs.py render_rirs
+render_array_rirs.m render_array_rirs   render_rirs.py render_rirs_array
+render_mic_rirs.m render_mic_rirs   render_rirs.py render_rirs_mic
+render_sh_rirs.m render_sh_rirs   render_rirs.py render_rirs_sh
+filter_rir.m    filter_rir  render_rirs.py  filter_rirs
+render_quantized.m  render_quantized    render_rirs.py  render_quantized
+apply_absorption.m apply_absorption   apply_absorption.py    apply_absorption
+-   -   echogram.py Echogram
+-   -   ../utils.py cart2sph()
+
+
+_____________________________________________
+METHOD SPLIT INTO SCRIPTS
+getRTsabine
+ims_coreN
+ims_coreT
+
+_____________________________________________
+RENAMED PYTHON METHODS (avoid method and file with same name, so getattr() cannot be used in a general way)
+absorption_module.py::absorption_module() -> absorption_module.py::apply_absorption()
+
+
+_____________________________________________
+getSH
+
+normalization of real sh is applied in order to match matlab implementation.
+However, it is still not clear for me which is the criteria...
