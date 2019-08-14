@@ -52,6 +52,7 @@ def compute_echograms_array(room, src, rec, abs_wall, limits):
     raise NotImplementedError
 
 
+# TODO: unify abs_wall/alpha arguments (absorption, absorption ratio, diractivity)
 def compute_echograms_mic(room, src, rec, abs_wall, limits, mic_specs):
     """
     TODO
@@ -65,9 +66,10 @@ def compute_echograms_mic(room, src, rec, abs_wall, limits, mic_specs):
     """
     nRec = rec.shape[0]
     nSrc = src.shape[0]
-    nBands = abs_wall.shape[1]
+    nBands = abs_wall.shape[0]
 
     # Limit the RIR by reflection order or by time-limit
+    # TODO: expose type as argument
     type = 'maxTime'
 
     # Compute echogram due to pure propagation (frequency-independent)
@@ -78,7 +80,6 @@ def compute_echograms_mic(room, src, rec, abs_wall, limits, mic_specs):
             # Compute echogram
             echograms[ns, nr] = ims_coreMtx(room, src[ns,:], rec[nr,:], type, np.max(limits))
 
-    # Apply receiver directivities (this can be omitted too if all omni sensors
     print('Apply receiver direcitivites')
     rec_echograms = rec_module_mic(echograms, mic_specs)
 
@@ -88,9 +89,11 @@ def compute_echograms_mic(room, src, rec, abs_wall, limits, mic_specs):
         for nr in range(nRec):
             print ('Apply absorption: Source ' + str(ns) + ' - Receiver ' + str(nr))
             # Compute echogram
-            abs_echograms[ns, nr] = apply_absorption(rec_echograms[ns, nr], abs_wall, limits)
+            abs_echograms[ns, nr, :] = apply_absorption(rec_echograms[ns, nr], abs_wall, limits)
 
-    return abs_echograms, rec_echograms, echograms
+    # TODO: validate return
+    # return abs_echograms, rec_echograms, echograms
+    return abs_echograms
 
 
 def compute_echograms_sh(room, src, rec, abs_wall, limits, rec_orders):
@@ -130,5 +133,7 @@ def compute_echograms_sh(room, src, rec, abs_wall, limits, rec_orders):
             # Compute echogram
             abs_echograms[ns, nr] = apply_absorption(rec_echograms[ns, nr], abs_wall, limits)
 
-    return abs_echograms, rec_echograms, echograms
+    # TODO: validate return
+    # return abs_echograms, rec_echograms, echograms
+    return abs_echograms
 
