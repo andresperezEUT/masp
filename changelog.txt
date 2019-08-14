@@ -122,3 +122,10 @@ getSH
 
 normalization of real sh is applied in order to match matlab implementation.
 However, it is still not clear for me which is the criteria...
+
+
+_____________________________________________
+compute_echograms_mic, compute_echograms_sh: expose type as argument?
+
+compute_echograms_mic, compute_echograms_sh: MODIFICATION
+- returns just abs_echograms
