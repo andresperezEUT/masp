@@ -47,24 +47,20 @@ def test_ims_coreMtx():
             typeValues.append(np.random.randint(20))
         elif type == 'maxTime':
             typeValues.append(np.random.rand() * 0.1 + 0.1)
-
-    params = [
-        # room
+    params = {
+        'room':
         [(np.random.random(C) * 5 + 5).tolist() for i in range(num_tests)],
-        # source
+        'source':
         [(np.random.random(C) * 5).tolist() for i in range(num_tests)],
-        # receiver
+        'receiver':
         [(np.random.random(C) * 5).tolist() for i in range(num_tests)],
-        # type
+        'type':
         types,
-        # typeValue
+        'typeValue':
         typeValues,
-    ]
-    num_params = len(params)
+    }
     for t in range(num_tests):
-        p = []
-        for p_idx in range(num_params):
-            p.append(params[p_idx][t])
+        p = get_parameters(params, t)
         numeric_assert("ims_coreMtx",
                        "ims_coreMtx",
                        *p,
@@ -74,21 +70,18 @@ def test_ims_coreMtx():
 
 def test_ims_coreT():
     num_tests = 10
-    params = [
-        # room
+    params = {
+        'room':
         [(np.random.random(C) * 5 + 5).tolist() for i in range(num_tests)],
-        # source
+        'source':
         [(np.random.random(C) * 5 - 2.5).tolist() for i in range(num_tests)],
-        # receiver
+        'receiver':
         [(np.random.random(C) * 5 - 2.5).tolist() for i in range(num_tests)],
-        # maxTime
+        'maxTime':
         [np.random.rand() * 0.1 + 0.1 for i in range(num_tests)],
-    ]
-    num_params = len(params)
+    }
     for t in range(num_tests):
-        p = []
-        for p_idx in range(num_params):
-            p.append(params[p_idx][t])
+        p = get_parameters(params, t)
         numeric_assert("ims_coreT",
                        "ims_coreT",
                        *p,
@@ -98,21 +91,18 @@ def test_ims_coreT():
 
 def test_ims_coreN():
     num_tests = 10
-    params = [
-        # room
+    params = {
+        'room':
         [(np.random.random(C) * 5 + 5).tolist() for i in range(num_tests)],
-        # source
+        'source':
         [(np.random.random(C) * 5 - 2.5).tolist() for i in range(num_tests)],
-        # receiver
+        'receiver':
         [(np.random.random(C) * 5 - 2.5).tolist() for i in range(num_tests)],
-        # maxTime
+        'N':
         [np.random.randint(20) for i in range(num_tests)],
-    ]
-    num_params = len(params)
+    }
     for t in range(num_tests):
-        p = []
-        for p_idx in range(num_params):
-            p.append(params[p_idx][t])
+        p = get_parameters(params, t)
         numeric_assert("ims_coreN",
                        "ims_coreN",
                        *p,

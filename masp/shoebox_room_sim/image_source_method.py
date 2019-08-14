@@ -137,7 +137,7 @@ def ims_coreN(room, src, rec, N):
         Source position in cartesian coordinates. Dimension = (3) [x, y, z].
     rec : ndarray
         Receiver position in cartesian coordinates. Dimension = (3) [x, y, z].
-    maxTime : int
+    N : int
         Maximum reflection order.
 
     Returns

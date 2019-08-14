@@ -63,6 +63,30 @@ eng.addpath(os.path.join(matlab_path,'Spherical-Harmonic-Transform-master'))
 tmp_path = os.path.abspath("./masp/tests/tmp")
 
 
+def get_parameters(params, t):
+    """
+    TODO
+    get a params dictionary, with each key a parameter name,
+    and value a list of values of lenght T.
+    :param params:
+    :param t:
+    :return:
+    """
+    num_params = len(params)
+    print('')
+    print('-----------------------------------------------')
+    print('                  t='+str(t))
+    p = []
+    for p_idx in range(num_params):
+        dict_tuple = list(params.items())[p_idx]
+        key = dict_tuple[0]
+        value = dict_tuple[1]
+        p.append(value[t])
+        print(key, value[t])
+    print('-----------------------------------------------')
+    return p
+
+
 def generate_random_echogram():
     room = np.random.random(C) * 5 + 5
     src = np.random.random(C) * 5 - 2.5

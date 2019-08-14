@@ -38,25 +38,18 @@ import random
 
 
 def test_get_sh():
-
     num_tests = 10
-    params = [
-        # N
+    params = {
+        'N':
         [np.random.randint(10) for i in range(num_tests)],
-        # [0 for i in range(num_tests)],
-        # [np.random.randint(1,2) for i in range(num_tests)],
-        # dirs
+        'dirs':
         [(np.random.rand(np.random.randint(1,10),2)*[2*np.pi, np.pi]).tolist() for i in range(num_tests)],
-        # [[np.pi/4, np.pi/4] for i in range(num_tests)],
-        # basisType
+        'basisType':
         # [random.choice(['real', 'complex']) for i in range(num_tests)],
         ['real' for i in range(num_tests)],
-    ]
-    num_params = len(params)
+    }
     for t in range(num_tests):
-        p = []
-        for p_idx in range(num_params):
-            p.append(params[p_idx][t])
+        p = get_parameters(params, t)
         numeric_assert("getSH",
                        "get_sh",
                        *p,

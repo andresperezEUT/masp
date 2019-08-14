@@ -43,25 +43,20 @@ import random
 def test_apply_absorption():
     num_tests = 10
     nBands = [np.random.randint(1, 10) for i in range(num_tests)]
-    params = [
-        # echogram
+    params = {
+        'echogram':
         [generate_random_echogram() for i in range(num_tests)],
-        # alpha
+        'alpha':
         [np.random.random((nBands[i], 2*C)).tolist() for i in range(num_tests)],
-        # limits
+        'limits':
         [random.choice([None, (np.random.random(nBands[i])+0.1).tolist()]) for i in range(num_tests)],
         # [(np.random.random(nBands[i])+0.1).tolist() for i in range(num_tests)],
         # [None for i in range(num_tests)]
-    ]
-    num_params = len(params)
+    }
     for t in range(num_tests):
-        p = []
-        for p_idx in range(num_params):
-            p.append(params[p_idx][t])
+        p = get_parameters(params, t)
         numeric_assert("absorption_module",
                        "apply_absorption",
                        *p,
                        write_file=True,
                        namespace='srs')
-
-test_apply_absorption()

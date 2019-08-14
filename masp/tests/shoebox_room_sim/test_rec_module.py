@@ -41,17 +41,14 @@ def test_rec_module_mic():
     num_tests = 10
     nSrc = np.random.randint(1, 10)
     nRec = np.random.randint(1, 10)
-    params = [
-        # echograms
+    params = {
+        'echograms':
         [generate_random_echogram_array(nSrc, nRec) for i in range(num_tests)],
-        # mic specs
+        'mic_specs':
         [generate_random_mic_specs(nRec) for i in range(num_tests)],
-    ]
-    num_params = len(params)
+    }
     for t in range(num_tests):
-        p = []
-        for p_idx in range(num_params):
-            p.append(params[p_idx][t])
+        p = get_parameters(params, t)
         numeric_assert("rec_moduleMic",
                        "rec_module_mic",
                        *p,
@@ -63,17 +60,15 @@ def test_rec_module_sh():
     nSrc = [np.random.randint(1,5) for i in range(num_tests)]
     nRec = [np.random.randint(1,5) for i in range(num_tests)]
     max_sh_order = 5
-    params = [
-        # echograms
+    params = {
+        'echograms':
         [generate_random_echogram_array(nSrc[i], nRec[i]) for i in range(num_tests)],
-        # sh_order
-        [random.choice([max_sh_order,(np.random.rand(nRec[i])*max_sh_order).round().astype(int).tolist()]) for i in range(num_tests)],
-    ]
-    num_params = len(params)
+        'sh_order':
+        [random.choice([np.random.randint(max_sh_order),
+                        (np.random.rand(nRec[i])*max_sh_order).round().astype(int).tolist()]) for i in range(num_tests)],
+    }
     for t in range(num_tests):
-        p = []
-        for p_idx in range(num_params):
-            p.append(params[p_idx][t])
+        p = get_parameters(params, t)
         numeric_assert("rec_moduleSH",
                        "rec_module_sh",
                        *p,

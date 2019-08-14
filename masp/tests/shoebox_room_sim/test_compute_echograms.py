@@ -42,29 +42,22 @@ def test_compute_echograms_mic():
     nBands = [np.random.randint(1, 5) for i in range(num_tests)]
     nSrc = [np.random.randint(1, 5) for i in range(num_tests)]
     nRec = [np.random.randint(1, 5) for i in range(num_tests)]
-    params = [
-        # room
+    params = {
+        'room':
         [(np.random.random(C) * 5 + 5).tolist() for i in range(num_tests)],
-        # source
+        'source':
         [(np.random.random((nSrc[i],C)) * 5).tolist() for i in range(num_tests)],
-        # receiver
+        'receiver':
         [(np.random.random((nRec[i],C)) * 5).tolist() for i in range(num_tests)],
-        # abs_wall
+        'abs_wall':
         [np.random.random((nBands[i], 2*C)).tolist() for i in range(num_tests)],
-        # limits
+        'limits':
         [(np.random.random(nBands[i]) + 0.1).tolist() for i in range(num_tests)],
-        # mic specs
+        'mic_specs':
         [generate_random_mic_specs(nRec[i]) for i in range(num_tests)],
-    ]
-    num_params = len(params)
+    }
     for t in range(num_tests):
-        print('-----------------------------------------------')
-        print('                  t='+str(t))
-        p = []
-        for p_idx in range(num_params):
-            p.append(params[p_idx][t])
-            print(params[p_idx][t])
-        print('-----------------------------------------------')
+        p = get_parameters(params, t)
         numeric_assert("compute_echograms_mics",
                        "compute_echograms_mic",
                        *p,

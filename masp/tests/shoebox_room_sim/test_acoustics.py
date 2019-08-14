@@ -40,20 +40,17 @@ import random
 
 def test_find_abs_coeffs_from_rt():
     num_tests = 10
-    params = [
-        # room
+    params = {
+        'room':
         [(np.random.random(C) * 10).tolist() for i in range(num_tests)],
-        # rt60
+        'rt60':
         [(np.random.random(6)).tolist() for i in range(num_tests)],
-        # abs_wall_ratios
+        'abs_wall_ratios':
         [random.choice([None, (np.random.random(6) * 10).tolist()]) for i in range(num_tests)],
         # [None for i in range(num_tests)],
-    ]
-    num_params = len(params)
+    }
     for t in range(num_tests):
-        p = []
-        for p_idx in range(num_params):
-            p.append(params[p_idx][t])
+        p = get_parameters(params, t)
         numeric_assert("findAbsCoeffsFromRT",
                        "find_abs_coeffs_from_rt",
                        *p,
@@ -63,19 +60,16 @@ def test_find_abs_coeffs_from_rt():
 
 def test_get_rt_sabine():
     num_tests = 10
-    params = [
-        # alpha
+    params = {
+        'alpha':
         [np.random.rand() for i in range(num_tests)],
-        # room
+        'room':
         [(np.random.random(C) * 10).tolist() for i in range(num_tests)],
-        # abs_wall_ratios
+        'abs_wall_ratios':
         [(np.random.random(2*C) * 10).tolist() for i in range(num_tests)],
-    ]
-    num_params = len(params)
+    }
     for t in range(num_tests):
-        p = []
-        for p_idx in range(num_params):
-            p.append(params[p_idx][t])
+        p = get_parameters(params, t)
         numeric_assert("getRTsabine",
                        "get_rt_sabine",
                        *p,
@@ -85,17 +79,14 @@ def test_get_rt_sabine():
 
 def test_room_stats():
     num_tests = 10
-    params = [
-        # room
+    params = {
+        'room':
         [(np.random.random(C) * 10).tolist() for i in range(num_tests)],
-        # abs_wall
+        'abs_wall':
         [np.random.random((np.random.randint(1,10),6)).tolist() for i in range(num_tests)],
-    ]
-    num_params = len(params)
+    }
     for t in range(num_tests):
-        p = []
-        for p_idx in range(num_params):
-            p.append(params[p_idx][t])
+        p = get_parameters(params, t)
         numeric_assert("room_stats",
                        "room_stats",
                        *p,
