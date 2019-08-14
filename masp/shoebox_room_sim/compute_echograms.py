@@ -89,14 +89,15 @@ def compute_echograms_mic(room, src, rec, abs_wall, limits, mic_specs):
         for nr in range(nRec):
             print('Apply absorption: Source ' + str(ns) + ' - Receiver ' + str(nr))
             # Compute echogram
-            abs_echograms[ns, nr, :] = apply_absorption(rec_echograms[ns, nr], abs_wall, limits)
+            # TODO: check why does it take soooo long...
+            abs_echograms[ns, nr] = apply_absorption(rec_echograms[ns, nr], abs_wall, limits)
 
     # TODO: validate return
     # return abs_echograms, rec_echograms, echograms
     return abs_echograms
 
 
-def compute_echograms_sh(room, src, rec, abs_wall, limits, rec_orders):
+def compute_echograms_sh(room, src, rec, abs_wall, limits, sh_orders):
     """
     TODO
     :param room:
@@ -104,13 +105,13 @@ def compute_echograms_sh(room, src, rec, abs_wall, limits, rec_orders):
     :param rec:
     :param abs_wall:
     :param limits:
-    :param rec_orders:
+    :param sh_orders:
     :return:
     """
 
     nRec = rec.shape[0]
     nSrc = src.shape[0]
-    nBands = abs_wall.shape[1]
+    nBands = abs_wall.shape[0]
 
     # Limit the RIR by reflection order or by time-limit
     type = 'maxTime'
@@ -123,7 +124,7 @@ def compute_echograms_sh(room, src, rec, abs_wall, limits, rec_orders):
             echograms[ns, nr] = ims_coreMtx(room, src[ns,:], rec[nr,:], type, np.max(limits))
 
     print('Apply SH directivites')
-    rec_echograms = rec_module_sh(echograms, rec_orders)
+    rec_echograms = rec_module_sh(echograms, sh_orders)
 
     abs_echograms = np.empty((nSrc, nRec, nBands), dtype=Echogram)
     # Apply boundary absorption

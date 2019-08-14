@@ -56,10 +56,10 @@ def test_rec_module_mic():
                        namespace='srs')
 
 def test_rec_module_sh():
-    num_tests = 5
-    nSrc = [np.random.randint(1,5) for i in range(num_tests)]
-    nRec = [np.random.randint(1,5) for i in range(num_tests)]
-    max_sh_order = 5
+    num_tests = 10
+    nSrc = [np.random.randint(1,10) for i in range(num_tests)]
+    nRec = [np.random.randint(1,10) for i in range(num_tests)]
+    max_sh_order = 10
     params = {
         'echograms':
         [generate_random_echogram_array(nSrc[i], nRec[i]) for i in range(num_tests)],

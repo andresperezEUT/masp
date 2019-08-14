@@ -144,6 +144,6 @@ def apply_absorption(echogram, alpha, limits=None):
 
         s_abs_tot = abs_x * abs_y * abs_z
         # Final amplitude of reflection
-        abs_echograms[nb].value = abs_echograms[nb].value * s_abs_tot
+        abs_echograms[nb].value = abs_echograms[nb].value * s_abs_tot[:,np.newaxis]
 
     return abs_echograms[np.newaxis,:]

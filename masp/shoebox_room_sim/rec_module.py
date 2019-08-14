@@ -140,6 +140,6 @@ def rec_module_sh(echograms, sh_orders):
 
                 nSH = int(np.power(sh_orders[nr] + 1, 2))
                 sh_gains = get_sh(int(sh_orders[nr]), np.asarray([azi, polar]).transpose(), 'real')
-                rec_echograms[ns, nr].value = sh_gains * np.outer(echograms[ns, nr].value, np.ones(nSH))
+                rec_echograms[ns, nr].value = sh_gains * echograms[ns, nr].value[:,np.newaxis]
 
     return rec_echograms

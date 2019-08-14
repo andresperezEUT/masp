@@ -100,110 +100,32 @@ def get_sh(N, dirs, basisType):
 
     nDirs = dirs.shape[0]
     nHarm = np.power(N+1, 2)
+    Y_N = np.zeros((nDirs, nHarm))
 
-    Y_N = np.zeros((nHarm, nDirs))
+    def delta_kronecker(q1, q2):
+        return 1 if q1 == q2 else 0
+
+    def norm(m):
+        """
+        TODO
+        SN3D FACTOR, REMOVE CONDON SHOTLEY
+        IT MUST BE MULTIPLIED BY sqrt(4PI) to be normalized to 1
+        :param m:
+        :return:
+        """
+        return np.power(-1, np.abs(m)) * np.sqrt(2 - delta_kronecker(0, np.abs(m)))
 
     if basisType is 'complex':
         raise NotImplementedError
 
     elif basisType is 'real':
-        for dir_idx, dir in enumerate(dirs):
-            azi = dir[0]
-            incl = np.pi/2 - dir[1]
-            Y_N[:, dir_idx] = get_ambisonics_coefs(azi, incl, N)
-        return Y_N.transpose()
+        harm_idx = 0
+        for l in range(N + 1):
+            for m in range(-l,0):
+                Y_N[:, harm_idx] = np.imag(sph_harm(np.abs(m), l, dirs[:, 0], dirs[:, 1])) * norm(m)
+                harm_idx += 1
+            for m in range(l + 1):
+                Y_N[:, harm_idx] = np.real(sph_harm(m, l, dirs[:, 0], dirs[:, 1])) * norm(m)
+                harm_idx += 1
 
-
-def delta_kronecker(q1, q2):
-    if (q1==q2): return 1
-    else:        return 0
-
-def get_real_spherical_harmonic(azimuth, elevation, ambisonics_order, ambisonics_degree):
-    # NOTE THAT EVERYTHING IS CHANGED RESPECT TO THE MAN ENTRY
-    # here, we use phi as azimuth and theta as elevation
-    # furthermore, L is ambisonics order and M is ambisonics degree
-    return np.real(sph_harm(ambisonics_degree, ambisonics_order, azimuth, elevation))
-
-def get_imag_spherical_harmonic(azimuth, elevation, ambisonics_order, ambisonics_degree):
-    # NOTE THAT EVERYTHING IS CHANGED RESPECT TO THE MAN ENTRY
-    # here, we use phi as azimuth and theta as elevation
-    # furthermore, L is ambisonics order and M is ambisonics degree
-    return np.imag(sph_harm(ambisonics_degree,ambisonics_order,azimuth,elevation))
-
-
-def get_spherical_harmonic_normalization_coef(order,degree):
-    # standard normalization function, without Condon-Shotley
-
-    # we can use it to divide the sph_harm function by this number and get 1-normalization
-
-    # this is the default coef given by sph_harm function
-
-    # this is an implementation of the normalization function provided by sph_harm
-    # see https://docs.scipy.org/doc/scipy-0.19.1/reference/generated/scipy.special.sph_harm.html
-    #
-    # it follows the standard normalization convention as used IIRC in physics
-    # since we want SN3D and not this one, we use this function to compute it
-    # in order to substract it to the resulting coefficients, and then applying
-    # the SN3D normalization
-    #
-    # notice that Condon-Shortley phase is not included here, since it is calculated internally
-    # by means of lpmv function
-    l = order
-    m = abs(degree)
-    return np.sqrt( ( ((2*l)+1) / (4*np.pi) ) * ( float(factorial(l-m)) / float(factorial(l+m)) ) )
-
-
-def get_spherical_harmonic(azimuth, elevation, ambisonics_order, ambisonics_degree):
-
-    l = ambisonics_order
-    m = abs(ambisonics_degree)
-
-    # in the sph_harm, the elevation is defined in the range [0..pi]
-    # luckily the sph_harm reference system follows the right-hand rule
-    # so there is no other changes involved
-    elevation_internal = elevation - (np.pi/2)
-
-    # the harmonics with positive degree are the real part of the solution
-    # and the ones with negative degree are the imaginary part
-    # degree 0 is symmetrical for both solutions
-    # check http://mathworld.wolfram.com/SphericalHarmonic.html
-    if (ambisonics_degree >= 0):
-        coef = get_real_spherical_harmonic(azimuth,elevation_internal,l, m)
-    else:
-        coef = get_imag_spherical_harmonic(azimuth,elevation_internal,l, m)
-
-    # normalization
-    #
-    # get_real_spherical_harmonic returns a value with a different normalization
-    # that the one we want
-    # (check https://docs.scipy.org/doc/scipy-0.19.1/reference/generated/scipy.special.sph_harm.html)
-    #
-    # therefore we "take it out" from the result, and apply our desired SN3D normalization
-    # as described in Daniel2003, 2.1 (http://gyronymo.free.fr/audio3D/publications/AES23%20NFC%20HOA.pdf)
-    # we must account as well for the Condon-Shortley phase, which is already included in coef
-    sn3d_factor = pow(-1,m) *np.sqrt ( (2-delta_kronecker(0,m)) * ( float(factorial(l-m)) / float(factorial(l+m)) ) )
-    coef = coef / get_spherical_harmonic_normalization_coef(ambisonics_order,ambisonics_degree) * sn3d_factor
-
-    # if we would want to include N3D support at some moment, uncomment this lines
-    n3d_factor = np.sqrt((2*l)+1)
-    coef = coef * n3d_factor
-
-    # TODO: COMPATIBILITY WITH MATLAB CODE...
-    # this is approx 1/(2*sqrt(3)), but still don't know where it comes from...
-    coef = coef * 0.28209479177387814
-
-    return coef
-
-
-def get_ambisonics_coefs(azimuth,elevation,order):
-
-    coefs = np.zeros(np.power(order+1,2))
-    coef_index = 0
-    for l in range(order+1):
-        for m in range(-l,l+1): # this is ACN channel ordering
-            coefs[coef_index] = get_spherical_harmonic(azimuth, elevation, l, m)
-            coef_index += 1
-    return coefs
-
-
-
+    return Y_N

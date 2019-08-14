@@ -226,7 +226,6 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
     # with the same name as the matlab function called
     # Then, we can open it using scipy.io
     if write_file:
-        # TODO: WHEN MULTIPLE OUTPUT FILES, NAME THEM SIMILARLY AND FIND THEM BY NAME HERE
         tmp_file_path = os.path.join(tmp_path, ml_method+'_test.mat')
         mat_file = loadmat(tmp_file_path)
 
