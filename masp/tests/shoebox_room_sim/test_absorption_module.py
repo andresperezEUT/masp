@@ -35,6 +35,7 @@
 
 
 from masp.tests.convenience_test_methods import *
+from masp.utils import C
 from masp.validate_data_types import _validate_echogram
 import random
 
@@ -46,7 +47,7 @@ def test_apply_absorption():
         # echogram
         [generate_random_echogram() for i in range(num_tests)],
         # alpha
-        [np.random.random((nBands[i], 6)).tolist() for i in range(num_tests)],
+        [np.random.random((nBands[i], 2*C)).tolist() for i in range(num_tests)],
         # limits
         [random.choice([None, (np.random.random(nBands[i])+0.1).tolist()]) for i in range(num_tests)],
         # [(np.random.random(nBands[i])+0.1).tolist() for i in range(num_tests)],

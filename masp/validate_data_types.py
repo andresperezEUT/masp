@@ -166,37 +166,19 @@ def _validate_string(name, string, choices=None):
 #         raise TypeError('alpha must be an integer, float or 1-D ndarray')
 
 def _validate_echogram(echogram):
+    from masp.utils import C
 
     if not isinstance(echogram, Echogram):
         raise TypeError('echogram must be an instance of Echogram')
 
-    _validate_ndarray_1D('echogram.value', echogram.value, positive=True)
-    # elif not isinstance(echogram.value, np.ndarray):
-    #     raise TypeError('echogram.value must be a ndarray')
-    # elif echogram.value.ndim != 1:
-    #     raise ValueError('echogram.value dimension must be (t,)')
-
+    _validate_ndarray_1D('echogram.value', echogram.value)
     _validate_ndarray_1D('echogram.time', echogram.time, positive=True)
-    # elif not isinstance(echogram.time, np.ndarray):
-    #     raise TypeError('echogram.time must be a ndarray')
-    # elif echogram.time.ndim != 1:
-    #     raise ValueError('echogram.time dimension must be (t,)')
-
-    _validate_ndarray_2D('echogram.order', echogram.order, shape1=3)
+    _validate_ndarray_2D('echogram.order', echogram.order, shape1=C, dtype=int)
     # order values should be integers
-    if not np.all(echogram.order == np.floor(echogram.order)):
-        raise ValueError('echogram.order should contain integers')
-
-    # elif not isinstance(echogram.order, np.ndarray):
-    #     raise TypeError('echogram.order must be a ndarray')
-    # elif echogram.order.ndim != 2 or echogram.order.shape[1] !=3:
-    #     raise ValueError('echogram.order dimension must be (t, 3)')
-
-    _validate_ndarray_2D('echogram.coords', echogram.coords, shape1=3)
-    # elif not isinstance(echogram.coords, np.ndarray):
-    #     raise TypeError('echogram.coords must be a ndarray')
-    # elif echogram.coords.ndim != 2 or echogram.coords.shape[1] !=3:
-    #     raise ValueError('echogram.coords dimension must be (t, 3)')
+    # TODO check
+    # if not np.all(echogram.order == np.floor(echogram.order)):
+    #     raise ValueError('echogram.order should contain integers')
+    _validate_ndarray_2D('echogram.coords', echogram.coords, shape1=C)
 
     if echogram.value.shape[0] != echogram.time.shape[0] != echogram.order.shape[0] != echogram.coords.shape[0]:
         raise ValueError('echogram shape mismatch')

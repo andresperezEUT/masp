@@ -26,9 +26,9 @@ tmp_path = os.path.abspath("/Users/andres.perez/source/masp/masp/tests/tmp")
 ### 1x1 STRUCT
 
 # generate_random_echogram():
-room = np.random.random(3) * 5 + 5
-src = np.random.random(3) * 5 - 2.5
-rec = np.random.random(3) * 5 - 2.5
+room = np.random.random(C) * 5 + 5
+src = np.random.random(C) * 5 - 2.5
+rec = np.random.random(C) * 5 - 2.5
 N = np.random.randint(20)
 echo = masp.srs.ims_coreN(room, src, rec, N)
 
@@ -89,9 +89,9 @@ assert np.allclose(x['coords'][0,0], echo_dict['coords'])
 # This procedure could be standardized for the general case.
 
 def generate_random_echogram():
-    room = np.random.random(3) * 5 + 5
-    src = np.random.random(3) * 5 - 2.5
-    rec = np.random.random(3) * 5 - 2.5
+    room = np.random.random(C) * 5 + 5
+    src = np.random.random(C) * 5 - 2.5
+    rec = np.random.random(C) * 5 - 2.5
     # N = np.random.randint(20)
     N = 1
     echo = masp.srs.ims_coreN(room, src, rec, N)

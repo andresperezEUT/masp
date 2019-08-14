@@ -42,7 +42,7 @@ def test_find_abs_coeffs_from_rt():
     num_tests = 10
     params = [
         # room
-        [(np.random.random(3) * 10).tolist() for i in range(num_tests)],
+        [(np.random.random(C) * 10).tolist() for i in range(num_tests)],
         # rt60
         [(np.random.random(6)).tolist() for i in range(num_tests)],
         # abs_wall_ratios
@@ -67,9 +67,9 @@ def test_get_rt_sabine():
         # alpha
         [np.random.rand() for i in range(num_tests)],
         # room
-        [(np.random.random(3) * 10).tolist() for i in range(num_tests)],
+        [(np.random.random(C) * 10).tolist() for i in range(num_tests)],
         # abs_wall_ratios
-        [(np.random.random(6) * 10).tolist() for i in range(num_tests)],
+        [(np.random.random(2*C) * 10).tolist() for i in range(num_tests)],
     ]
     num_params = len(params)
     for t in range(num_tests):
@@ -87,7 +87,7 @@ def test_room_stats():
     num_tests = 10
     params = [
         # room
-        [(np.random.random(3) * 10).tolist() for i in range(num_tests)],
+        [(np.random.random(C) * 10).tolist() for i in range(num_tests)],
         # abs_wall
         [np.random.random((np.random.randint(1,10),6)).tolist() for i in range(num_tests)],
     ]

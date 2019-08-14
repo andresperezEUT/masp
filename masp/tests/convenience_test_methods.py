@@ -40,12 +40,13 @@ import masp
 import numpy as np
 import os.path
 from scipy.io import loadmat, savemat
+from masp.validate_data_types import _validate_echogram, _validate_echogram_array
+from masp.utils import C
 
 
 # Start matlab
 # matlab session will automatically close when shoebox_room_sim properly finish,
 # or alternatively on AssertionError handling
-from masp.validate_data_types import _validate_echogram, _validate_echogram_array
 
 eng = matlab.engine.start_matlab()
 
@@ -63,9 +64,9 @@ tmp_path = os.path.abspath("./masp/tests/tmp")
 
 
 def generate_random_echogram():
-    room = np.random.random(3) * 5 + 5
-    src = np.random.random(3) * 5 - 2.5
-    rec = np.random.random(3) * 5 - 2.5
+    room = np.random.random(C) * 5 + 5
+    src = np.random.random(C) * 5 - 2.5
+    rec = np.random.random(C) * 5 - 2.5
     N = np.random.randint(20)
     echo = masp.srs.ims_coreN(room, src, rec, N)
     _validate_echogram(echo)
@@ -80,7 +81,7 @@ def generate_random_echogram_array(nSrc, nRec):
     return echogram_array
 
 def generate_random_unit_vector():
-    v = np.random.rand(masp.utils.C)
+    v = np.random.rand(C)
     return (v/np.linalg.norm(v)).tolist()
 
 def generate_random_mic_specs(nRec):
@@ -107,15 +108,19 @@ def compare_echograms(np_res, ml_res):
 
 def compare_echogram_arrays(np_res, ml_res):
     # Compare shapes
+    # In the case of `absorption_module`, the resulting matlab abs_echogram
+    # might be 2D instead of 3D if nBands==1 (due to struct expansion/filling).
+    # So, in this case, just adapt the numpy array for the comparison
+    if np_res.ndim == 3 and np_res.shape[-1] == 1:
+        np_res = np_res.squeeze(axis=-1)
     if not ml_res.shape == np_res.shape: raise_error()
     # Compare values
-    s0, s1 = np_res.shape
-    for r in range(s0):
-        for c in range(s1):
-            if not np.allclose(ml_res['time'][r,c].squeeze(), np_res[r,c].time.squeeze()): raise_error()
-            if not np.allclose(ml_res['value'][r,c].squeeze(), np_res[r,c].value.squeeze()): raise_error()
-            if not np.allclose(ml_res['order'][r,c], np_res[r,c].order): raise_error()
-            if not np.allclose(ml_res['coords'][r,c], np_res[r,c].coords): raise_error()
+    for idx in np.ndindex(np_res.shape):    # multidimensional iterator, valid for 2D and 3D
+        if not np.allclose(ml_res['time'][idx].squeeze(), np_res[idx].time.squeeze()): raise_error()
+        if not np.allclose(ml_res['value'][idx].squeeze(), np_res[idx].value.squeeze()): raise_error()
+        if not np.allclose(ml_res['order'][idx], np_res[idx].order): raise_error()
+        if not np.allclose(ml_res['coords'][idx], np_res[idx].coords): raise_error()
+
 
 def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, namespace=None):
 

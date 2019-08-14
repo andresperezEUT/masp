@@ -36,6 +36,7 @@
 
 from masp.tests.convenience_test_methods import *
 import random
+from masp.utils import C
 
 def test_ims_coreMtx():
     num_tests = 10
@@ -49,11 +50,11 @@ def test_ims_coreMtx():
 
     params = [
         # room
-        [(np.random.random(3) * 5 + 5).tolist() for i in range(num_tests)],
+        [(np.random.random(C) * 5 + 5).tolist() for i in range(num_tests)],
         # source
-        [(np.random.random(3) * 5).tolist() for i in range(num_tests)],
+        [(np.random.random(C) * 5).tolist() for i in range(num_tests)],
         # receiver
-        [(np.random.random(3) * 5).tolist() for i in range(num_tests)],
+        [(np.random.random(C) * 5).tolist() for i in range(num_tests)],
         # type
         types,
         # typeValue
@@ -75,11 +76,11 @@ def test_ims_coreT():
     num_tests = 10
     params = [
         # room
-        [(np.random.random(3) * 5 + 5).tolist() for i in range(num_tests)],
+        [(np.random.random(C) * 5 + 5).tolist() for i in range(num_tests)],
         # source
-        [(np.random.random(3) * 5 - 2.5).tolist() for i in range(num_tests)],
+        [(np.random.random(C) * 5 - 2.5).tolist() for i in range(num_tests)],
         # receiver
-        [(np.random.random(3) * 5 - 2.5).tolist() for i in range(num_tests)],
+        [(np.random.random(C) * 5 - 2.5).tolist() for i in range(num_tests)],
         # maxTime
         [np.random.rand() * 0.1 + 0.1 for i in range(num_tests)],
     ]
@@ -99,11 +100,11 @@ def test_ims_coreN():
     num_tests = 10
     params = [
         # room
-        [(np.random.random(3) * 5 + 5).tolist() for i in range(num_tests)],
+        [(np.random.random(C) * 5 + 5).tolist() for i in range(num_tests)],
         # source
-        [(np.random.random(3) * 5 - 2.5).tolist() for i in range(num_tests)],
+        [(np.random.random(C) * 5 - 2.5).tolist() for i in range(num_tests)],
         # receiver
-        [(np.random.random(3) * 5 - 2.5).tolist() for i in range(num_tests)],
+        [(np.random.random(C) * 5 - 2.5).tolist() for i in range(num_tests)],
         # maxTime
         [np.random.randint(20) for i in range(num_tests)],
     ]
