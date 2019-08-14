@@ -38,7 +38,7 @@ from masp.utils import C
 
 
 def test_compute_echograms_mic():
-    num_tests = 100
+    num_tests = 5
     nBands = [np.random.randint(1, 5) for i in range(num_tests)]
     nSrc = [np.random.randint(1, 5) for i in range(num_tests)]
     nRec = [np.random.randint(1, 5) for i in range(num_tests)]

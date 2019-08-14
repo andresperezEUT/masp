@@ -87,7 +87,7 @@ def compute_echograms_mic(room, src, rec, abs_wall, limits, mic_specs):
     # Apply boundary absorption
     for ns in range(nSrc):
         for nr in range(nRec):
-            print ('Apply absorption: Source ' + str(ns) + ' - Receiver ' + str(nr))
+            print('Apply absorption: Source ' + str(ns) + ' - Receiver ' + str(nr))
             # Compute echogram
             abs_echograms[ns, nr, :] = apply_absorption(rec_echograms[ns, nr], abs_wall, limits)
 
