@@ -54,3 +54,19 @@ def test_get_sh():
                        "get_sh",
                        *p,
                        nargout=1)
+
+def test_lagrange():
+    num_tests = 10
+    ns = [np.random.randint(1,101) for i in range(num_tests)]
+    params = {
+        'N':
+        ns,
+        'delays':
+        [(np.linspace(0, 1, np.random.randint(3, 11)) + (ns[i] / 2)).tolist() for i in range(num_tests)]        # [(np.random.rand(np.random.randint(1,10),2)*[2*np.pi, np.pi]).tolist() for i in range(num_tests)],
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("lagrange",
+                       "lagrange",
+                       *p,
+                       nargout=1)
