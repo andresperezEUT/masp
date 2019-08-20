@@ -94,10 +94,6 @@ def get_sh(N, dirs, basisType):
     _validate_ndarray_2D('dirs', dirs, shape1=2)
     _validate_string('basisType', basisType, choices=['complex', 'real'])
 
-    # expand 1dim
-    if np.ndim(dirs) == 1:
-        dirs = dirs[np.newaxis, :]
-
     nDirs = dirs.shape[0]
     nHarm = np.power(N+1, 2)
     Y_N = np.zeros((nDirs, nHarm))
