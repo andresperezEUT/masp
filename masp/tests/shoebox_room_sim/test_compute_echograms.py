@@ -93,5 +93,3 @@ def test_compute_echograms_sh():
                        *p,
                        write_file=True,
                        namespace='srs')
-
-test_compute_echograms_mic()
