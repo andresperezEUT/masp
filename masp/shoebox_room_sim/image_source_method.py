@@ -205,7 +205,7 @@ def ims_coreN(room, src, rec, N):
     s_att[s_d > 1] = 1./s_d[s_d > 1]
 
     # Write to echogram structure
-    reflections = Echogram(value=s_att,
+    reflections = Echogram(value=s_att[:, np.newaxis],
                            time=s_t,
                            order=np.stack([i, j, k], axis=1),
                            coords=np.stack([s_x, s_y, s_z], axis=1))
@@ -304,7 +304,7 @@ def ims_coreT(room, src, rec, maxTime):
     s_att[s_d > 1] = 1./s_d[s_d > 1]
 
     # Write to echogram structure
-    reflections = Echogram(value=s_att,
+    reflections = Echogram(value=s_att[:, np.newaxis],
                            time=s_t,
                            order=np.stack([i, j, k], axis=1),
                            coords=np.stack([s_x, s_y, s_z], axis=1))

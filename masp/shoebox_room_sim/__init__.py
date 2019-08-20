@@ -7,13 +7,14 @@ from .compute_echograms import compute_echograms_sh
 from .render_rirs import render_rirs_array
 from .render_rirs import render_rirs_mic
 from .render_rirs import render_rirs_sh
+from .render_rirs import render_rirs # private
 from .apply_source_signals import apply_source_signals_array
 from .apply_source_signals import apply_source_signals_mic
 from .apply_source_signals import apply_source_signals_sh
 from .echogram import Echogram
 from .absorption_module import apply_absorption
 from .image_source_method import ims_coreMtx
-from .image_source_method import ims_coreT
-from .image_source_method import ims_coreN
+from .image_source_method import ims_coreT # private
+from .image_source_method import ims_coreN # private
 from .rec_module import rec_module_mic
 from .rec_module import rec_module_sh

@@ -87,8 +87,9 @@ def rec_module_mic(echograms, mic_specs):
                 rec_vecs = rec_vecs / np.sqrt(np.sum(np.power(rec_vecs,2), axis=1))[:,np.newaxis]
 
                 mic_gains = mic_coeffs[nr] + (1 - mic_coeffs[nr]) * np.sum(rec_vecs * mic_vecs[nr,:], axis=1)
-                rec_echograms[ns, nr].value = echograms[ns, nr].value * mic_gains
+                rec_echograms[ns, nr].value = echograms[ns, nr].value * mic_gains[:,np.newaxis]
 
+    _validate_echogram_array(rec_echograms)
     return rec_echograms
 
 
@@ -140,6 +141,8 @@ def rec_module_sh(echograms, sh_orders):
 
                 nSH = int(np.power(sh_orders[nr] + 1, 2))
                 sh_gains = get_sh(int(sh_orders[nr]), np.asarray([azi, polar]).transpose(), 'real')
-                rec_echograms[ns, nr].value = sh_gains * echograms[ns, nr].value[:,np.newaxis]
+                # rec_echograms[ns, nr].value = sh_gains * echograms[ns, nr].value[:,np.newaxis]
+                rec_echograms[ns, nr].value = sh_gains * echograms[ns, nr].value
 
+    _validate_echogram_array(rec_echograms)
     return rec_echograms

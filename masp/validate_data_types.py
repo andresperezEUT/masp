@@ -171,14 +171,9 @@ def _validate_echogram(echogram):
     if not isinstance(echogram, Echogram):
         raise TypeError('echogram must be an instance of Echogram')
 
-    # TODO: IT CAN ALSO BE 2D
-    # _validate_ndarray_1D('echogram.value', echogram.value)
+    _validate_ndarray_2D('echogram.value', echogram.value)
     _validate_ndarray_1D('echogram.time', echogram.time, positive=True)
     _validate_ndarray_2D('echogram.order', echogram.order, shape1=C, dtype=int)
-    # order values should be integers
-    # TODO check
-    # if not np.all(echogram.order == np.floor(echogram.order)):
-    #     raise ValueError('echogram.order should contain integers')
     _validate_ndarray_2D('echogram.coords', echogram.coords, shape1=C)
 
     if echogram.value.shape[0] != echogram.time.shape[0] != echogram.order.shape[0] != echogram.coords.shape[0]:
