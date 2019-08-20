@@ -91,9 +91,8 @@ def generate_random_echogram():
     room = np.random.random(C) * 5 + 5
     src = np.random.random(C) * 5 - 2.5
     rec = np.random.random(C) * 5 - 2.5
-    N = np.random.randint(20)
-    echo = masp.srs.ims_coreN(room, src, rec, N)
-    _validate_echogram(echo)
+    N = np.random.randint(20)+3
+    echo = masp.srs.ims_coreMtx(room, src, rec, 'maxOrder', N)
     return echo
 
 def generate_random_echogram_array(nSrc, nRec):

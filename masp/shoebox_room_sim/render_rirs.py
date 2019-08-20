@@ -35,6 +35,7 @@
 
 import numpy as np
 import scipy.signal
+from masp.utils import lagrange
 
 def render_rirs_array(echograms, band_centerfreqs, fs, grids, array_irs):
     """
@@ -194,36 +195,46 @@ def render_rirs(echogram, endtime, fs, fractional):
     # TODO CHECK
     idx_trans = echogram.time[echogram.time < endtime].size
 
-    if fractional:
-        # TODO: lagrange filter design in numpy?
-        raise NotImplementedError
+    if np.ndim(echogram.value) <= 1:
+        nChannels = 1
+    else:
+        nChannels = np.shape(echogram.value)[1]
 
-        # # get lagrange interpolating filter of order 100 (filter length 101)
-        # # todo: parametrize order?
+    if fractional:
+
+        # Get lagrange interpolating filter of order 100 (filter length 101)
+        # todo: parametrize order?
         # order = 100
         # h_offset = 50
-        # h_idx = np.arange(-(order/2),(order/2)+1) # only valid for even orders
-        #
-        # # make a filter table for quick access for quantized fractional samples
-        # fractions = np.linspace(0,1,order+1)
-        # H_frac = lagrange(order, 50 + fractions);
-    else:
+        # h_idx = np.arange(-(order/2),(order/2)+1).astype(int) # only valid for even orders
+        order = 100
+        h_offset = 50
+        h_idx = np.arange(-(order/2),(order/2)+1).astype(int) # only valid for even orders
+
+        # make a filter table for quick access for quantized fractional samples
+        fractions = np.linspace(0,1,101)
+        H_frac = lagrange(order, 50 + fractions)
+
         # Initialise array
-        # TODO: AGAIN HERE SAME PROBLEM AS ABOVE...
-        if np.ndim(echogram.value) <= 1:
-            nSH = 1
-        else:
-            nSH = np.shape(echogram.value)[1]
+        tmp_ir = np.zeros((int(np.ceil(endtime * fs) + (2*h_offset)), nChannels))
+
+        for i in range(idx_trans):
+            refl_idx = int(np.floor(echogram.time[i] * fs) + 1)
+            refl_frac = np.remainder(echogram.time[i] * fs, 1)
+            filter_idx = np.argmin(np.abs(refl_frac - fractions))
+            h_frac = H_frac[:, filter_idx]
+            tmp_ir[h_offset+refl_idx+h_idx-1,:] += h_frac[:,np.newaxis] * echogram.value[i]
+
+        ir = tmp_ir[h_offset:-h_offset,:]
+
+    else:
 
         L_ir = int(np.ceil(endtime * fs))
-        ir = np.zeros((L_ir, nSH))
-        # TODO: PROBABLY THE ORIGINAL +1 is due to the matlab indexing system..
-        # refl_idx = (np.round(echogram.time[:idx_trans] * fs) + 1).astype(int)
+        ir = np.zeros((L_ir, nChannels))
         refl_idx = (np.round(echogram.time[:idx_trans] * fs)).astype(int)
         # filter out exceeding indices
         refl_idx = refl_idx[refl_idx < L_ir]
-        # TODO: FIX nSH...
-        ir[refl_idx, :] = echogram.value[:refl_idx.size, np.newaxis]
+        ir[refl_idx, :] = echogram.value[:refl_idx.size]
 
     return ir
 
