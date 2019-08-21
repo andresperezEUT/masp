@@ -124,8 +124,9 @@ def raise_error(e=None):
         raise e
 
 def compare_echograms(np_res, ml_res):
+    # In python, 'time' is 1D, while others are 2D. Therefore we must use squeeze for comparison
     if not np.allclose(np.asarray(ml_res['time']).squeeze(), np_res.time.squeeze()): raise_error()
-    if not np.allclose(np.asarray(ml_res['value']).squeeze(), np_res.value): raise_error()
+    if not np.allclose(ml_res['value'], np_res.value): raise_error()
     if not np.allclose(ml_res['order'], np_res.order): raise_error()
     if not np.allclose(ml_res['coords'], np_res.coords): raise_error()
 
@@ -140,7 +141,8 @@ def compare_echogram_arrays(np_res, ml_res):
     # Compare values
     for idx in np.ndindex(np_res.shape):    # multidimensional iterator, valid for 2D and 3D
         if not np.allclose(ml_res['time'][idx].squeeze(), np_res[idx].time.squeeze()): raise_error()
-        if not np.allclose(ml_res['value'][idx].squeeze(), np_res[idx].value.squeeze()): raise_error()
+        # if not np.allclose(ml_res['value'][idx].squeeze(), np_res[idx].value.squeeze()): raise_error()
+        if not np.allclose(ml_res['value'][idx], np_res[idx].value): raise_error()
         if not np.allclose(ml_res['order'][idx], np_res[idx].order): raise_error()
         if not np.allclose(ml_res['coords'][idx], np_res[idx].coords): raise_error()
 
