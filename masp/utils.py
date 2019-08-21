@@ -37,7 +37,7 @@ import numpy as np
 from scipy.special import sph_harm
 from math import factorial
 
-from masp.validate_data_types import _validate_int, _validate_ndarray_2D, _validate_string
+from masp.validate_data_types import _validate_int, _validate_ndarray_2D, _validate_string, _validate_ndarray_1D
 
 c = 343.
 C = 3
@@ -129,12 +129,11 @@ def get_sh(N, dirs, basisType):
 
 def lagrange(N, delays):
     """
-    Design a fractional delay order-N filter with polynomial interpolation.
-    TODO check description. it might be a filterbank...
+    Design a fractional delay order-N filter matrix with polynomial interpolation.
 
     Parameters
     ----------
-    N : integer
+    N : int
         Filter order.
     delays : ndarray
        Target fractional delays, in samples. Dimension = (1).
@@ -153,11 +152,13 @@ def lagrange(N, delays):
     For best results, delay should be near N/2 +/- 1.
     """
 
+    _validate_int('N', N, positive=True)
+    _validate_ndarray_1D('delays', delays, positive=True)
+
     n = np.arange(N+1)
     h = np.ones((N+1, delays.size))
     for l in range(delays.size):
         for k in range(N+1):
             idx = n[n != k]
-            h[idx,l] = h[idx,l] * (delays[l]-k)/ (n[idx]-k)
-
+            h[idx, l] = h[idx, l] * (delays[l]-k) / (n[idx]-k)
     return h
