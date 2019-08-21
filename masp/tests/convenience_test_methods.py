@@ -31,7 +31,7 @@
 #   @author Andrés Pérez-López
 #   @date   31/07/2019
 #
-#   run it with `python3 -m pytest --cov-report term-missing --cov=masp -v -s masp/tests/`
+#   run it with `python3 -m pytest --cov-report term-missing --cov=masp -v -s -x masp/tests/`
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -89,19 +89,24 @@ def get_parameters(params, t):
 
 def generate_random_echogram():
     room = np.random.random(C) * 5 + 5
-    src = np.random.random(C) * 5 - 2.5
-    rec = np.random.random(C) * 5 - 2.5
+    src = np.random.random(C) * 2.5
+    rec = np.random.random(C) * 2.5
     N = np.random.randint(20)+3
     echo = masp.srs.ims_coreMtx(room, src, rec, 'maxOrder', N)
     return echo
 
-def generate_random_echogram_array(nSrc, nRec):
-    echogram_array = np.empty((nSrc, nRec), dtype=masp.srs.Echogram)
-    for src in range(nSrc):
-        for rec in range(nRec):
-            echogram_array[src, rec] = generate_random_echogram()
+def generate_random_echogram_array(nSrc, nRec, nBands=None):
+    if nBands:
+        echogram_array = np.empty((nSrc, nRec, nBands), dtype=masp.srs.Echogram)
+    else:
+        echogram_array = np.empty((nSrc, nRec), dtype=masp.srs.Echogram)
+
+    for idx in np.ndindex(echogram_array.shape):
+        echogram_array[idx] = generate_random_echogram()
+
     _validate_echogram_array(echogram_array)
     return echogram_array
+
 
 def generate_random_unit_vector():
     v = np.random.rand(C)
@@ -172,19 +177,17 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
             np_args.append(arg)
 
         # Array of echograms: write to file and append path to read
-        elif isinstance(arg, np.ndarray):
+        elif isinstance(arg, np.ndarray) and arg.dtype == np.dtype('O'):
             # Parse array and convert to array of dicts
-            s0, s1 = arg.shape
-            ml_echogram_array = np.empty((s0, s1), dtype=masp.srs.Echogram)
-            for i in range(s0):
-                for j in range(s1):
-                    echo = arg[i,j]
-                    ml_echo = {}
-                    ml_echo['time'] = echo.time[:, np.newaxis].tolist()
-                    ml_echo['value'] = echo.value[:, np.newaxis].tolist()
-                    ml_echo['order'] = echo.order.tolist()
-                    ml_echo['coords'] = echo.coords.tolist()
-                    ml_echogram_array[i, j] = ml_echo
+            ml_echogram_array = np.empty(arg.shape, dtype=masp.srs.Echogram)
+            for idx in np.ndindex(arg.shape):
+                echo = arg[idx]
+                ml_echo = {}
+                ml_echo['time'] = echo.time[:, np.newaxis].tolist()
+                ml_echo['value'] = echo.value[:, np.newaxis].tolist()
+                ml_echo['order'] = echo.order.tolist()
+                ml_echo['coords'] = echo.coords.tolist()
+                ml_echogram_array[idx] = ml_echo
 
             # Save resulting array to tmp folder, and add the path to the method args
             ml_echogram_array_path = os.path.join(tmp_path, ml_method+'_arg.mat')

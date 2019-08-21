@@ -88,8 +88,8 @@ def ims_coreMtx(room, source, receiver, type, typeValue):
     """
 
     _validate_ndarray_1D('room', room, size=3, positive=True)
-    _validate_ndarray_1D('source', source, size=3, positive=True, limit=room)
-    _validate_ndarray_1D('receiver', receiver, size=3, positive=True, limit=room)
+    _validate_ndarray_1D('source', source, size=3, positive=True, limit=[np.zeros(C),room])
+    _validate_ndarray_1D('receiver', receiver, size=3, positive=True, limit=[np.zeros(C),room])
     _validate_string('type', type, choices=['maxTime', 'maxOrder'])
 
     # Room dimensions
@@ -121,7 +121,6 @@ def ims_coreMtx(room, source, receiver, type, typeValue):
     echogram.order = echogram.order[idx, :]
     echogram.coords = echogram.coords[idx, :]
 
-    _validate_echogram(echogram)
     return echogram
 
 
@@ -172,8 +171,8 @@ def ims_coreN(room, src, rec, N):
     """
 
     _validate_ndarray_1D('room', room, size=C, positive=True)
-    _validate_ndarray_1D('source', src, size=C, limit=room/2)
-    _validate_ndarray_1D('receiver', rec, size=C, limit=room/2)
+    _validate_ndarray_1D('source', src, size=C, limit=[-room/2,room/2])
+    _validate_ndarray_1D('receiver', rec, size=C, limit=[-room/2,room/2])
     _validate_int('N', N, positive=True)
 
     # i,j,k indices for calculation in x,y,z respectively
@@ -207,7 +206,7 @@ def ims_coreN(room, src, rec, N):
     # Write to echogram structure
     reflections = Echogram(value=s_att[:, np.newaxis],
                            time=s_t,
-                           order=np.stack([i, j, k], axis=1),
+                           order=np.asarray(np.stack([i, j, k], axis=1), dtype=int),
                            coords=np.stack([s_x, s_y, s_z], axis=1))
 
     return reflections
@@ -260,8 +259,8 @@ def ims_coreT(room, src, rec, maxTime):
     """
 
     _validate_ndarray_1D('room', room, size=C, positive=True)
-    _validate_ndarray_1D('source', src, size=C, limit=room/2)
-    _validate_ndarray_1D('receiver', rec, size=C, limit=room/2)
+    _validate_ndarray_1D('source', src, size=C, limit=[-room/2,room/2])
+    _validate_ndarray_1D('receiver', rec, size=C, limit=[-room/2,room/2])
     _validate_number('maxTime', maxTime, positive=True)
 
     # Find order N that corresponds to maximum distance
@@ -306,7 +305,7 @@ def ims_coreT(room, src, rec, maxTime):
     # Write to echogram structure
     reflections = Echogram(value=s_att[:, np.newaxis],
                            time=s_t,
-                           order=np.stack([i, j, k], axis=1),
+                           order=np.asarray(np.stack([i, j, k], axis=1), dtype=int),
                            coords=np.stack([s_x, s_y, s_z], axis=1))
 
     return reflections

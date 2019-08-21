@@ -8,6 +8,7 @@ from .render_rirs import render_rirs_array
 from .render_rirs import render_rirs_mic
 from .render_rirs import render_rirs_sh
 from .render_rirs import render_rirs # private
+from .render_rirs import filter_rirs # private
 from .apply_source_signals import apply_source_signals_array
 from .apply_source_signals import apply_source_signals_mic
 from .apply_source_signals import apply_source_signals_sh

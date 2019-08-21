@@ -66,7 +66,7 @@ def test_get_rt_sabine():
         'room':
         [(np.random.random(C) * 10).tolist() for i in range(num_tests)],
         'abs_wall_ratios':
-        [(np.random.random(2*C) * 10).tolist() for i in range(num_tests)],
+        [np.random.random(2*C).tolist() for i in range(num_tests)],
     }
     for t in range(num_tests):
         p = get_parameters(params, t)
