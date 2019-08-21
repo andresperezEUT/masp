@@ -36,6 +36,9 @@
 import numpy as np
 import scipy.signal
 from masp.utils import lagrange
+from masp.validate_data_types import _validate_echogram, _validate_float, _validate_int, _validate_boolean, \
+    _validate_ndarray_2D, _validate_ndarray_1D
+
 
 def render_rirs_array(echograms, band_centerfreqs, fs, grids, array_irs):
     """
@@ -175,71 +178,80 @@ def render_rirs_sh(echograms, band_centerfreqs, fs):
     return rirs
 
 
-def render_rirs(echogram, endtime, fs, fractional):
-    """
-    TODO
-    %RENDER_RIR Samples the echogram to a specified sample rate.
-%   echogram:       the echogram structure
-%   endtime:        time in secs for desired length of the impulse response
-%   fs:             sampling rate
-%
 
-    :param echogram:
-    :param endtime:
-    :param fs:
-    :param fractional:
-    :return:
+
+def render_rirs(echogram, endtime, fs, fractional=True):
+    """
+    Render an echogram into an impulse response.
+
+    Parameters
+    ----------
+    echogram : Echogram
+        Target Echogram.
+    endtime: float
+        Maximum time of rendered reflections, in seconds.
+    fs: int
+        Target sampling rate
+    fractional: bool, optional
+        Use fractional or integer (round) delay. Default to True.
+
+    Returns
+    -------
+    ir : ndarray
+        Rendered echogram. Dimension = (ceil(endtime * fs), nChannels)
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    TODO: expose filter order as parameter?
     """
 
+    _validate_echogram(echogram)
+    _validate_float('endtime', endtime, positive=True)
+    _validate_int('fs', fs, positive=True)
+    _validate_boolean('fractional', fractional)
+
+    nChannels = 1 if np.ndim(echogram.value) <= 1 else np.shape(echogram.value)[1]
+    L_ir = int(np.ceil(endtime * fs))
+    ir = np.zeros((L_ir, nChannels))
     # Number of reflections inside the time limit
-    # TODO CHECK
     idx_trans = echogram.time[echogram.time < endtime].size
 
-    if np.ndim(echogram.value) <= 1:
-        nChannels = 1
-    else:
-        nChannels = np.shape(echogram.value)[1]
-
     if fractional:
-
         # Get lagrange interpolating filter of order 100 (filter length 101)
-        # todo: parametrize order?
-        # order = 100
-        # h_offset = 50
-        # h_idx = np.arange(-(order/2),(order/2)+1).astype(int) # only valid for even orders
         order = 100
         h_offset = 50
-        h_idx = np.arange(-(order/2),(order/2)+1).astype(int) # only valid for even orders
+        h_idx = np.arange(-(order/2), (order/2)+1).astype(int)  # only valid for even orders
 
-        # make a filter table for quick access for quantized fractional samples
-        fractions = np.linspace(0,1,101)
+        # Make a filter table for quick access for quantized fractional samples
+        fractions = np.linspace(0, 1, 101)
         H_frac = lagrange(order, 50 + fractions)
 
         # Initialise array
-        tmp_ir = np.zeros((int(np.ceil(endtime * fs) + (2*h_offset)), nChannels))
+        tmp_ir = np.zeros((int(L_ir + (2*h_offset)), nChannels))
 
         for i in range(idx_trans):
             refl_idx = int(np.floor(echogram.time[i] * fs) + 1)
             refl_frac = np.remainder(echogram.time[i] * fs, 1)
             filter_idx = np.argmin(np.abs(refl_frac - fractions))
             h_frac = H_frac[:, filter_idx]
-            tmp_ir[h_offset+refl_idx+h_idx-1,:] += h_frac[:,np.newaxis] * echogram.value[i]
+            tmp_ir[h_offset+refl_idx+h_idx-1, :] += h_frac[:, np.newaxis] * echogram.value[i]
 
-        ir = tmp_ir[h_offset:-h_offset,:]
+        ir = tmp_ir[h_offset:-h_offset, :]
 
     else:
-
-        L_ir = int(np.ceil(endtime * fs))
-        ir = np.zeros((L_ir, nChannels))
         refl_idx = (np.round(echogram.time[:idx_trans] * fs)).astype(int)
-        # filter out exceeding indices
+        # Filter out exceeding indices
         refl_idx = refl_idx[refl_idx < L_ir]
         ir[refl_idx, :] = echogram.value[:refl_idx.size]
 
     return ir
 
 
-def render_quantized(qechogram, endtime, fs, FRACTIONAL):
+def render_quantized(echogram, endtime, fs, FRACTIONAL):
     '''
     TODO
     %RENDER_HRTF Samples the echogram using HRTFs.
@@ -260,50 +272,72 @@ def render_quantized(qechogram, endtime, fs, FRACTIONAL):
 
 def filter_rirs(rir, f_center, fs):
     """
-    TODO
-    :param rir:
-    :param f_center:
-    :param fs:
-    :return:
+    Apply a filterbank to a given impulse responses.
+
+    Parameters
+    ----------
+    rir : ndarray
+        Impulse responses to be filtered.  Dimension = (L, nBands)
+    f_center: ndarray
+        Center frequencies of the filterbank. Dimension = (nBands)
+    fs: int
+        Target sampling rate
+
+    Returns
+    -------
+    ir : ndarray
+        Filtered impulse responses. Dimension = (L+M-1, 1)
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    Filter operation is implemented with `scipy.signal.firwin`.
+    Order of the filters is hardcoded to M = 1000.
+
+    The highest center frequency must be at most equal to fs/2, in order to avoid aliasing.
+    The lowest center frequency must be at least equal to 30 Hz.
+    Center frequencies must increase monotonically.
+
+    TODO: expose filter order, minimum frequency as parameter?
     """
 
     nBands = rir.shape[1]
-
-    if f_center.size != nBands:
-        raise ValueError('The number of bands should match the number of columns in the 2nd dimension of rir')
+    _validate_ndarray_2D('rir', rir)
+    _validate_int('fs', fs, positive=True)
+    _validate_ndarray_1D('f_center', f_center, positive=True, size=nBands, limit=[30,fs/2])
+    # if not np.all(np.asarray(f_center) <= fs/2):
+    #     raise ValueError('Center frequencies must be at most equal to fs/2.')
+    # if not np.all(np.asarray(f_center) >= 30):
+    #     raise ValueError('Center frequencies must be at least equal to 30 Hz.')
 
     if nBands == 1:
         rir_full = rir
     else:
-        # Order of filters
         order = 1000
         filters = np.zeros((order + 1, nBands))
         for i in range(nBands):
             if i == 0:
-                fl = 30. # TODO: HARDCODED?
+                fl = 30. 
                 fh = np.sqrt(f_center[i] * f_center[i + 1])
                 wl = fl / (fs / 2.)
                 wh = fh / (fs / 2.)
-                # w = np.array([wl, wh])
                 filters[:, i] = scipy.signal.firwin(order+1, [wl, wh], pass_zero='bandpass')
-                # filters[:, i] = fir1(order, w, 'bandpass')
             elif i == nBands-1:
                 fl = np.sqrt(f_center[i] * f_center[i - 1])
                 w = fl / (fs / 2.)
                 filters[:, i] = scipy.signal.firwin(order+1, w, pass_zero='highpass')
-                # filters[:, i] = fir1(order, w, 'high')
             else:
                 fl = np.sqrt(f_center[i] * f_center[i - 1])
                 fh = np.sqrt(f_center[i] * f_center[i + 1])
                 wl = fl / (fs / 2.)
                 wh = fh / (fs / 2.)
-                # w = np.array([wl, wh])
                 filters[:, i] = scipy.signal.firwin(order + 1, [wl, wh], pass_zero='bandpass')
-                # filters[:, i] = fir1(order, w, 'bandpass')
-
+        
         temp_rir = np.append(rir, np.zeros((order, nBands)), axis=0)
-        # rir_filt = fftfilt(filters, temp_rir)
-        # rir_filt = scipy.signal.filtfilt(filters, temp_rir)
-        rir_filt = scipy.signal.fftconvolve(filters, temp_rir)[:temp_rir.shape[0]]
-        rir_full = np.sum(rir_filt, axis=1)
+        rir_filt = scipy.signal.fftconvolve(filters, temp_rir, axes=0)[:temp_rir.shape[0],:]
+        rir_full = np.sum(rir_filt, axis=1)[:,np.newaxis]
+    
     return rir_full
