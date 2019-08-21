@@ -36,14 +36,30 @@
 import numpy as np
 from masp.shoebox_room_sim.echogram import Echogram
 
+def _validate_boolean(name, boolean):
+
+    if not isinstance(boolean, bool):
+        raise TypeError(name + ' must be an instance of bool')
+
 def _validate_int(name, number, positive=False, limit=None):
 
     if not isinstance(number, int):
         raise TypeError(name + ' must be an instance of int')
-    elif positive:
+    if positive:
         if number < 0:
             raise ValueError(name + ' must be positive')
-    elif limit is not None:
+    if limit is not None:
+        if number > limit:
+            raise ValueError(name + ' must be smaller than ' + str(limit))
+
+def _validate_float(name, number, positive=False, limit=None):
+
+    if not isinstance(number, float):
+        raise TypeError(name + ' must be an instance of float')
+    if positive:
+        if number < 0:
+            raise ValueError(name + ' must be positive')
+    if limit is not None:
         if number > limit:
             raise ValueError(name + ' must be smaller than ' + str(limit))
 
@@ -53,22 +69,26 @@ def _validate_number(name, number, norm=False, positive=False, limit=None):
         if norm:
             if not 0 <= number <= 1:
                 raise ValueError(name + ' must be in the interval [0,1]')
-        elif positive:
+        if positive:
             if 0 > number:
                 raise ValueError(name + ' must be positive')
-        elif limit is not None:
-            if number > limit:
-                raise ValueError(name + ' must be smaller than ' + str(limit))
+        if limit is not None:
+            if number < limit[0]:
+                raise ValueError(name + ' must be greater or equal than ' + str(limit[0]))
+            if number > limit[1]:
+                raise ValueError(name + ' must be smaller or equal than ' + str(limit[1]))
     elif isinstance(number, np.ndarray):
         if norm:
             if np.any(number < 0) or np.any(number > 1):
                 raise ValueError(name + ' must be in the interval [0,1]')
-        elif positive:
+        if positive:
             if np.any(number < 0):
                 raise ValueError(name + ' must be positive')
-        elif limit is not None:
-            if np.any(number > limit):
-                raise ValueError(name + ' must be smaller than ' + str(limit))
+        if limit is not None:
+            if np.any(number < limit[0]):
+                raise ValueError(name + ' must be greater or equal than ' + str(limit[0]))
+            if np.any(number > limit[1]):
+                raise ValueError(name + ' must be smaller or equal than ' + str(limit[1]))
     else:
         raise TypeError(name + ' must be an integer, float or 1-D ndarray')
 
@@ -76,53 +96,53 @@ def _validate_ndarray_1D(name, ndarray, size=None, norm=False, positive=False, l
 
     if not isinstance(ndarray, np.ndarray):
         raise TypeError(name + ' must be an instance of ndarray')
-    elif ndarray.ndim != 1:
+    if ndarray.ndim != 1:
         raise ValueError(name + ' must be 1D')
-    elif size is not None:
+    if size is not None:
         if ndarray.size != size:
             raise ValueError(name + ' must have size ' + str(size))
-    elif norm:
+    if norm:
         if np.any(ndarray < 0) or np.any(ndarray > 1):
             raise ValueError(name + ' must be in the interval [0,1]')
-    elif positive:
+    if positive:
         if np.any(ndarray < 0):
             raise ValueError(name + ' must be positive')
-    elif limit is not None:
-        if np.any(ndarray > limit):
-            raise ValueError(name + ' must be smaller than ' + str(limit))
-    elif dtype is not None:
+    if limit is not None:
+        if np.any(ndarray < limit[0]):
+            raise ValueError(name + ' must be greater or equal than ' + str(limit[0]))
+        if np.any(ndarray > limit[1]):
+            raise ValueError(name + ' must be smaller or equal than ' + str(limit[1]))
+    if dtype is not None:
         if ndarray.dtype != dtype:
-            raise ValueError(name + ' dtype must be ' + dtype)
+            raise ValueError(name + ' dtype must be ' + str(dtype))
 
 def _validate_ndarray_2D(name, ndarray, shape0=None, shape1=None, norm=False, positive=False, dtype=None):
 
     if not isinstance(ndarray, np.ndarray):
         raise TypeError(name + ' must be an instance of ndarray')
-    elif ndarray.ndim != 2:
+    if ndarray.ndim != 2:
         raise ValueError(name + ' must be 2D')
-
-    elif shape0 is not None:
+    if shape0 is not None:
         if ndarray.shape[0] != shape0:
             raise ValueError(name + ' must have dimension 0=' + str(shape0))
-    elif shape1 is not None:
+    if shape1 is not None:
         if ndarray.shape[1] != shape1:
             raise ValueError(name + ' must have dimension 1=' + str(shape1))
-    elif norm:
+    if norm:
         if np.any(ndarray < 0) or np.any(ndarray > 1):
             raise ValueError(name + ' must be in the interval [0,1]')
-    elif positive:
+    if positive:
         if np.any(ndarray < 0):
             raise ValueError(name + ' must be positive')
-    elif dtype is not None:
+    if dtype is not None:
         if ndarray.dtype != dtype:
-            raise ValueError(name + ' dtype must be ' + dtype)
+            raise ValueError(name + ' dtype must be ' + str(dtype))
 
 def _validate_string(name, string, choices=None):
 
     if not isinstance(string, str):
         raise TypeError(name + ' must be an instance of str')
-
-    elif choices is not None and string not in choices:
+    if choices is not None and string not in choices:
         raise ValueError(name + ' must be one of the following: ' + str(choices))
 
 
@@ -179,25 +199,27 @@ def _validate_echogram(echogram):
     if echogram.value.shape[0] != echogram.time.shape[0] != echogram.order.shape[0] != echogram.coords.shape[0]:
         raise ValueError('echogram shape mismatch')
 
-def _validate_echogram_array(ndarray, shape0=None, shape1=None):
+def _validate_echogram_array(ndarray, shape0=None, shape1=None, shape2=None):
     """
-    specific case of 2D ndarray with dtype=Echogram
+    specific case of 2D/3D ndarray with dtype=Echogram
     """
     if not isinstance(ndarray, np.ndarray):
         raise TypeError('Echogram array must be an instance of ndarray')
-    elif ndarray.ndim != 2:
-        raise ValueError('Echogram array must be 2D')
-    elif shape0 is not None:
+    if ndarray.ndim not in (2, 3):
+        raise ValueError('Echogram array must be 2D or 3D')
+    if shape0 is not None:
         if ndarray.shape[0] != shape0:
             raise ValueError('Echogram array must have dimension 0=' + str(shape0))
-    elif shape1 is not None:
+    if shape1 is not None:
         if ndarray.shape[1] != shape1:
             raise ValueError('Echogram array must have dimension 1=' + str(shape1))
-    elif ndarray.dtype != Echogram:
+    if shape2 is not None:
+        if ndarray.shape[2] != shape1:
+            raise ValueError('Echogram array must have dimension 2=' + str(shape2))
+    if ndarray.dtype != Echogram:
         raise ValueError('Echogram array dtype must be Echogram')
-    for i in range(ndarray.shape[0]):
-        for j in range(ndarray.shape[1]):
-            _validate_echogram(ndarray[i,j])
+    for idx in np.ndindex(ndarray.shape):
+        _validate_echogram(ndarray[idx])
 
 # def _validate_alpha_walls_per_band(alpha):
 #     if not isinstance(alpha, np.ndarray):
