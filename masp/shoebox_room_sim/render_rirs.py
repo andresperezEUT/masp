@@ -37,7 +37,7 @@ import numpy as np
 import scipy.signal
 from masp.utils import lagrange
 from masp.validate_data_types import _validate_echogram, _validate_float, _validate_int, _validate_boolean, \
-    _validate_ndarray_2D, _validate_ndarray_1D
+    _validate_ndarray_2D, _validate_ndarray_1D, _validate_echogram_array
 
 
 def render_rirs_array(echograms, band_centerfreqs, fs, grids, array_irs):
@@ -56,19 +56,41 @@ def render_rirs_array(echograms, band_centerfreqs, fs, grids, array_irs):
 
 def render_rirs_mic(echograms, band_centerfreqs, fs):
     """
+    Render an echogram array into an impulse response matrix.
 
-    :param echograms:
-    :param band_centerfreqs:
-    :param fs:
-    :return:
+    Parameters
+    ----------
+    echograms : ndarray, dtype = Echogram
+        Target echograms. Dimension = (nSrc, nRec, nBands)
+    band_centerfreqs: ndarray
+        Center frequencies of the filterbank. Dimension = (nBands)
+    fs: int
+        Target sampling rate
 
-    TODO: expose fractional as parameter?
+    Returns
+    -------
+    ir : ndarray
+        Rendered echograms. Dimension = (M, nRec, nSrc)
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    The highest center frequency must be at most equal to fs/2, in order to avoid aliasing.
+    The lowest center frequency must be at least equal to 30 Hz.
+    Center frequencies must increase monotonically.
+
+    TODO: expose fractional, L_filterbank as parameter?
     """
 
-    # echograms: [nSrc, nRec, nBands] dimension
     nSrc = echograms.shape[0]
     nRec = echograms.shape[1]
     nBands = echograms.shape[2]
+    _validate_echogram_array(echograms)
+    _validate_int('fs', fs, positive=True)
+    _validate_ndarray_1D('f_center', band_centerfreqs, positive=True, size=nBands, limit=[30,fs/2])
 
     # Sample echogram to a specific sampling rate with fractional interpolation
     fractional = True
@@ -77,33 +99,27 @@ def render_rirs_mic(echograms, band_centerfreqs, fs):
     endtime = 0
     for ns in range(nSrc):
         for nr in range(nRec):
-            # TODO: this line gets the last time value of the first echogram.
-            #  Is that what we want, or is it the maximum of all last time values?
-            # temptime = echograms[ns, nr].time(end)
             temptime = echograms[ns, nr, 0].time[-1]
             if temptime > endtime:
                 endtime = temptime
 
     L_rir = int(np.ceil(endtime * fs))
-    if nBands > 1:
-        L_fbank = 1000 # TODO: is filterbank lenght hardcoded?
-    else:
-        L_fbank = 0
+    L_fbank = 1000 if nBands > 1 else 0
     L_tot = L_rir + L_fbank
 
-    # Render responses and apply filterbank to combine different decays at different bands1    rirs = np.zeros((L_tot, maxSH, nRec, nSrc))
+    # Render responses and apply filterbank to combine different decays at different bands
     rirs = np.empty((L_tot, nRec, nSrc))
     for ns in range(nSrc):
         for nr in range(nRec):
 
             print('Rendering echogram: Source ' + str(ns) + ' - Receiver ' + str(nr))
-
             tempIR = np.zeros((L_rir, nBands))
             for nb in range(nBands):
                 tempIR[:, nb] = np.squeeze(render_rirs(echograms[ns, nr, nb], endtime, fs, fractional))
-            # TODO: CHECK SQUEEZE...
+
             print('     Filtering and combining bands')
             rirs[:, nr, ns] = filter_rirs(tempIR, band_centerfreqs, fs).squeeze()
+
     return rirs
 
 

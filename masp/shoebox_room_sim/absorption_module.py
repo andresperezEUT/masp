@@ -64,7 +64,7 @@ def apply_absorption(echogram, alpha, limits=None):
 
     Notes
     -----
-    `nBands` will be determined by the length of alpha's first dimension.
+    `nBands` will be determined by the length of `alpha` first dimension.
 
     `alpha` must have all values in the range [0,1].
 

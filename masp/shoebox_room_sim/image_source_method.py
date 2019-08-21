@@ -87,9 +87,9 @@ def ims_coreMtx(room, source, receiver, type, typeValue):
 
     """
 
-    _validate_ndarray_1D('room', room, size=3, positive=True)
-    _validate_ndarray_1D('source', source, size=3, positive=True, limit=[np.zeros(C),room])
-    _validate_ndarray_1D('receiver', receiver, size=3, positive=True, limit=[np.zeros(C),room])
+    _validate_ndarray_1D('room', room, size=C, positive=True)
+    _validate_ndarray_1D('source', source, size=C, positive=True, limit=[np.zeros(C),room])
+    _validate_ndarray_1D('receiver', receiver, size=C, positive=True, limit=[np.zeros(C),room])
     _validate_string('type', type, choices=['maxTime', 'maxOrder'])
 
     # Room dimensions
