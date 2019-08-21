@@ -72,3 +72,4 @@ masp/tests/__pycache__/*
 masp/shoebox_room_sim/__pycache__/*
 masp/tests/shoebox_room_sim/__pycache__/*
 .coverage
+masp/shoebox_room_sim/deleteme.py
