@@ -81,29 +81,27 @@ def test_filter_rirs():
                        namespace='srs')
 
 
-#
-# def test_render_rirs_mic():
-#     num_tests = 10
-#     nSrc = [np.random.randint(1, 10) for i in range(num_tests)]
-#     nRec = [np.random.randint(1, 10) for i in range(num_tests)]
-#     nBands = [np.random.randint(1, 10) for i in range(num_tests)]
-#     band_centerfreqs = [[np.random.randint(30,100)] for i in range(num_tests)]
-#     [[band_centerfreqs[i].append(2 * band_centerfreqs[i][b]) for b in range(nBands[i] - 1)] for i in range(num_tests)]
-#
-#     params = {
-#         'echograms':
-#         [generate_random_echogram_array(nSrc[i], nRec[i], nBands[i]) for i in range(num_tests)],
-#         'band_centerfreqs':
-#         band_centerfreqs,
-#         'fs':
-#         [np.random.randint(100000)+100 for i in range(num_tests)],
-#     }
-#     for t in range(num_tests):
-#         p = get_parameters(params, t)
-#         numeric_assert("render_mic_rirs",
-#                        "render_rirs_mic",
-#                        *p,
-#                        nargout=1,
-#                        namespace='srs')
-#
-# test_render_rirs_mic()
+def test_render_rirs_mic():
+    num_tests = 3
+    nSrc = [np.random.randint(1, 10) for i in range(num_tests)]
+    nRec = [np.random.randint(1, 10) for i in range(num_tests)]
+    nBands = [np.random.randint(1, 10) for i in range(num_tests)]
+    band_centerfreqs = [[np.random.randint(30, 100)] for i in range(num_tests)]
+    [[band_centerfreqs[i].append(2 * band_centerfreqs[i][b]) for b in range(nBands[i] - 1)] for i in range(num_tests)]
+    fs = [int(band_centerfreqs[i][-1]*2.1) for i in range(num_tests)] # avoid fs/2 smaller than last centerband
+
+    params = {
+        'echograms':
+        [generate_random_echogram_array(nSrc[i], nRec[i], nBands[i]) for i in range(num_tests)],
+        'band_centerfreqs':
+        band_centerfreqs,
+        'fs':
+        fs
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("render_mic_rirs",
+                       "render_rirs_mic",
+                       *p,
+                       nargout=1,
+                       namespace='srs')

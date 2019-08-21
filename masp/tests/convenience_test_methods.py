@@ -128,6 +128,23 @@ def raise_error(e=None):
     else:
         raise e
 
+def validate_result(ml_res, np_res):
+    if isinstance(np_res, np.ndarray):
+        m = np.asarray(ml_res).squeeze()
+        n = np_res.squeeze()
+        if not m.shape == n.shape: raise_error()
+        if not np.allclose(m, n): raise_error()
+
+    elif isinstance(np_res, float):
+        if ml_res != np_res: raise_error()
+
+    elif isinstance(np_res, masp.srs.Echogram):
+        compare_echograms(np_res, ml_res)
+
+    else:
+        print(type(np_res))
+        raise_error(NotImplementedError)
+
 def compare_echograms(np_res, ml_res):
     # In python, 'time' is 1D, while others are 2D. Therefore we must use squeeze for comparison
     if not np.allclose(np.asarray(ml_res['time']).squeeze(), np_res.time.squeeze()): raise_error()
@@ -154,9 +171,12 @@ def compare_echogram_arrays(np_res, ml_res):
 
 def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, namespace=None):
 
+    # PREPROCESS ARGS --------------------------------------------------------
+
     # Convert arguments to required data types
     ml_args = []
     np_args = []
+    ml_path_arg = False  # flag, active if passing class objects to matlab
     for arg in args:
 
         if isinstance(arg, list):
@@ -198,6 +218,7 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
 
             # For python the argument is fine
             np_args.append(arg)
+            ml_path_arg = True
 
         elif isinstance(arg, str):
             ml_args.append(arg)
@@ -210,19 +231,29 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
             print(type(arg))
             raise NotImplementedError
 
-    # Run method
+    # RUN METHODS --------------------------------------------------------
+
+    # Run python method
     if namespace is None:
         np_res = getattr(masp, np_method)(*np_args)
     else:
         np_res = getattr(getattr(masp, namespace), np_method)(*np_args)
 
+    # Run matlab method.
+    # Specific matlab test file exists when :
+    # 1). passing a file path to be loaded inside matlab (`ml_path_arg=True`)
+    # 2). returing a file path from matlab to be read in python (`write_file=True`)
+
     if write_file:
-        ml_args.insert(0, tmp_path)
-        ml_method_test = ml_method+'_test'
+        ml_args.insert(0, tmp_path)  # Add first argument: path to save output file
+        ml_method_test = ml_method + '_test'
         getattr(eng, ml_method_test)(*ml_args, nargout=nargout)
     else:
+        if ml_path_arg:
+            ml_method += '_test'
         ml_res = getattr(eng, ml_method)(*ml_args, nargout=nargout)
 
+    # VALIDATE OUTPUT --------------------------------------------------------
 
     # Write check: matlab-python interface is not able to pass struct arrays.
     # Therefore, we call the `test` version of the matlab function,
@@ -240,42 +271,20 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
         # Actually compare them
         compare_echogram_arrays(np_res, ml_res)
 
-        # Remove used file
+        # Remove used tmp file
         os.remove(tmp_file_path)
-        # Also remove matlab arg file, in case
-        if 'ml_echogram_array_path' in locals():
-            if os.path.isfile(ml_echogram_array_path):
-                os.remove(ml_echogram_array_path)
 
     # Regular check: matlab result data is saved into ml_res
     else:
         if nargout == 1:
-            if isinstance(np_res, np.ndarray):
-                if not np.allclose(ml_res, np_res): raise_error()
-
-            elif isinstance(np_res, float):
-                if ml_res != np_res: raise_error()
-
-            elif isinstance(np_res, masp.srs.Echogram):
-                compare_echograms(np_res, ml_res)
-
-            else:
-                print(type(np_res))
-                raise_error(NotImplementedError)
-
+            validate_result(ml_res, np_res)
         else:
             for arg_idx in range(nargout):
+                validate_result(ml_res[arg_idx], np_res[arg_idx])
 
-                if isinstance(np_res[arg_idx], np.ndarray):
-                    if not np.allclose(ml_res[arg_idx], np_res[arg_idx]): raise_error()
+    # Remove matlab arg file, in case
+    if 'ml_echogram_array_path' in locals():
+        if os.path.isfile(ml_echogram_array_path):
+            os.remove(ml_echogram_array_path)
 
-                elif isinstance(np_res[arg_idx], float):
-                    if ml_res[arg_idx] != np_res[arg_idx]: raise_error()
-
-                elif isinstance(arg, masp.srs.Echogram):
-                    compare_echograms(np_res, ml_res)
-
-                else:
-                    print(type(np_res))
-                    raise_error(NotImplementedError)
 

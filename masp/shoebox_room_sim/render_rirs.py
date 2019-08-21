@@ -61,6 +61,8 @@ def render_rirs_mic(echograms, band_centerfreqs, fs):
     :param band_centerfreqs:
     :param fs:
     :return:
+
+    TODO: expose fractional as parameter?
     """
 
     # echograms: [nSrc, nRec, nBands] dimension
@@ -69,7 +71,7 @@ def render_rirs_mic(echograms, band_centerfreqs, fs):
     nBands = echograms.shape[2]
 
     # Sample echogram to a specific sampling rate with fractional interpolation
-    fractional = False # TODO: ARGUMENT
+    fractional = True
 
     # Decide on number of samples for all RIRs
     endtime = 0
@@ -101,7 +103,7 @@ def render_rirs_mic(echograms, band_centerfreqs, fs):
                 tempIR[:, nb] = np.squeeze(render_rirs(echograms[ns, nr, nb], endtime, fs, fractional))
             # TODO: CHECK SQUEEZE...
             print('     Filtering and combining bands')
-            rirs[:, nr, ns] = filter_rirs(tempIR, band_centerfreqs, fs)
+            rirs[:, nr, ns] = filter_rirs(tempIR, band_centerfreqs, fs).squeeze()
     return rirs
 
 
@@ -308,10 +310,6 @@ def filter_rirs(rir, f_center, fs):
     _validate_ndarray_2D('rir', rir)
     _validate_int('fs', fs, positive=True)
     _validate_ndarray_1D('f_center', f_center, positive=True, size=nBands, limit=[30,fs/2])
-    # if not np.all(np.asarray(f_center) <= fs/2):
-    #     raise ValueError('Center frequencies must be at most equal to fs/2.')
-    # if not np.all(np.asarray(f_center) >= 30):
-    #     raise ValueError('Center frequencies must be at least equal to 30 Hz.')
 
     if nBands == 1:
         rir_full = rir
