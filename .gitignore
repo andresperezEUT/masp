@@ -69,7 +69,12 @@ fabric.properties
 
 masp/__pycache__/*
 masp/tests/__pycache__/*
+
 masp/shoebox_room_sim/__pycache__/*
 masp/tests/shoebox_room_sim/__pycache__/*
+
+masp/array_response_simulator/__pycache__/*
+masp/tests/array_response_simulator/__pycache__/*
+
 .coverage
 masp/shoebox_room_sim/deleteme.py

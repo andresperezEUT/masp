@@ -96,7 +96,7 @@ arrayType = 'rigid'
 c = 343
 f_max = 16000
 kR_max = 2*np.pi*f_max*R/c
-array_order = np.ceil(2*kR_max)
+array_order = np.ceil(2*kR_max)  # TODO: this formula resembles Daniel's 2006 (Eq. 14), except for the 2 factor. Why?
 L_resp = 1024
 
 # Define grid to simulate responses (or that's coming from measurements directly)

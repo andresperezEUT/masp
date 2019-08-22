@@ -5,6 +5,5 @@
 # from masp.shoebox_room_sim.acoustics import find_abs_coeffs_from_rt
 
 import masp.shoebox_room_sim as srs
-
-# import masp.utils
+import masp.array_response_simulator as ars
 from masp.utils import *
