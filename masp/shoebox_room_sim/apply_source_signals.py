@@ -36,7 +36,7 @@
 import numpy as np
 import scipy.signal
 
-from masp.validate_data_types import _validate_ndarray_3D, _validate_ndarray_2D
+from masp.validate_data_types import _validate_ndarray_3D, _validate_ndarray_2D, _validate_ndarray_4D
 
 
 def apply_source_signals_array(array_rirs, src_sigs):
@@ -99,12 +99,12 @@ def apply_source_signals_mic(mic_rirs, src_sigs):
 
     Notes
     -----
-    The number of source positions (dim2) in `mic_rirs` should match the number of sources (dim1) in `src_sigs`.
+    The number of source positions (shape[2]) in `mic_rirs` should match the number of sources (shape[1]) in `src_sigs`.
 
     """
+    L_rir = mic_rirs.shape[0]
     nRec = mic_rirs.shape[1]
     nSrc = mic_rirs.shape[2]
-    L_rir = mic_rirs.shape[0]
     L_sig = src_sigs.shape[0]
     _validate_ndarray_3D('mic_rirs', mic_rirs)
     _validate_ndarray_2D('src_sigs', src_sigs, shape1=nSrc)
@@ -120,36 +120,49 @@ def apply_source_signals_mic(mic_rirs, src_sigs):
 
 def apply_source_signals_sh(sh_rirs, src_sigs):
     """
-    TODO
-    :param sh_rirs:
-    :param src_sigs:
-    :return:
+    Apply spherical harmonic room impulse responses to a set of source signals.
+
+    Parameters
+    ----------
+    sh_rirs : ndarray
+       Matrix containing the room impulse responses. Dimension = (L_rir, nSH, nRec, nSrc)
+    src_sigs: ndarray
+       Matrix containing the source signals. Dimension = (L_sig, nSrc)
+
+    Returns
+    -------
+    sh_sigs : ndarray
+        Source signals subjected to the RIRs. Dimension = = (L_rir+L_sig-1, nSH, nRec)
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    The number of source positions (shape[3]) in `sh_rirs` should match the number of sources (shape[1]) in `src_sigs`.
+
+    TODO: check return values
     """
 
-    raise NotImplementedError
-
+    L_rir = sh_rirs.shape[0]
+    nSH = sh_rirs.shape[1]
     nRec = sh_rirs.shape[2]
     nSrc = sh_rirs.shape[3]
-    nSH = sh_rirs.shape[1]
-    L_rir = sh_rirs.shape[0]
-
-    nSigs = src_sigs.shape[1]
-    if nSigs < nSrc:
-        raise ValueError('The number of source signals should be at least as many as the source number in the simulation')
     L_sig = src_sigs.shape[0]
+    _validate_ndarray_4D('mic_rirs', sh_rirs)
+    _validate_ndarray_2D('src_sigs', src_sigs, shape1=nSrc)
 
     sh_sigs = np.zeros((L_sig + L_rir - 1, nSH, nRec))
     src_sh_sigs = np.zeros((L_sig + L_rir - 1, nSH, nRec, nSrc))
     for nr in range(nRec):
         for ns in range(nSrc):
             print('Convolving with source signal: Source ' + str(ns) + ' - Receiver ' + str(nr))
-                # todo
-                # idx_nonzero = find(sum(squeeze(sh_rirs(:,:, nr, ns)))~ = 0)
-                # src_sh_sigs(:, idx_nonzero, nr, ns) = fftfilt(sh_rirs(:, idx_nonzero, nr, ns), [src_sigs(:, ns); zeros(L_rir - 1,                                                                                           1)]);
-
+            # Just apply convolution to non-zero channels (skip empty channels due to different sh orders)
+            idx_nonzero = np.sum(sh_rirs[:,:, nr, ns],axis=0) != 0
+            src_sh_sigs[:, idx_nonzero, nr, ns] = scipy.signal.fftconvolve(sh_rirs[:, idx_nonzero, nr, ns], src_sigs[:, ns, np.newaxis], axes=0)
     sh_sigs = np.sum(src_sh_sigs, axis=3)
 
-    return sh_sigs, src_sh_sigs
-
-
+    # return sh_sigs, src_sh_sigs
+    return sh_sigs
 

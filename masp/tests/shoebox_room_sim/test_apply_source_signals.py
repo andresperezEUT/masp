@@ -56,3 +56,27 @@ def test_apply_source_signals_mic():
                        *p,
                        nargout=1,
                        namespace='srs')
+
+def test_apply_source_signals_sh():
+    num_tests = 10
+    L_sig = [np.random.randint(1, 10) * 1000 for i in range(num_tests)]
+    L_rir = [np.random.randint(1, 10) * 100 for i in range(num_tests)]
+    nSrc = [np.random.randint(1, 10) for i in range(num_tests)]
+    nRec = [np.random.randint(1, 10) for i in range(num_tests)]
+    nSH = [np.random.randint(1, 10) for i in range(num_tests)]
+    params = {
+        'sh_rirs':
+            [(np.random.rand(L_rir[i], nSH[i], nRec[i], nSrc[i]) * 2 - 1).tolist() for i in range(num_tests)],
+        'src_sigs':
+            [(np.random.rand(L_sig[i], nSrc[i]) * 2 - 1).tolist() for i in range(num_tests)],
+
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("apply_source_signals_sh",
+                       "apply_source_signals_sh",
+                       *p,
+                       nargout=1,
+                       namespace='srs')
+
+test_apply_source_signals_sh()

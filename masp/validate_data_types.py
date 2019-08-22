@@ -163,6 +163,34 @@ def _validate_ndarray_3D(name, ndarray, shape0=None, shape1=None, shape2=None, n
         if ndarray.dtype != dtype:
             raise ValueError(name + ' dtype must be ' + str(dtype))
 
+def _validate_ndarray_4D(name, ndarray, shape0=None, shape1=None, shape2=None, shape3=None, norm=False, positive=False, dtype=None):
+
+    if not isinstance(ndarray, np.ndarray):
+        raise TypeError(name + ' must be an instance of ndarray')
+    if ndarray.ndim != 4:
+        raise ValueError(name + ' must be 4D')
+    if shape0 is not None:
+        if ndarray.shape[0] != shape0:
+            raise ValueError(name + ' must have dimension 0=' + str(shape0))
+    if shape1 is not None:
+        if ndarray.shape[1] != shape1:
+            raise ValueError(name + ' must have dimension 1=' + str(shape1))
+    if shape2 is not None:
+        if ndarray.shape[2] != shape2:
+            raise ValueError(name + ' must have dimension 2=' + str(shape1))
+    if shape3 is not None:
+        if ndarray.shape[3] != shape2:
+            raise ValueError(name + ' must have dimension 3=' + str(shape1))
+    if norm:
+        if np.any(ndarray < 0) or np.any(ndarray > 1):
+            raise ValueError(name + ' must be in the interval [0,1]')
+    if positive:
+        if np.any(ndarray < 0):
+            raise ValueError(name + ' must be positive')
+    if dtype is not None:
+        if ndarray.dtype != dtype:
+            raise ValueError(name + ' dtype must be ' + str(dtype))
+
 def _validate_string(name, string, choices=None):
 
     if not isinstance(string, str):
