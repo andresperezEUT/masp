@@ -58,7 +58,7 @@ def test_render_rirs():
                        namespace='srs')
 
 def test_filter_rirs():
-    num_tests = 100
+    num_tests = 10
     nBands = [np.random.randint(1, 10) for i in range(num_tests)]
     band_centerfreqs = [[np.random.randint(30,100)] for i in range(num_tests)]
     [[band_centerfreqs[i].append(2 * band_centerfreqs[i][b]) for b in range(nBands[i] - 1)] for i in range(num_tests)]

@@ -36,6 +36,8 @@
 import numpy as np
 import scipy.signal
 
+from masp.validate_data_types import _validate_ndarray_3D, _validate_ndarray_2D
+
 
 def apply_source_signals_array(array_rirs, src_sigs):
     """
@@ -77,19 +79,35 @@ def apply_source_signals_array(array_rirs, src_sigs):
 
 def apply_source_signals_mic(mic_rirs, src_sigs):
     """
-    TODO
-    :param mic_rirs:
-    :param src_sigs:
-    :return:
+    Apply microphone room impulse responses to a set of source signals.
+
+    Parameters
+    ----------
+    mic_rirs : ndarray
+       Matrix containing the room impulse responses. Dimension = (L_rir, nRec, nSrc)
+    src_sigs: ndarray
+       Matrix containing the source signals. Dimension = (L_sig, nSrc)
+
+    Returns
+    -------
+    mic_sigs : ndarray
+        Source signals subjected to the RIRs. Dimension = = (L_rir+L_sig-1, nRec)
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    The number of source positions (dim2) in `mic_rirs` should match the number of sources (dim1) in `src_sigs`.
+
     """
     nRec = mic_rirs.shape[1]
     nSrc = mic_rirs.shape[2]
     L_rir = mic_rirs.shape[0]
-
-    nSigs = src_sigs.shape[1]
-    if nSigs < nSrc:
-        raise ValueError('The number of source signals should be at least as many as the source number in the simulation')
     L_sig = src_sigs.shape[0]
+    _validate_ndarray_3D('mic_rirs', mic_rirs)
+    _validate_ndarray_2D('src_sigs', src_sigs, shape1=nSrc)
 
     mic_sigs = np.zeros((L_sig + L_rir - 1, nRec))
     for nr in range(nRec):
