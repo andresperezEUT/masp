@@ -66,7 +66,7 @@ nRec = rec.shape[0]
 
 # Source positions
 src = np.array([ [6.2, 2.0, 1.8], [7.9, 3.3, 1.75], [5.8, 5.0, 1.9] ])
-nSrc = rec.shape[0]
+nSrc = src.shape[0]
 
 # Mic orientations and directivities
 mic_specs = np.array([  [1, 0, 0, 0.5],    # cardioid looking to the front
@@ -94,17 +94,11 @@ mic_specs = np.array([  [1, 0, 0, 0.5],    # cardioid looking to the front
 tic = time.time()
 
 maxlim = 1.5 # just stop if the echogram goes beyond that time ( or just set it to max(rt60) )
-
-# TODO: check note
 limits = np.minimum(rt60, maxlim)
-# for nb = 1:nBands
-#     if (rt60(nb)<maxlim) limits(nb) = rt60(nb);
-#     else limits(nb,1) = maxlim;
-#     end
-# end
 
 # Compute echograms
-abs_echograms, rec_echograms, echograms = srs.compute_echograms_mic(room, src, rec, abs_wall, limits, mic_specs);
+# abs_echograms, rec_echograms, echograms = srs.compute_echograms_mic(room, src, rec, abs_wall, limits, mic_specs);
+abs_echograms = srs.compute_echograms_mic(room, src, rec, abs_wall, limits, mic_specs);
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # RENDERING
@@ -123,7 +117,7 @@ print('Elapsed time is ' + str(toc-tic) + 'seconds.')
 # Each source is convolved with the respective mic IR, and summed with
 # the rest of the sources to create the microphone mixed signals
 
-sourcepath = 'data/milk_cow_blues_4src.wav'
-src_sigs = librosa.core.load(sourcepath, sr=None, mono=False)[0].T
+sourcepath = '../../data/milk_cow_blues_4src.wav'
+src_sigs = librosa.core.load(sourcepath, sr=None, mono=False)[0].T[:,:nSrc]
 
 mic_sigs = srs.apply_source_signals_mic(mic_rirs, src_sigs)
