@@ -34,7 +34,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import numpy as np
-from masp.array_response_simulator import sph_besselj
+from masp.array_response_simulator import sph_besselj, dsph_besselj
 
 
 def sph_modal_coefs(N, kr, arrayType, dirCoeff):
@@ -71,6 +71,7 @@ def sph_modal_coefs(N, kr, arrayType, dirCoeff):
 
         elif arrayType is 'rigid':
             jn = sph_besselj(n, kr)
-            jnprime = dsph_besselj(n, kr);
+            jnprime = dsph_besselj(n, kr)
+            hn = sph_hankel2(n, kr);
 
 

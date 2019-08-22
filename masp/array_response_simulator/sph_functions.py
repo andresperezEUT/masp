@@ -34,8 +34,10 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import numpy as np
-from scipy.special import jv
+from scipy.special import jv, yv
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Spherical functions
 
 def sph_besselj(n, x):
     """
@@ -51,6 +53,44 @@ def sph_besselj(n, x):
     j[idx_zero] = 1. if n == 0 else 0.
     return j
 
+def sph_bessely(n, x):
+    """
+    %SPH_BESSELY Spherical bessel function of the second kind.
+
+    :param n:
+    :param x:
+    :return:
+    TODO
+    """
+    return np.sqrt(np.pi / (2 * x)) * yv(n + 0.5, x)
+
+def sph_function():
+    raise NotImplementedError
+
+def sph_hankel1(n, x):
+    """
+    %SPH_HANKEL1 Spherical hankel function of the first kind.
+    :param n:
+    :param x:
+    :return:
+    TODO
+    """
+    return sph_besselj(n, x) + 1j * sph_bessely(n, x)
+
+def sph_hankel2(n, x):
+    """
+    %SPH_HANKEL1 Spherical hankel function of the second kind.
+    :param n:
+    :param x:
+    :return:
+    TODO
+    """
+    return sph_besselj(n, x) - 1j * sph_bessely(n, x)
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# First derivative of spherical functions
+
 def dsph_besselj(n, x):
     """
     %DSPH_BESSELJ Spherical bessel function derivative of the first kind.
@@ -63,14 +103,3 @@ def dsph_besselj(n, x):
     return  1. / (2 * n + 1) * (n * sph_besselj(n - 1, x) - (n + 1) * sph_besselj(n + 1, x))
 
 
-def sph_bessel_y(n, x):
-    raise NotImplementedError
-
-def sph_function():
-    raise NotImplementedError
-
-def sph_hankel_1():
-    raise NotImplementedError
-
-def sph_hankel_2():
-    raise NotImplementedError
