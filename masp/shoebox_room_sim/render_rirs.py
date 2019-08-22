@@ -56,7 +56,7 @@ def render_rirs_array(echograms, band_centerfreqs, fs, grids, array_irs):
 
 def render_rirs_mic(echograms, band_centerfreqs, fs):
     """
-    Render an echogram array into an impulse response matrix.
+    Render a mic echogram array into an impulse response matrix.
 
     Parameters
     ----------
@@ -125,66 +125,75 @@ def render_rirs_mic(echograms, band_centerfreqs, fs):
 
 def render_rirs_sh(echograms, band_centerfreqs, fs):
     """
-    TODO
-    :param echograms:
-    :param band_centerfreqs:
-    :param fs:
-    :return:
+    Render a spherical harmonic echogram array into an impulse response matrix.
+
+    Parameters
+    ----------
+    echograms : ndarray, dtype = Echogram
+        Target echograms. Dimension = (nSrc, nRec, nBands)
+    band_centerfreqs: ndarray
+        Center frequencies of the filterbank. Dimension = (nBands)
+    fs: int
+        Target sampling rate
+
+    Returns
+    -------
+    ir : ndarray
+        Rendered echograms. Dimension = (M, maxSH, nRec, nSrc)
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    `maxSH` is the highest spherical harmonic number found in all echograms.
+    For any echogram with nSH<maxSH, the channels (nSH...maxSH) will contain only zeros.
+
+    The highest center frequency must be at most equal to fs/2, in order to avoid aliasing.
+    The lowest center frequency must be at least equal to 30 Hz.
+    Center frequencies must increase monotonically.
+
+    TODO: expose fractional, L_filterbank as parameter?
     """
 
     # echograms: [nSrc, nRec, nBands] dimension
     nSrc = echograms.shape[0]
     nRec = echograms.shape[1]
     nBands = echograms.shape[2]
+    _validate_echogram_array(echograms)
+    _validate_int('fs', fs, positive=True)
+    _validate_ndarray_1D('f_center', band_centerfreqs, positive=True, size=nBands, limit=[30,fs/2])
 
     # Sample echogram to a specific sampling rate with fractional interpolation
-    fractional = False # TODO: ARGUMENT
+    fractional = True
 
     # Decide on number of samples for all RIRs
     endtime = 0
     for ns in range(nSrc):
         for nr in range(nRec):
-            # TODO: this line gets the last time value of the first echogram.
-            #  Is that what we want, or is it the maximum of all last time values?
-            # temptime = echograms[ns, nr].time(end)
             temptime = echograms[ns, nr, 0].time[-1]
             if temptime > endtime:
                 endtime = temptime
-    # # python add
-    # endtime = int(np.ceil(endtime))
 
     L_rir = int(np.ceil(endtime * fs))
-    if nBands > 1:
-        L_fbank = 1000 # TODO: is filterbank lenght hardcoded?
-    else:
-        L_fbank = 0
+    L_fbank = 1000 if nBands > 1 else 0
     L_tot = L_rir + L_fbank
 
-    # Find maximum number of SH channels of echograms
+    # Find maximum number of SH channels in all echograms
     maxSH = 0
     for nr in range(nRec):
-        # TODO: should the echograms have different column number as a function of sh?
-        #  now that seems broken...
-        if np.ndim(echograms[0, nr, 0].value) <= 1:
-            tempSH = 1
-        else:
-            tempSH = np.shape(echograms[0, nr, 0].value)[1] # this should work in the general case (broken now?)
+        tempSH = np.shape(echograms[0, nr, 0].value)[1]
         if tempSH > maxSH:
             maxSH = tempSH
 
-    # Render responses and apply filterbank to combine different decays at different bands1    rirs = np.zeros((L_tot, maxSH, nRec, nSrc))
-
-    # TODO: AGAIN HERE SAME PROBLEM AS ABOVE...
-    if np.ndim(echograms[ns, nr, 0].value) <= 1:
-        nSH = 1
-    else:
-        nSH = np.shape(echograms[ns, nr, 0].value)[1]
-
-    rirs = np.empty((L_tot, nSH, nRec, nSrc))
+    # Render responses and apply filterbank to combine different decays at different bands
+    rirs = np.empty((L_tot, maxSH, nRec, nSrc))
     for ns in range(nSrc):
         for nr in range(nRec):
 
             print('Rendering echogram: Source ' + str(ns) + ' - Receiver ' + str(nr))
+            nSH = np.shape(echograms[ns, nr, 0].value)[1]
 
             tempIR = np.zeros((L_rir, nSH, nBands))
             for nb in range(nBands):
@@ -192,7 +201,7 @@ def render_rirs_sh(echograms, band_centerfreqs, fs):
 
             print('     Filtering and combining bands')
             for nh in range(nSH):
-                rirs[:, nh, nr, ns] = filter_rirs(np.squeeze(tempIR[:, nh, :]), band_centerfreqs, fs)
+                rirs[:, nh, nr, ns] = filter_rirs(tempIR[:, nh, :], band_centerfreqs, fs).squeeze()
     return rirs
 
 
@@ -304,7 +313,7 @@ def filter_rirs(rir, f_center, fs):
     Returns
     -------
     ir : ndarray
-        Filtered impulse responses. Dimension = (L+M-1, 1)
+        Filtered impulse responses. Dimension = (L+M, 1)
 
     Raises
     -----
@@ -313,7 +322,7 @@ def filter_rirs(rir, f_center, fs):
     Notes
     -----
     Filter operation is implemented with `scipy.signal.firwin`.
-    Order of the filters is hardcoded to M = 1000.
+    Order of the filters is hardcoded to M = 1000 (length=M+1).
 
     The highest center frequency must be at most equal to fs/2, in order to avoid aliasing.
     The lowest center frequency must be at least equal to 30 Hz.

@@ -95,6 +95,16 @@ def generate_random_echogram():
     echo = masp.srs.ims_coreMtx(room, src, rec, 'maxOrder', N)
     return echo
 
+def generate_random_echogram_sh(nSH=4):
+    room = np.random.random(C) * 5 + 5
+    src = np.random.random(C) * 2.5
+    rec = np.random.random(C) * 2.5
+    N = np.random.randint(20)+3
+    echo = masp.srs.ims_coreMtx(room, src, rec, 'maxOrder', N)
+    # Expand the value dimension simulating sh echograms
+    echo.value = echo.value*np.random.rand(nSH)
+    return echo
+
 def generate_random_echogram_array(nSrc, nRec, nBands=None):
     if nBands:
         echogram_array = np.empty((nSrc, nRec, nBands), dtype=masp.srs.Echogram)
@@ -103,6 +113,19 @@ def generate_random_echogram_array(nSrc, nRec, nBands=None):
 
     for idx in np.ndindex(echogram_array.shape):
         echogram_array[idx] = generate_random_echogram()
+
+    _validate_echogram_array(echogram_array)
+    return echogram_array
+
+def generate_random_echogram_array_sh(nSrc, nRec, nBands=None):
+    if nBands:
+        echogram_array = np.empty((nSrc, nRec, nBands), dtype=masp.srs.Echogram)
+    else:
+        echogram_array = np.empty((nSrc, nRec), dtype=masp.srs.Echogram)
+
+    nSH = np.random.randint(20)
+    for idx in np.ndindex(echogram_array.shape):
+        echogram_array[idx] = generate_random_echogram_sh(nSH)
 
     _validate_echogram_array(echogram_array)
     return echogram_array
@@ -203,8 +226,8 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
             for idx in np.ndindex(arg.shape):
                 echo = arg[idx]
                 ml_echo = {}
-                ml_echo['time'] = echo.time[:, np.newaxis].tolist()
-                ml_echo['value'] = echo.value[:, np.newaxis].tolist()
+                ml_echo['time'] = echo.time[:, np.newaxis].tolist()  # Time is the only 1D field in python
+                ml_echo['value'] = echo.value.tolist()
                 ml_echo['order'] = echo.order.tolist()
                 ml_echo['coords'] = echo.coords.tolist()
                 ml_echogram_array[idx] = ml_echo
