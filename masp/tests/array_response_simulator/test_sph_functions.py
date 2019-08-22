@@ -35,6 +35,7 @@
 
 from masp.tests.convenience_test_methods import *
 
+
 def test_sph_besselj():
     num_tests = 10
     params = {

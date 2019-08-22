@@ -33,41 +33,63 @@
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-import numpy as np
-from masp.array_response_simulator import sph_besselj, dsph_besselj, sph_hankel2
+from masp.array_response_simulator.sph_functions import *
+from masp.validate_data_types import _validate_int, _validate_ndarray_1D, _validate_string, _validate_float
 
 
-def sph_modal_coefs(N, kr, arrayType, dirCoeff):
+def sph_modal_coefs(N, kr, arrayType, dirCoef=None):
     """
-    %SPHMODALCOEFFS Modal coefficients for rigid or open spherical array
-    %
-    %   N: maximum order
-    %   kr: wavenumber-radius product
-    %   arrayType: {'open','rigid','directional'} open for open array of
-    %               omnidirectional sensors, rigid for sensors mounted on a
-    %               rigid baffle, directional for an array of first-order
-    %               directional microphones determined by the dirCoeff
-    %   dirCoeff:   relevant only in the 'directional' type, dirCoeff ranges
-    %               from 0 (omni) to 1 (dipole), where for example 0.5 is a
-    %               cardioid sensor. In the 0 case it is equivalent to an open
-    %               array of omnis. The first order directivity function is
-    %               defined as d(theta) = dirCoeff + (1-dirCoeff)*cos(theta)
+    Modal coefficients for rigid or open spherical array
 
-    :param N: INT
-    :param kr: POSITIVE
-    :param arrayType:
-    :param dirCoeff:
-    :return:
+    Parameters
+    ----------
+    N : int
+        Maximum spherical harmonic expansion order
+    kr: ndarray
+        Wavenumber-radius product. Dimension = (l)
+    arrayType: str
+        'open', 'rigid' or 'directional'
+    dirCoef: float, optional
+        Directivity coefficient of the sensor. Default to None.
 
-    TODO
+    Returns
+    -------
+    b_N : ndarray
+        Modal coefficients. Dimension = (l, N+1)
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    The `arrayType` options are:
+    - 'open' for open array of omnidirectional sensors,
+    - 'rigid' for sensors mounted on a rigid baffle,
+    = 'directional' for an array of first-order directional microphones determined by `dirCoef`.
+
+    `dirCoef` is relevant (and required) only in the 'directional' type.
+    `dirCoef` ranges from 0 (omni) to 1 (dipole), where for example 0.5 is a cardioid sensor.
+    In the 0 case it is equivalent to an open array of omnis.
+    The first order directivity function is defined as d(theta) = dirCoeff + (1-dirCoeff)*cos(theta).
+
+    TODO: IS DIRECTIONAL OPTION NECESSARILY OPEN?
     """
 
-    b_N = np.zeros((kr.size, N+1))
+    _validate_int('N', N)
+    _validate_ndarray_1D('kr', kr, positive=True)
+    _validate_string('arrayType', arrayType, choices=['open', 'rigid', 'directional'])
+    if arrayType is 'directional':
+        if dirCoef is None:
+            raise ValueError('dirCoef must be defined in the directional case.')
+        _validate_float('dirCoef',dirCoef)
 
-    for n in range(N):
+    b_N = np.zeros((kr.size, N+1), dtype='complex')
+
+    for n in range(N+1):
 
         if arrayType is 'open':
-            b_N[:,n+1] = 4 * np.pi * np.power(1j,n) * sph_besselj(n, kr)
+            b_N[:,n] = 4 * np.pi * np.power(1j,n) * sph_besselj(n, kr)
 
         elif arrayType is 'rigid':
             jn = sph_besselj(n, kr)
@@ -75,4 +97,15 @@ def sph_modal_coefs(N, kr, arrayType, dirCoeff):
             hn = sph_hankel2(n, kr)
             hnprime = dsph_hankel2(n, kr)
 
+            temp = 4 * np.pi * np.power(1j, n) * (jn - (jnprime / hnprime) * hn)
+            temp[np.where(kr==0)] = 4*np.pi if n==0 else 0.
+            b_N[:, n] = temp
 
+        elif arrayType is 'directional':
+            jn = sph_besselj(n, kr)
+            jnprime = dsph_besselj(n, kr)
+
+            temp = 4 * np.pi * np.power(1j, n) * (dirCoef * jn - 1j * (1-dirCoef) * jnprime)
+            b_N[:, n] = temp
+
+    return b_N
