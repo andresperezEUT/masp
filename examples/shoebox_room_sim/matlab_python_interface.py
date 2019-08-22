@@ -17,6 +17,7 @@ import time
 import masp
 import os.path
 from scipy.io import loadmat, savemat
+from masp.utils import C
 from numpy.core.records import fromarrays
 
 
@@ -63,7 +64,7 @@ savemat(os.path.join(tmp_path, 'echo1x1.mat'), {'echo': echo_dict})
 # data is given in the value corresponding to the variable name's key
 x = loadmat(os.path.join(tmp_path, 'echo1x1.mat'))['echo']
 
-# now x is a structured nd rray (https://docs.scipy.org/doc/numpy/user/basics.rec.html)
+# now x is a structured ndarray (https://docs.scipy.org/doc/numpy/user/basics.rec.html)
 # x.dtype -> dtype([('value', 'O'), ('time', 'O'), ('order', 'O'), ('coords', 'O')])
 
 # furthermore, each of the 'fields' of x has a shape of (1,1)

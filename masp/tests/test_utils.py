@@ -38,6 +38,7 @@ import random
 
 
 def test_get_sh():
+    # TODO
     num_tests = 10
     params = {
         'N':
@@ -56,6 +57,7 @@ def test_get_sh():
                        nargout=1)
 
 def test_lagrange():
+    # TODO
     num_tests = 10
     ns = [np.random.randint(1,101) for i in range(num_tests)]
     params = {

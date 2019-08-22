@@ -88,6 +88,8 @@ def get_sh(N, dirs, basisType):
     Ouput dimension is given by: nHarm = (N+1)^2
 
     Inclination is defined as the angle from zenith: inclination = pi/2-elevation
+
+    TODO: implement complex basis?
     """
 
     _validate_int('order', N, positive=True)
