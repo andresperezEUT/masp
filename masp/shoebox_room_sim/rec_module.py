@@ -71,7 +71,7 @@ def rec_module_mic(echograms, mic_specs):
     nSrc = echograms.shape[0]
     nRec = echograms.shape[1]
     _validate_echogram_array(echograms)
-    _validate_ndarray_2D('mic_specs', mic_specs, shape0=nRec, shape1=C+1, norm=True)
+    _validate_ndarray_2D('mic_specs', mic_specs, shape0=nRec, shape1=C+1)
 
     mic_vecs = mic_specs[:,:C]
     mic_coeffs = mic_specs[:,-1]

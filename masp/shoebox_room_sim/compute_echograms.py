@@ -122,7 +122,7 @@ def compute_echograms_mic(room, src, rec, abs_wall, limits, mic_specs):
     _validate_ndarray_2D('rec', rec, shape1=C, positive=True)
     _validate_ndarray_2D('abs_wall', abs_wall, shape1=2*C, positive=True)
     _validate_ndarray_1D('limits', limits, positive=True, size=nBands)
-    _validate_ndarray_2D('mic_specs', mic_specs, shape0=nRec, shape1=C+1, norm=True)
+    _validate_ndarray_2D('mic_specs', mic_specs, shape0=nRec, shape1=C+1)
 
     # Limit the RIR by reflection order or by time-limit
     type = 'maxTime'
