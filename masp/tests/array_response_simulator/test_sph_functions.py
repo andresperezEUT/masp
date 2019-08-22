@@ -114,3 +114,51 @@ def test_dsph_besselj():
                        *p,
                        nargout=1,
                        namespace='ars')
+
+def test_dsph_bessely():
+    num_tests = 10
+    params = {
+        'n':
+        [np.random.randint(10) for i in range(num_tests)],
+        'x':
+        [(np.random.rand(10)*10).tolist() for i in range(num_tests)],
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("dsph_bessely",
+                       "dsph_bessely",
+                       *p,
+                       nargout=1,
+                       namespace='ars')
+
+def test_dsph_hankel1():
+    num_tests = 10
+    params = {
+        'n':
+        [np.random.randint(10) for i in range(num_tests)],
+        'x':
+        [(np.random.rand(10)*10).tolist() for i in range(num_tests)],
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("dsph_hankel1",
+                       "dsph_hankel1",
+                       *p,
+                       nargout=1,
+                       namespace='ars')
+
+def test_dsph_hankel2():
+    num_tests = 10
+    params = {
+        'n':
+        [np.random.randint(10) for i in range(num_tests)],
+        'x':
+        [(np.random.rand(10)*10).tolist() for i in range(num_tests)],
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("dsph_hankel2",
+                       "dsph_hankel2",
+                       *p,
+                       nargout=1,
+                       namespace='ars')

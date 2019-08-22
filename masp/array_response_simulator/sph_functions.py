@@ -79,7 +79,7 @@ def sph_hankel1(n, x):
 
 def sph_hankel2(n, x):
     """
-    %SPH_HANKEL1 Spherical hankel function of the second kind.
+    %SPH_HANKEL2 Spherical hankel function of the second kind.
     :param n:
     :param x:
     :return:
@@ -102,4 +102,35 @@ def dsph_besselj(n, x):
     """
     return  1. / (2 * n + 1) * (n * sph_besselj(n - 1, x) - (n + 1) * sph_besselj(n + 1, x))
 
+def dsph_bessely(n, x):
+    """
+    %DSPH_BESSELY Spherical bessel function derivative of the second kind.
 
+    :param n:
+    :param x:
+    :return:
+    TODO
+    """
+    return 1. / (2 * n+1) * (n*sph_bessely(n-1, x) - (n+1)*sph_bessely(n+1, x))
+
+def dsph_hankel1(n, x):
+    """
+    %DSPH_HANKEL1 Spherical hankel function derivative of the first kind.
+
+    :param n:
+    :param x:
+    :return:
+    TODO
+    """
+    return dsph_besselj(n, x) + 1j * dsph_bessely(n, x)
+
+def dsph_hankel2(n, x):
+    """
+    %DSPH_HANKEL2 Spherical hankel function derivative of the second kind.
+
+    :param n:
+    :param x:
+    :return:
+    TODO
+    """
+    return dsph_besselj(n, x) - 1j * dsph_bessely(n, x)
