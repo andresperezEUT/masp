@@ -56,5 +56,3 @@ def test_sph_modal_coefs():
                        *p,
                        nargout=1,
                        namespace='ars')
-
-test_sph_modal_coefs()

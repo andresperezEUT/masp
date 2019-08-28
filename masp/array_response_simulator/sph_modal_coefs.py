@@ -44,11 +44,11 @@ def sph_modal_coefs(N, kr, arrayType, dirCoef=None):
     Parameters
     ----------
     N : int
-        Maximum spherical harmonic expansion order
+        Maximum spherical harmonic expansion order.
     kr: ndarray
-        Wavenumber-radius product. Dimension = (l)
+        Wavenumber-radius product. Dimension = (l).
     arrayType: str
-        'open', 'rigid' or 'directional'
+        'open', 'rigid' or 'directional'.
     dirCoef: float, optional
         Directivity coefficient of the sensor. Default to None.
 

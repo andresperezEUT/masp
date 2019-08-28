@@ -78,3 +78,4 @@ masp/tests/array_response_simulator/__pycache__/*
 
 .coverage
 masp/shoebox_room_sim/deleteme.py
+masp/array_response_simulator/deleteme.py
