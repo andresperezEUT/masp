@@ -83,7 +83,7 @@ def sph_modal_coefs(N, kr, arrayType, dirCoef=None):
     if arrayType is 'directional':
         if dirCoef is None:
             raise ValueError('dirCoef must be defined in the directional case.')
-        _validate_float('dirCoef',dirCoef)
+        _validate_float('dirCoef', dirCoef)
 
     b_N = np.zeros((kr.size, N+1), dtype='complex')
 
@@ -164,6 +164,3 @@ def cyl_modal_coefs(N, kr, arrayType):
             b_N[:, n] = temp
 
     return b_N
-
-
-

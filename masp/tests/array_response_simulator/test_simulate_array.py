@@ -47,7 +47,7 @@ def test_simulate_sph_array():
         'mic_dirs_rad':
         [(np.random.rand(nMics[i], C-1)*[2*np.pi, np.pi]).tolist() for i in range(num_tests)],
         'src_dirs_rad':
-        [(np.random.rand(nDOAs[i], C-1)*[2 * np.pi, np.pi]).tolist() for i in range(num_tests)],
+        [(np.random.rand(nDOAs[i], C-1)*[2*np.pi, np.pi]).tolist() for i in range(num_tests)],
         'arrayType':
         [random.choice(['open', 'rigid', 'directional']) for i in range(num_tests)],
         'R':
@@ -63,6 +63,34 @@ def test_simulate_sph_array():
         p = get_parameters(params, t)
         numeric_assert("simulateSphArray",
                        "simulate_sph_array",
+                       *p,
+                       nargout=2,
+                       namespace='ars')
+
+def test_simulate_cyl_array():
+    num_tests = 10
+    nMics = [np.random.randint(1, 10) for i in range(num_tests)]
+    nDOAs = [np.random.randint(1, 10) for i in range(num_tests)]
+    params = {
+        'N_filt': # even
+        [np.random.randint(10, 100)*2 for i in range(num_tests)],
+        'mic_dirs_rad':
+        [(np.random.rand(nMics[i])*[2*np.pi]).tolist() for i in range(num_tests)],
+        'src_dirs_rad':
+        [(np.random.rand(nDOAs[i])*[2*np.pi]).tolist() for i in range(num_tests)],
+        'arrayType':
+        [random.choice(['open', 'rigid']) for i in range(num_tests)],
+        'R':
+        [np.random.random() for i in range(num_tests)],
+        'N_order':
+        [np.random.randint(1, 10) for i in range(num_tests)],
+        'fs':
+        [np.random.randint(100000) + 100 for i in range(num_tests)],
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("simulateCylArray",
+                       "simulate_cyl_array",
                        *p,
                        nargout=2,
                        namespace='ars')

@@ -206,7 +206,11 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
     for arg in args:
 
         if isinstance(arg, list):
-            ml_args.append(matlab.double(arg))
+            # 1D arrays to matlab columns
+            if np.asarray(arg).ndim == 1:
+                ml_args.append(matlab.double((np.asarray(arg)[:,np.newaxis]).tolist()))
+            else:
+                ml_args.append(matlab.double(arg))
             np_args.append(np.array(arg))
 
         elif isinstance(arg, (int, float)):
