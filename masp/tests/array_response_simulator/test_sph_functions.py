@@ -36,37 +36,37 @@
 from masp.tests.convenience_test_methods import *
 
 
-def test_sph_besselj():
-    num_tests = 10
-    params = {
-        'n':
-        [np.random.randint(10) for i in range(num_tests)],
-        'x':
-        [(np.random.rand(10)*10).tolist() for i in range(num_tests)],
-    }
-    for t in range(num_tests):
-        p = get_parameters(params, t)
-        numeric_assert("sph_besselj",
-                       "sph_besselj",
-                       *p,
-                       nargout=1,
-                       namespace='ars')
+# def test_sph_besselj():
+#     num_tests = 10
+#     params = {
+#         'n':
+#         [np.random.randint(10) for i in range(num_tests)],
+#         'x':
+#         [(np.random.rand(10)*10).tolist() for i in range(num_tests)],
+#     }
+#     for t in range(num_tests):
+#         p = get_parameters(params, t)
+#         numeric_assert("sph_besselj",
+#                        "sph_besselj",
+#                        *p,
+#                        nargout=1,
+#                        namespace='ars')
 
-def test_sph_bessely():
-    num_tests = 10
-    params = {
-        'n':
-        [np.random.randint(10) for i in range(num_tests)],
-        'x':
-        [(np.random.rand(10)*10).tolist() for i in range(num_tests)],
-    }
-    for t in range(num_tests):
-        p = get_parameters(params, t)
-        numeric_assert("sph_bessely",
-                       "sph_bessely",
-                       *p,
-                       nargout=1,
-                       namespace='ars')
+# def test_sph_bessely():
+#     num_tests = 10
+#     params = {
+#         'n':
+#         [np.random.randint(10) for i in range(num_tests)],
+#         'x':
+#         [(np.random.rand(10)*10).tolist() for i in range(num_tests)],
+#     }
+#     for t in range(num_tests):
+#         p = get_parameters(params, t)
+#         numeric_assert("sph_bessely",
+#                        "sph_bessely",
+#                        *p,
+#                        nargout=1,
+#                        namespace='ars')
 
 def test_sph_hankel1():
     num_tests = 10
@@ -100,37 +100,37 @@ def test_sph_hankel2():
                        nargout=1,
                        namespace='ars')
 
-def test_dsph_besselj():
-    num_tests = 10
-    params = {
-        'n':
-        [np.random.randint(10) for i in range(num_tests)],
-        'x':
-        [(np.random.rand(10)*10).tolist() for i in range(num_tests)],
-    }
-    for t in range(num_tests):
-        p = get_parameters(params, t)
-        numeric_assert("dsph_besselj",
-                       "dsph_besselj",
-                       *p,
-                       nargout=1,
-                       namespace='ars')
+# def test_dsph_besselj():
+#     num_tests = 10
+#     params = {
+#         'n':
+#         [np.random.randint(10) for i in range(num_tests)],
+#         'x':
+#         [(np.random.rand(10)*10).tolist() for i in range(num_tests)],
+#     }
+#     for t in range(num_tests):
+#         p = get_parameters(params, t)
+#         numeric_assert("dsph_besselj",
+#                        "dsph_besselj",
+#                        *p,
+#                        nargout=1,
+#                        namespace='ars')
 
-def test_dsph_bessely():
-    num_tests = 10
-    params = {
-        'n':
-        [np.random.randint(10) for i in range(num_tests)],
-        'x':
-        [(np.random.rand(10)*10).tolist() for i in range(num_tests)],
-    }
-    for t in range(num_tests):
-        p = get_parameters(params, t)
-        numeric_assert("dsph_bessely",
-                       "dsph_bessely",
-                       *p,
-                       nargout=1,
-                       namespace='ars')
+# def test_dsph_bessely():
+#     num_tests = 10
+#     params = {
+#         'n':
+#         [np.random.randint(10) for i in range(num_tests)],
+#         'x':
+#         [(np.random.rand(10)*10).tolist() for i in range(num_tests)],
+#     }
+#     for t in range(num_tests):
+#         p = get_parameters(params, t)
+#         numeric_assert("dsph_bessely",
+#                        "dsph_bessely",
+#                        *p,
+#                        nargout=1,
+#                        namespace='ars')
 
 def test_dsph_hankel1():
     num_tests = 10

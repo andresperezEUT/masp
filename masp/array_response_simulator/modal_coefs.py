@@ -27,11 +27,12 @@
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
-#   @file   sph_modal_coefs.py
+#   @file   modal_coefs.py
 #   @author Andrés Pérez-López
 #   @date   22/08/2019
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+from scipy.special import jv, jvp, hankel2, h2vp
 
 from masp.array_response_simulator.sph_functions import *
 from masp.validate_data_types import _validate_int, _validate_ndarray_1D, _validate_string, _validate_float
@@ -89,11 +90,11 @@ def sph_modal_coefs(N, kr, arrayType, dirCoef=None):
     for n in range(N+1):
 
         if arrayType is 'open':
-            b_N[:,n] = 4 * np.pi * np.power(1j,n) * sph_besselj(n, kr)
+            b_N[:, n] = 4 * np.pi * np.power(1j,n) * spherical_jn(n, kr)
 
         elif arrayType is 'rigid':
-            jn = sph_besselj(n, kr)
-            jnprime = dsph_besselj(n, kr)
+            jn = spherical_jn(n, kr)
+            jnprime = spherical_jn(n, kr, derivative=True)
             hn = sph_hankel2(n, kr)
             hnprime = dsph_hankel2(n, kr)
 
@@ -102,10 +103,67 @@ def sph_modal_coefs(N, kr, arrayType, dirCoef=None):
             b_N[:, n] = temp
 
         elif arrayType is 'directional':
-            jn = sph_besselj(n, kr)
-            jnprime = dsph_besselj(n, kr)
+            jn = spherical_jn(n, kr)
+            jnprime = spherical_jn(n, kr, derivative=True)
 
             temp = 4 * np.pi * np.power(1j, n) * (dirCoef * jn - 1j * (1-dirCoef) * jnprime)
             b_N[:, n] = temp
 
     return b_N
+
+
+def cyl_modal_coefs(N, kr, arrayType):
+    """
+    Modal coefficients for rigid or open cylindrical array
+
+    Parameters
+    ----------
+    N : int
+        Maximum spherical harmonic expansion order.
+    kr: ndarray
+        Wavenumber-radius product. Dimension = (l).
+    arrayType: str
+        'open' or 'rigid'.
+
+    Returns
+    -------
+    b_N : ndarray
+        Modal coefficients. Dimension = (l, N+1)
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    The `arrayType` options are:
+    - 'open' for open array of omnidirectional sensors
+    - 'rigid' for sensors mounted on a rigid baffle.
+
+    """
+
+    _validate_int('N', N)
+    _validate_ndarray_1D('kr', kr, positive=True)
+    _validate_string('arrayType', arrayType, choices=['open', 'rigid'])
+
+    b_N = np.zeros((kr.size, N+1), dtype='complex')
+
+    for n in range(N+1):
+
+        if arrayType is 'open':
+            b_N[:, n] = np.power(1j,n) * jv(n, kr)
+
+        elif arrayType is 'rigid':
+            jn = jv(n, kr)
+            jnprime = jvp(n, kr, 1)
+            hn = hankel2(n, kr)
+            hnprime = h2vp(n, kr, 1)
+
+            temp = np.power(1j, n) * (jn - (jnprime / hnprime) * hn)
+            temp[np.where(kr==0)] = 1 if n==0 else 0.
+            b_N[:, n] = temp
+
+    return b_N
+
+
+

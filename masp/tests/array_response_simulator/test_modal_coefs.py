@@ -56,3 +56,22 @@ def test_sph_modal_coefs():
                        *p,
                        nargout=1,
                        namespace='ars')
+
+def test_cyl_modal_coefs():
+    num_tests = 10
+    params = {
+        'N':
+        [np.random.randint(10) for i in range(num_tests)],
+        'kr':
+        [(np.random.rand(10)*10).tolist() for i in range(num_tests)],
+        'arrayType':
+        [random.choice(['open', 'rigid']) for i in range(num_tests)],
+
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("cylModalCoeffs",
+                       "cyl_modal_coefs",
+                       *p,
+                       nargout=1,
+                       namespace='ars')
