@@ -57,6 +57,21 @@ def cart2sph(x, y, z):
     az = np.arctan2(y, x)
     return az, elev, r
 
+def sph2cart(az,elev,r):
+    """
+    TODO
+    implemented from matlab
+    :param az:
+    :param elev:
+    :param r:
+    :return:
+    """
+    z = r * np.sin(elev)
+    rcoselev = r * np.cos(elev)
+    x = rcoselev * np.cos(az)
+    y = rcoselev * np.sin(az)
+    return np.asarray([x, y, z]).T
+
 
 def get_sh(N, dirs, basisType):
     """
