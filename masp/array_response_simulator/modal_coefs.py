@@ -67,14 +67,13 @@ def sph_modal_coefs(N, kr, arrayType, dirCoef=None):
     The `arrayType` options are:
     - 'open' for open array of omnidirectional sensors,
     - 'rigid' for sensors mounted on a rigid baffle,
-    = 'directional' for an array of first-order directional microphones determined by `dirCoef`.
+    = 'directional' for an open array of first-order directional microphones determined by `dirCoef`.
 
     `dirCoef` is relevant (and required) only in the 'directional' type.
     `dirCoef` ranges from 0 (omni) to 1 (dipole), where for example 0.5 is a cardioid sensor.
     In the 0 case it is equivalent to an open array of omnis.
     The first order directivity function is defined as d(theta) = dirCoeff + (1-dirCoeff)*cos(theta).
 
-    TODO: IS DIRECTIONAL OPTION NECESSARILY OPEN?
     """
 
     _validate_int('N', N)

@@ -94,3 +94,36 @@ def test_simulate_cyl_array():
                        *p,
                        nargout=2,
                        namespace='ars')
+
+def test_get_array_response():
+    num_tests = 10
+    nMics = [np.random.randint(1, 10) for i in range(num_tests)]
+    nDOAs = [np.random.randint(1, 10) for i in range(num_tests)]
+
+    params = {
+        'U_doa':
+        [(np.random.rand(nDOAs[i],C)*[1, 1, 0]).tolist() for i in range(num_tests)],
+        'R_mic':
+        [(np.random.rand(nMics[i],C) * [1, 1, 0]).tolist() for i in range(num_tests)],
+        'Lfilt':
+        [np.random.randint(10, 100) * 2 for i in range(num_tests)],
+        'fs':
+        [np.random.randint(100000) + 100 for i in range(num_tests)],
+        'U_orient':
+        [random.choice([
+            None,
+            (np.random.rand(C)).tolist(),
+            (np.random.rand(nMics[i], C)).tolist(),
+        ]) for i in range(num_tests)],
+        'fDir_handle':
+        # TODO: how to pass lambda expressions to Matlab...?
+        [None for i in range(num_tests)],
+
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("getArrayResponse",
+                       "get_array_response",
+                       *p,
+                       nargout=2,
+                       namespace='ars')

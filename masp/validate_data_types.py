@@ -101,6 +101,12 @@ def _validate_number(name, number, norm=False, positive=False, limit=None):
     else:
         raise TypeError(name + ' must be an integer, float or 1-D ndarray')
 
+
+def _validate_ndarray(name, ndarray):
+
+    if not isinstance(ndarray, np.ndarray):
+        raise TypeError(name + ' must be an instance of ndarray')
+
 def _validate_ndarray_1D(name, ndarray, size=None, norm=False, positive=False, limit=None, dtype=None):
 
     if not isinstance(ndarray, np.ndarray):

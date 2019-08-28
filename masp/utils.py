@@ -179,3 +179,8 @@ def lagrange(N, delays):
             idx = n[n != k]
             h[idx, l] = h[idx, l] * (delays[l]-k) / (n[idx]-k)
     return h
+
+
+def islambda(v):
+    LAMBDA = lambda:0
+    return isinstance(v, type(LAMBDA)) and v.__name__ == LAMBDA.__name__
