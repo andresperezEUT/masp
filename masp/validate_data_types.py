@@ -41,7 +41,7 @@ def _validate_boolean(name, boolean):
     if not isinstance(boolean, bool):
         raise TypeError(name + ' must be an instance of bool')
 
-def _validate_int(name, number, positive=False, limit=None):
+def _validate_int(name, number, positive=False, limit=None, parity=None):
 
     if not isinstance(number, int):
         raise TypeError(name + ' must be an instance of int')
@@ -51,6 +51,15 @@ def _validate_int(name, number, positive=False, limit=None):
     if limit is not None:
         if number > limit:
             raise ValueError(name + ' must be smaller than ' + str(limit))
+    if parity is not None:
+        if parity == 'even':
+            if number%2 != 0:
+                raise ValueError(name + ' must be even')
+        elif parity == 'odd':
+            if number%2 == 0:
+                raise ValueError(name + ' must be odd')
+        else:
+            raise TypeError(name + ': unknown parity value: ' + parity)
 
 def _validate_float(name, number, positive=False, limit=None):
 
