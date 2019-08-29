@@ -84,7 +84,6 @@ def get_sh(N, dirs, basisType):
     dirs : ndarray
         Evaluation directions. Dimension = (nDirs, 2).
         Directions are expected in radians, expressed in pairs [azimuth, inclination].
-
     basisType : str
         Type of spherical harmonics. Either 'complex' or 'real'.
 

@@ -8,3 +8,4 @@ from .sph_functions import sph_hankel2
 from .sph_functions import dsph_hankel1
 from .sph_functions import dsph_hankel2
 from .scatter import spherical_scatterer
+from .scatter import cylindrical_scatterer

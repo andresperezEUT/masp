@@ -35,7 +35,6 @@
 
 from masp.tests.convenience_test_methods import *
 from masp.utils import C
-import random
 
 def test_spherical_scatterer():
     num_tests = 10
@@ -64,4 +63,31 @@ def test_spherical_scatterer():
                        *p,
                        nargout=2,
                        namespace='ars')
-test_spherical_scatterer()
+
+def test_cylindrical_scatterer():
+    num_tests = 10
+    # The `same_radius` case will be tested when nMics=1
+    nMics = [1] + [np.random.randint(1, 10) for i in range(num_tests-1)]
+    nDOAs = [np.random.randint(1, 10) for i in range(num_tests)]
+    Rs = [np.random.random() for i in range(num_tests)]
+    params = {
+        'mic_dirs_rad':
+        [(np.random.rand(nMics[i], C-1)*[2*np.pi, np.pi]+[0,Rs[i]]).tolist() for i in range(num_tests)],
+        'src_dirs_rad':
+        [(np.random.rand(nDOAs[i])*2*np.pi).tolist() for i in range(num_tests)],
+        'R':
+        Rs,
+        'N_order':
+        [np.random.randint(1, 10) for i in range(num_tests)],
+        'N_filt': # even
+        [np.random.randint(10, 100)*2 for i in range(num_tests)],
+        'fs':
+        [np.random.randint(100000) + 100 for i in range(num_tests)],
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("cylindricalScatterer",
+                       "cylindrical_scatterer",
+                       *p,
+                       nargout=2,
+                       namespace='ars')
