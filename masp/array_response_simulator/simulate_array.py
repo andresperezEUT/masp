@@ -220,7 +220,7 @@ def simulate_cyl_array(N_filt, mic_dirs_rad, src_dirs_rad, arrayType, R, N_order
     return h_mic, H_mic
 
 
-def get_array_response(U_doa, R_mic, Lfilt, fs=48000, U_orient=None, fDir_handle=None):
+def get_array_response(src_dirs, mic_pos, N_filt, fs=48000, mic_dirs=None, fDir_handle=None):
     """
     Return array response of directional sensors.
 
@@ -232,18 +232,18 @@ def get_array_response(U_doa, R_mic, Lfilt, fs=48000, U_orient=None, fDir_handle
 
     Parameters
     ----------
-    U_doa: ndarray
+    src_dirs: ndarray
         Direction of arrival of the indicent plane waves, in cartesian coordinates.
         Dimension = (Ndoa, C).
-    R_mic: ndarray
+    mic_pos: ndarray
         Position of microphone capsules, in cartesian coordinates.
         Dimension = (Nmic, C).
-    Lfilt: int
+    N_filt: int
         Number of frequencies where to compute the responses. It must be even.
     fs: int, optional.
         Sample rate. Default to 48000 Hz.
-    U_orient: optional.
-        Position of microphone capsules, in cartesian coordinates.
+    mic_dirs: optional.
+        Orientation of microphone capsules, in cartesian coordinates.
         Default to None. See notes.
     fDir_handle: optional.
         Microphone directivity functions.
@@ -251,10 +251,10 @@ def get_array_response(U_doa, R_mic, Lfilt, fs=48000, U_orient=None, fDir_handle
 
     Returns
     -------
-    micIRs: ndarray
-        Computed IRs in time-domain. Dimension = (Lfilt, Nmic, Ndoa)
-    micTFs: ndarray, dtype='complex'
-        Frequency responses of the computed IRs. Dimension = (Lfilt//2+1, N_mic, N_doa).
+    h_mic: ndarray
+        Computed IRs in time-domain. Dimension = (N_filt, Nmic, Ndoa)
+    H_mic: ndarray, dtype='complex'
+        Frequency responses of the computed IRs. Dimension = (N_filt//2+1, N_mic, N_doa).
 
     Raises
     -----
@@ -286,7 +286,7 @@ def get_array_response(U_doa, R_mic, Lfilt, fs=48000, U_orient=None, fDir_handle
     orientations, for front and side incidence:
 
     Nmic = 3
-    Lfilt = 1000
+    N_filt = 1000
     U_doa = np.asarray([[1, 0, 0],[0, 1, 0]])
     R_mic = np.random.rand(Nmic,3)
     U_orient = np.random.rand(Nmic,3)
@@ -297,19 +297,19 @@ def get_array_response(U_doa, R_mic, Lfilt, fs=48000, U_orient=None, fDir_handle
     fdir_card2 = lambda angle: np.power(1/2,2) * np.power((1 + np.cos(angle)),2)
     fDir_handle = np.asarray([fdir_omni, fdir_card, fdir_card2])
 
-    micIRs, micTFs = ars.get_array_response(U_doa, R_mic, U_orient=U_orient,
-                                            fDir_handle=fDir_handle, Lfilt=Lfilt)
+    h_mic, H_mic = ars.get_array_response(U_doa, R_mic, U_orient=U_orient,
+                                            fDir_handle=fDir_handle, N_filt=N_filt)
 
     import matplotlib.pyplot as plt
-    plt.plot(micIRs[:,:,0])
+    plt.plot(h_mic[:,:,0])
     plt.show()
     """
 
-    Ndoa = U_doa.shape[0]
-    Nmics = R_mic.shape[0]
-    _validate_ndarray_2D('U_doa', U_doa, shape1=masp.utils.C)
-    _validate_ndarray_2D('R_mic', R_mic, shape1=masp.utils.C)
-    _validate_int('Lfilt', Lfilt, positive=True, parity='even')
+    Ndoa = src_dirs.shape[0]
+    Nmics = mic_pos.shape[0]
+    _validate_ndarray_2D('src_dirs', src_dirs, shape1=masp.utils.C)
+    _validate_ndarray_2D('mic_pos', mic_pos, shape1=masp.utils.C)
+    _validate_int('N_filt', N_filt, positive=True, parity='even')
     _validate_int('fs', fs, positive=True)
 
 
@@ -326,44 +326,44 @@ def get_array_response(U_doa, R_mic, Lfilt, fs=48000, U_orient=None, fDir_handle
                 assert masp.utils.islambda(fDir_handle[i])
 
     # Compute unit vectors of the microphone positionsT
-    normR_mic = np.sqrt(np.sum(np.power(R_mic, 2), axis=1))
-    U_mic = R_mic / normR_mic[:, np.newaxis]
+    normR_mic = np.sqrt(np.sum(np.power(mic_pos, 2), axis=1))
+    U_mic = mic_pos / normR_mic[:, np.newaxis]
 
     # If no orientation is defined then assume that the microphones
     # are oriented radially, similar to U_mic
-    if U_orient is None:
-        U_orient = U_mic
+    if mic_dirs is None:
+        mic_dirs = U_mic
     else:
-        _validate_ndarray('U_orient', U_orient)
-        if U_orient.ndim == 1:
-            _validate_ndarray_1D('U_orient', U_orient, size=masp.utils.C)
-            U_orient = np.tile(U_orient, (Nmics, 1))
+        _validate_ndarray('mic_dirs', mic_dirs)
+        if mic_dirs.ndim == 1:
+            _validate_ndarray_1D('mic_dirs', mic_dirs, size=masp.utils.C)
+            mic_dirs = np.tile(mic_dirs, (Nmics, 1))
         else:
-            _validate_ndarray_2D('U_orient', U_orient, shape1=masp.utils.C)
+            _validate_ndarray_2D('mic_dirs', mic_dirs, shape1=masp.utils.C)
 
 
     # Frequency vector
-    Nfft = Lfilt
+    Nfft = N_filt
     K = Nfft // 2 + 1
     f = np.arange(K) * fs / Nfft
 
     # Unit vectors pointing to the evaluation points
     U_eval = np.empty((Ndoa, Nmics, masp.utils.C))
-    U_eval[:,:,0] = np.tile(U_doa[:, 0], (Nmics, 1)).T
-    U_eval[:,:,1] = np.tile(U_doa[:, 1], (Nmics, 1)).T
-    U_eval[:,:,2] = np.tile(U_doa[:, 2], (Nmics, 1)).T
+    U_eval[:,:,0] = np.tile(src_dirs[:, 0], (Nmics, 1)).T
+    U_eval[:,:,1] = np.tile(src_dirs[:, 1], (Nmics, 1)).T
+    U_eval[:,:,2] = np.tile(src_dirs[:, 2], (Nmics, 1)).T
 
     # Computation of time delays and attenuation for each evaluation point to microphone,
     # measured from the origin
     tempR_mic = np.empty((Ndoa, Nmics, masp.utils.C))
-    tempR_mic[:,:,0] = np.tile(R_mic[:, 0], (Ndoa, 1))
-    tempR_mic[:,:,1] = np.tile(R_mic[:, 1], (Ndoa, 1))
-    tempR_mic[:,:,2] = np.tile(R_mic[:, 2], (Ndoa, 1))
+    tempR_mic[:,:,0] = np.tile(mic_pos[:, 0], (Ndoa, 1))
+    tempR_mic[:,:,1] = np.tile(mic_pos[:, 1], (Ndoa, 1))
+    tempR_mic[:,:,2] = np.tile(mic_pos[:, 2], (Ndoa, 1))
 
     tempU_orient = np.empty((Ndoa, Nmics, masp.utils.C))
-    tempU_orient[:,:,0] = np.tile(U_orient[:, 0], (Ndoa, 1))
-    tempU_orient[:,:,1] = np.tile(U_orient[:, 1], (Ndoa, 1))
-    tempU_orient[:,:,2] = np.tile(U_orient[:, 2], (Ndoa, 1))
+    tempU_orient[:,:,0] = np.tile(mic_dirs[:, 0], (Ndoa, 1))
+    tempU_orient[:,:,1] = np.tile(mic_dirs[:, 1], (Ndoa, 1))
+    tempU_orient[:,:,2] = np.tile(mic_dirs[:, 2], (Ndoa, 1))
 
     # cos-angles between DOAs and sensor orientations
     cosAngleU = np.sum(U_eval*tempU_orient, axis=2)
@@ -376,19 +376,19 @@ def get_array_response(U_doa, R_mic, Lfilt, fs=48000, U_orient=None, fDir_handle
         B[:, nm] = fDir_handle[nm](np.arccos(cosAngleU[:, nm]))
 
     # Create TFs for each microphone
-    micTFs = np.zeros((K, Nmics, Ndoa), dtype='complex')
+    H_mic = np.zeros((K, Nmics, Ndoa), dtype='complex')
     for kk in range(K):
         omega = 2 * np.pi * f[kk]
         tempTF = B * np.exp(1j * (omega / masp.utils.c) * dcosAngleU)
-        micTFs[kk,:,:] = tempTF.T
+        H_mic[kk,:,:] = tempTF.T
 
     # Create IRs for each microphone
-    micIRs = np.zeros((Nfft, Nmics, Ndoa))
+    h_mic = np.zeros((Nfft, Nmics, Ndoa))
     for nd in range(Ndoa):
-        tempTF = micTFs[:,:, nd].copy()
+        tempTF = H_mic[:,:, nd].copy()
         tempTF[-1,:] = np.abs(tempTF[-1,:])
         tempTF = np.append(tempTF, np.conj(tempTF[-2:0:-1,:]), axis=0)
-        micIRs[:,:, nd] = np.real(np.fft.ifft(tempTF, axis=0))
-        micIRs[:,:, nd] = np.fft.fftshift(micIRs[:,:, nd], axes=0)
+        h_mic[:,:, nd] = np.real(np.fft.ifft(tempTF, axis=0))
+        h_mic[:,:, nd] = np.fft.fftshift(h_mic[:,:, nd], axes=0)
 
-    return micIRs, micTFs
+    return h_mic, H_mic

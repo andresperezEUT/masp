@@ -101,15 +101,15 @@ def test_get_array_response():
     nDOAs = [np.random.randint(1, 10) for i in range(num_tests)]
 
     params = {
-        'U_doa':
+        'src_dirs':
         [(np.random.rand(nDOAs[i],C)*[1, 1, 0]).tolist() for i in range(num_tests)],
-        'R_mic':
+        'mic_pos':
         [(np.random.rand(nMics[i],C) * [1, 1, 0]).tolist() for i in range(num_tests)],
-        'Lfilt':
+        'N_filt':
         [np.random.randint(10, 100) * 2 for i in range(num_tests)],
         'fs':
         [np.random.randint(100000) + 100 for i in range(num_tests)],
-        'U_orient':
+        'mic_dirs':
         [random.choice([
             None,
             (np.random.rand(C)).tolist(),
