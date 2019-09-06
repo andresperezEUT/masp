@@ -44,15 +44,86 @@ from .absorption_module import apply_absorption
 
 def compute_echograms_array(room, src, rec, abs_wall, limits):
     """
-    Todo
-    :param room:
-    :param src:
-    :param rec:
-    :param abs_wall:
-    :param limits:
-    :return:
+    Compute the echogram response of a microphone array for a given acoustic scenario.
+
+    Parameters
+    ----------
+    room : ndarray
+        Room dimensions in cartesian coordinates. Dimension = (3) [x, y, z].
+    src : ndarray
+        Source position in cartesian coordinates. Dimension = (nSrc, 3) [[x, y, z]].
+    rec : ndarray
+        Receiver position in cartesian coordinates. Dimension = (nRec, 3) [[x, y, z]].
+    abs_wall : ndarray
+        Wall absorption coefficients per band. Dimension = (nBands, 6)
+    limits : ndarray
+        Maximum echogram computation time per band.  Dimension = (nBands)
+
+    Returns
+    -------
+    abs_echograms : ndarray, dtype = Echogram
+        Array with rendered echograms. Dimension = (nSrc, nRec, nBands)
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    `src` and `rec` positions are specified from the left ground corner
+    of the room, using a left-handed coordinate system.
+    `room` refers to the wall dimensions.
+    Therefore, their values should be positive and smaller than room dimensions.
+
+              _____    _
+             |     |   |
+             |     |   |
+           x ^     |   | l = r[0]
+             |     |   |
+             |     |   |
+             o---->    -
+                  y
+             |-----|
+                w = r[1]
+
+    `abs_wall` must have all values in the range [0,1].
+    `nBands` will be determined by the length of `abs_wall` first dimension.
+
+    TODO: expose type as parameter?, validate return
     """
-    raise NotImplementedError
+
+    nRec = rec.shape[0]
+    nSrc = src.shape[0]
+    nBands = abs_wall.shape[0]
+
+    _validate_ndarray_1D('room', room, size=C, positive=True)
+    _validate_ndarray_2D('src', src, shape1=C, positive=True)
+    _validate_ndarray_2D('rec', rec, shape1=C, positive=True)
+    _validate_ndarray_2D('abs_wall', abs_wall, shape1=2*C, positive=True)
+    _validate_ndarray_1D('limits', limits, positive=True, size=nBands)
+
+    # Limit the RIR by reflection order or by time-limit
+    type = 'maxTime'
+
+    echograms = np.empty((nSrc, nRec), dtype=Echogram)
+    # Compute echogram due to pure propagation (frequency-independent)
+    for ns in range(nSrc):
+        for nr in range(nRec):
+            print('Compute echogram: Source ' + str(ns) + ' - Receiver ' + str(nr))
+            # Compute echogram
+            echograms[ns, nr] = ims_coreMtx(room, src[ns,:], rec[nr,:], type, np.max(limits))
+
+    abs_echograms = np.empty((nSrc, nRec, nBands), dtype=Echogram)
+    # Apply boundary absorption
+    for ns in range(nSrc):
+        for nr in range(nRec):
+            print('Apply absorption: Source ' + str(ns) + ' - Receiver ' + str(nr))
+            # Compute echogram
+            abs_echograms[ns, nr] = apply_absorption(echograms[ns, nr], abs_wall, limits)
+
+    # return abs_echograms, echograms
+    return abs_echograms
+
 
 
 def compute_echograms_mic(room, src, rec, abs_wall, limits, mic_specs):

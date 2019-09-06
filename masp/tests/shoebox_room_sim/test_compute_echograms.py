@@ -37,6 +37,30 @@ from masp.tests.convenience_test_methods import *
 from masp.utils import C
 import random
 
+def test_compute_echograms_array():
+    num_tests = 3
+    nBands = [np.random.randint(1, 5) for i in range(num_tests)]
+    nSrc = [np.random.randint(1, 5) for i in range(num_tests)]
+    nRec = [np.random.randint(1, 5) for i in range(num_tests)]
+    params = {
+        'room':
+        [(np.random.random(C) * 5 + 5).tolist() for i in range(num_tests)],
+        'source':
+        [(np.random.random((nSrc[i],C)) * 5).tolist() for i in range(num_tests)],
+        'receiver':
+        [(np.random.random((nRec[i],C)) * 5).tolist() for i in range(num_tests)],
+        'abs_wall':
+        [np.random.random((nBands[i], 2*C)).tolist() for i in range(num_tests)],
+        'limits':
+        [(np.random.random(nBands[i]) + 0.1).tolist() for i in range(num_tests)],
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("compute_echograms_arrays",
+                       "compute_echograms_array",
+                       *p,
+                       write_file=True,
+                       namespace='srs')
 
 def test_compute_echograms_mic():
     num_tests = 3
