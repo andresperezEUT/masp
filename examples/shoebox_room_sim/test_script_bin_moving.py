@@ -27,7 +27,7 @@
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
-#   @file   test_script_arrays.py
+#   @file   test_script_bin_moving.py
 #   @author Andrés Pérez-López
 #   @date   30/07/2019
 #
@@ -59,49 +59,41 @@ abs_wall = srs.findAbsCoeffsFromRT(room, rt60)[0]
 _, d_critical, _ = srs.room_stats(room, abs_wall)
 
 # Receiver position
-rec = np.array([ [4.5, 3.4, 1.5], [2.0, 3.1, 1.4], [3.3, 2.3, 1.6] ])
+rec = np.array([3.4, 2.1, 1.7])
 nRec = rec.shape[0]
 
-# Source positions
-src = np.array([ [6.2, 2.0, 1.8], [5.8, 5.0, 1.9] ])
-nSrc = rec.shape[0]
-
-# TODO: not needed?
-# % % convert source directions from listener-centric to room-centric
-# % [src_coords(:,1), src_coords(:,2), src_coords(:,3)] = sph2cart(src_dirs(:,1)*pi/180, ...
-# %     src_dirs(:,2)*pi/180, src_r);
-# % src_coords(:,2) = -src_coords(:,2);
-# % src = ones(nSrc,1)*rec(1,:) + src_coords;
-# % % check sources
-# % for n=1:nSrc
-# %     if (src(n,1)>room(1))||(src(n,2)>room(2))||(src(n,3)>room(3))
-# %         error('Source coordinates out of room boundaries')
-# %     end
-# % end
-
+# Surce start
+xs0 = np.array([7.4, 2.1, 1.8])
+# Source velocity (m/s)
+s_vel = 1
+# Other point in line
+xs1 = np.array([3.4, 3.1, 1.8])
+# Duration of source signal (5sec)
+tSig = 5
+# Block length for RIR interpolation (50msec)
+tBlock = 0.05
+# number of blocks
+nBlocks = int(np.ceil(tSig/tBlock))
+# Get source positions for block RIRs
+nSrc = nBlocks+1
+src = np.zeros((nSrc, 3))
+for ns in range(nSrc):
+    src[ns,:] = xs0 + (xs1-xs0)/np.sqrt(np.sum(np.power(xs1-xs0, 2)))*ns*tBlock
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # DEFINE DIRECTIONAL IRs FOR RECEIVERS
 
 fs = 48000
 
-# Receiver 1 example: Eigenmike SMA
-print('Simulating EM32 responses for grid')
-# TODO: DECLARE THIS DATA SOMEWHERE ELSE TO BE REUSED
-mic_dirs_deg = np.array([   [0, 32, 0, 328, 0, 45, 69, 45, 0, 315, 291, 315, 91, 90, 90, 89, 180, 212, 180, 148, 180, 225, 249, 225, 180, 135, 111, 135, 269, 270, 270, 271],
-                            [21, 0, -21, 0, 58, 35, 0, -35, -58, -35, 0, 35, 69, 32, -31, -69, 21, 0, -21, 0, 58, 35, 0, -35, -58, -35, 0, 35, 69, 32, -32, -69] ])
-mic_dirs_rad = mic_dirs_deg*np.pi/180
-R = 0.042 #m
-arrayType = 'rigid'
-c = 343
-f_max = 16000
-kR_max = 2*np.pi*f_max*R/c
-array_order = np.ceil(2*kR_max)  # TODO: this formula resembles Daniel's 2006 (Eq. 14), except for the 2 factor. Why?
-L_resp = 1024
+# Receiver 3 example: Measured HRTFs
+# (MAKE SURE THAT THEY ARE THE SAME SAMPLERATE AS THE REST OR RESAMPLE)
+print('Loading measured HRTF responses')
+# TODO: WHERE ARE THOSE???????
+# load('ownsurround_sim2016.mat','hrtf_dirs','hrtf_mtx')
+# grids{1} = hrtf_dirs*pi/180;
+# array_irs{1} = hrtf_mtx;
+# array_irs{1} = array_irs{1}(250+(1:256),:,:);
+# clear hrtf_mtx hrtf_dirs
 
-# Define grid to simulate responses (or that's coming from measurements directly)
-# TODO: SPHERICAL LIBRARY OR SOMETHING...
-# grid = loadSphGrid('N040_M840_Octa.dat'); # 840 points uniformly distributed
-# grids{1} = grid.aziElev;
+# TODO: TBC...
 
-# todo: continue...

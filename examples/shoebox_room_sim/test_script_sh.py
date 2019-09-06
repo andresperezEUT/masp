@@ -27,7 +27,7 @@
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
-#   @file   srs_sh.py
+#   @file   test_script_sh.py
 #   @author Andrés Pérez-López
 #   @date   24/07/2019
 #

@@ -47,7 +47,10 @@ def apply_source_signals_array(array_rirs, src_sigs):
     :return:
     """
 
-    raise NotImplementedError
+    nRec = mic_rirs.shape[1]
+    nSrc = mic_rirs.shape[2]
+    _validate_ndarray_3D('mic_rirs', mic_rirs)
+    _validate_ndarray_2D('src_sigs', src_sigs, shape1=nSrc)
 
 #     nRec = len(array_rirs)
 #     nSrc = size(array_rirs{1}, 3);

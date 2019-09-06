@@ -32,7 +32,7 @@
 #   @date   30/07/2019
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+import csv
 import numpy as np
 from scipy.special import sph_harm
 from masp.validate_data_types import _validate_int, _validate_ndarray_2D, _validate_string, _validate_ndarray_1D, \
@@ -275,3 +275,22 @@ def lagrange(N, delays):
 def islambda(v):
     LAMBDA = lambda:0
     return isinstance(v, type(LAMBDA)) and v.__name__ == LAMBDA.__name__
+
+
+def load_sph_grid(file_path):
+    """
+    todo: implementation_ at the moment only 2D matrix
+    :param file_path:
+    :return:
+    """
+
+    with open(file_path) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=' ')
+        rows = list(csv_reader)
+        dim1 = int(rows[0][0])
+        dim0 = int(rows[1][0])
+        sph_grid = np.asarray(rows[2:], dtype='float')
+
+    assert np.shape(sph_grid) == (dim0, dim1)
+    return sph_grid
+
