@@ -35,12 +35,34 @@
 
 import numpy as np
 from scipy.special import sph_harm
-from math import factorial
-
-from masp.validate_data_types import _validate_int, _validate_ndarray_2D, _validate_string, _validate_ndarray_1D
+from masp.validate_data_types import _validate_int, _validate_ndarray_2D, _validate_string, _validate_ndarray_1D, \
+    _validate_float, _validate_ndarray
 
 c = 343.
 C = 3
+
+
+def get_capsule_positions(mic_array_name):
+    """
+    TODO
+    :param mic_array_name:
+    :return:
+    """
+    if mic_array_name is 'eigenmike':
+        mic_dirs_deg = np.array([[0, 32, 0, 328, 0, 45, 69, 45, 0, 315, 291, 315, 91, 90, 90, 89, 180, 212, 180, 148,
+                                  180, 225, 249, 225, 180, 135, 111, 135, 269, 270, 270, 271],
+                                 [21, 0, -21, 0, 58, 35, 0, -35, -58, -35, 0, 35, 69, 32, -31, -69, 21, 0, -21, 0, 58,
+                                  35, 0, -35, -58, -35, 0, 35, 69, 32, -32, -69]])
+        mic_dirs_rad = mic_dirs_deg * np.pi / 180
+        R = 0.042
+        mic_dirs_rad = np.row_stack((mic_dirs_rad, R*np.ones(np.shape(mic_dirs_rad)[1])))
+
+        return mic_dirs_rad.T
+
+    else:
+        raise NotImplementedError
+
+
 
 def cart2sph(x, y, z):
     """
@@ -57,20 +79,90 @@ def cart2sph(x, y, z):
     az = np.arctan2(y, x)
     return az, elev, r
 
-def sph2cart(az,elev,r):
+# TODO TEST
+def sph2cart(sph):
     """
     TODO
-    implemented from matlab
-    :param az:
-    :param elev:
-    :param r:
+    :param cart:
     :return:
     """
-    z = r * np.sin(elev)
-    rcoselev = r * np.cos(elev)
-    x = rcoselev * np.cos(az)
-    y = rcoselev * np.sin(az)
-    return np.asarray([x, y, z]).T
+
+    _validate_ndarray('sph', sph)
+    if sph.ndim == 1:
+        _validate_ndarray_1D('sph', sph, size=C)
+        sph = sph[np.newaxis, :]
+    elif sph.ndim == 2:
+        _validate_ndarray_2D('sph', sph, shape1=C)
+    else:
+        raise ValueError('sph must be either 1D or 2D array')
+
+    cart = np.empty(sph.shape)
+    cart[:,2] = sph[:,2] * np.sin( sph[:,1])
+    rcoselev = sph[:,2] * np.cos( sph[:,1])
+    cart[:, 0] = rcoselev * np.cos( sph[:,0])
+    cart[:, 1] = rcoselev * np.sin( sph[:,0])
+    if sph.ndim == 1:
+        cart = cart.squeeze()
+    return cart
+
+# def sph2cart(az,elev,r):
+#     """
+#     TODO
+#     input: 1d array or int
+#     implemented from matlab
+#     :param az:
+#     :param elev:
+#     :param r:
+#     :return:
+#     """
+#
+
+    # # Validate argument types
+    # az_type = type(az)
+    # if isinstance(az, float):
+    #     _validate_float('az', az)
+    # elif isinstance(az, np.ndarray):
+    #     _validate_ndarray_1D('az', az)
+    # else:
+    #     raise TypeError('az must be either Number (int or float) or 1D ndarray')
+    #
+    # elev_type = type(elev)
+    # if isinstance(elev, float):
+    #     _validate_float('elev', elev)
+    # elif isinstance(elev, np.ndarray):
+    #     _validate_ndarray_1D('elev', elev)
+    # else:
+    #     raise TypeError('elev must be either Number (int or float) or 1D ndarray')
+    #
+    # r_type = type(r)
+    # if isinstance(r, float):
+    #     _validate_float('r', r)
+    # elif isinstance(r, np.ndarray):
+    #     _validate_ndarray_1D('r', r)
+    # else:
+    #     raise TypeError('r must be either Number (int or float) or 1D ndarray')
+    #
+    # # Validate shapes, in case
+    # args = np.asarray([az, elev, r])
+    # types = np.asarray([type(az), type(elev), type(r)])
+    #
+    # if np.all(types==float):
+    #     # todo> all float, so return float
+    # pass
+    # else:
+    #     # some ndarrays, so check shape consistency ,get shape and expand dims of other stuff
+    # pass
+    #
+    # ndarray_types = types[types != float]  # ndarray types
+    # # TODO: GET INDICES OF NDARRAY TYPES INSTEAD OF MASKING THE VECTOR
+    # np.allclose(*[args[i].shape for i in range(np.size(ndarray_types))])  # shapes should match
+    # TODO
+    #
+    # z = r * np.sin(elev)
+    # rcoselev = r * np.cos(elev)
+    # x = rcoselev * np.cos(az)
+    # y = rcoselev * np.sin(az)
+    # return np.column_stack([x, y, z])
 
 
 def get_sh(N, dirs, basisType):

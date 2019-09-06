@@ -115,8 +115,8 @@ def simulate_sph_array(N_filt, mic_dirs_rad, src_dirs_rad, arrayType, R, N_order
     # Unit vectors of DOAs and microphones
     N_doa = src_dirs_rad.shape[0]
     N_mic = mic_dirs_rad.shape[0]
-    U_doa = masp.sph2cart(src_dirs_rad[:, 0], src_dirs_rad[:, 1], 1)
-    U_mic = masp.sph2cart(mic_dirs_rad[:, 0], mic_dirs_rad[:, 1], 1)
+    U_doa = masp.sph2cart(np.column_stack((src_dirs_rad[:, 0], src_dirs_rad[:, 1], np.ones(N_doa))))
+    U_mic = masp.sph2cart(np.column_stack((mic_dirs_rad[:, 0], mic_dirs_rad[:, 1], np.ones(N_mic))))
 
     h_mic = np.zeros((N_filt, N_mic, N_doa))
     H_mic = np.zeros((N_filt // 2 + 1, N_mic, N_doa), dtype='complex')
@@ -128,7 +128,7 @@ def simulate_sph_array(N_filt, mic_dirs_rad, src_dirs_rad, arrayType, R, N_order
             for nm in range(N_mic):
                 # The Legendre polynomial gives the angular dependency
                 Pn = scipy.special.lpmn(n,n,cosangle[nm])[0][0,-1]
-                P[n , nm] = (2 * n + 1) / (4 * np.pi) * Pn
+                P[n, nm] = (2 * n + 1) / (4 * np.pi) * Pn
         h_mic[:, :, i] = np.matmul(b_Nt, P)
         H_mic[:, :, i] = np.matmul(b_N, P)
 
