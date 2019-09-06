@@ -40,9 +40,6 @@ from masp.validate_data_types import _validate_int, _validate_ndarray_1D
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Spherical Hankel functions
 
-def sph_function():
-    raise NotImplementedError
-
 def sph_hankel1(n, x):
     """
     Spherical hankel function of the first kind.
