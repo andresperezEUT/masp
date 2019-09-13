@@ -65,6 +65,9 @@ eng.addpath(os.path.join(matlab_path,'Array-Response-Simulator-master'))
 # Path to tmp folder for Matlab struct storage and evaluation
 tmp_path = os.path.abspath("./masp/tests/tmp")
 
+# Define echogram dtypes...
+echogram_dtype = np.dtype([('time', 'O'), ('value', 'O'), ('order', 'O'), ('coords', 'O')])
+quantised_echogram_dtype = np.dtype([('value', 'O'), ('time', 'O'), ('isActive', 'O')])
 
 def get_parameters(params, t):
     """
@@ -167,6 +170,8 @@ def validate_result(ml_res, np_res):
     elif isinstance(np_res, masp.srs.Echogram):
         compare_echograms(np_res, ml_res)
 
+    elif isinstance(np_res, masp.srs.QuantisedEchogram):
+        compare_quantised_echograms(np_res, ml_res)
     else:
         print(type(np_res))
         raise_error(NotImplementedError)
@@ -177,6 +182,12 @@ def compare_echograms(np_res, ml_res):
     if not np.allclose(ml_res['value'], np_res.value): raise_error()
     if not np.allclose(ml_res['order'], np_res.order): raise_error()
     if not np.allclose(ml_res['coords'], np_res.coords): raise_error()
+
+def compare_quantised_echograms(np_res, ml_res):
+    # In python, 'time' is 1D, while others are 2D. Therefore we must use squeeze for comparison
+    if not np.allclose(np.asarray(ml_res['time']).squeeze(), np_res.time.squeeze()): raise_error()
+    if not np.allclose(ml_res['value'], np_res.value): raise_error()
+    if not np.allclose(ml_res['isActive'], np_res.isActive): raise_error()
 
 def compare_echogram_arrays(np_res, ml_res):
     # Compare shapes
@@ -194,6 +205,18 @@ def compare_echogram_arrays(np_res, ml_res):
         if not np.allclose(ml_res['order'][idx], np_res[idx].order): raise_error()
         if not np.allclose(ml_res['coords'][idx], np_res[idx].coords): raise_error()
 
+def compare_quantised_echogram_arrays(np_res, ml_res):
+    # For the moment, this function compares the output of `quantise_echogram()`
+    # Compare shapes
+    ml_res = ml_res.squeeze()
+    np_res = np_res.squeeze()
+    if not ml_res.shape == np_res.shape: raise_error()
+    # Compare values
+    for idx in np.ndindex(np_res.shape):    # multidimensional iterator, valid for 2D and 3D
+        if not np.allclose(ml_res['time'][idx].squeeze(), np_res[idx].time.squeeze()): raise_error()
+        # if not np.allclose(ml_res['value'][idx].squeeze(), np_res[idx].value.squeeze()): raise_error()
+        if not np.allclose(ml_res['value'][idx], np_res[idx].value): raise_error()
+        if ml_res['isActive'][idx] != np_res[idx].isActive: raise_error()
 
 def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, namespace=None):
 
@@ -227,18 +250,38 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
             ml_args.append(ml_echo)
             np_args.append(arg)
 
+        elif isinstance(arg, masp.srs.QuantisedEchogram):
+            ml_echo = {}
+            ml_echo['time'] = matlab.double(arg.time[:,np.newaxis].tolist())
+            ml_echo['value'] = matlab.double(arg.value[:,np.newaxis].tolist())
+            ml_echo['isActive'] = matlab.double(arg.isActive.tolist())
+            ml_args.append(ml_echo)
+            np_args.append(arg)
+
         # Array of echograms: write to file and append path to read
         elif isinstance(arg, np.ndarray) and arg.dtype == np.dtype('O'):
             # Parse array and convert to array of dicts
-            ml_echogram_array = np.empty(arg.shape, dtype=masp.srs.Echogram)
-            for idx in np.ndindex(arg.shape):
-                echo = arg[idx]
-                ml_echo = {}
-                ml_echo['time'] = echo.time[:, np.newaxis].tolist()  # Time is the only 1D field in python
-                ml_echo['value'] = echo.value.tolist()
-                ml_echo['order'] = echo.order.tolist()
-                ml_echo['coords'] = echo.coords.tolist()
-                ml_echogram_array[idx] = ml_echo
+            if type(arg.flat[0]) == masp.srs.Echogram:  # Check array type
+                ml_echogram_array = np.empty(arg.shape, dtype=masp.srs.Echogram)
+                for idx in np.ndindex(arg.shape):
+                    echo = arg[idx]
+                    ml_echo = {}
+                    ml_echo['time'] = echo.time[:, np.newaxis].tolist()  # Time is the only 1D field in python
+                    ml_echo['value'] = echo.value.tolist()
+                    ml_echo['order'] = echo.order.tolist()
+                    ml_echo['coords'] = echo.coords.tolist()
+                    ml_echogram_array[idx] = ml_echo
+            elif type(arg.flat[0]) == masp.srs.QuantisedEchogram:  # Check array type
+                ml_echogram_array = np.empty(arg.shape, dtype=masp.srs.QuantisedEchogram)
+                for idx in np.ndindex(arg.shape):
+                    echo = arg[idx]
+                    ml_echo = {}
+                    ml_echo['time'] = echo.time[:, np.newaxis].tolist()  # Time is the only 1D field in python
+                    ml_echo['value'] = echo.value.tolist()
+                    ml_echo['isActive'] = echo.isActive
+                    ml_echogram_array[idx] = ml_echo
+            else:
+                raise TypeError  # TODO proper error check
 
             # Save resulting array to tmp folder, and add the path to the method args
             ml_echogram_array_path = os.path.join(tmp_path, ml_method+'_arg.mat')
@@ -273,7 +316,7 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
     # Run matlab method.
     # Specific matlab test file exists when :
     # 1). passing a file path to be loaded inside matlab (`ml_path_arg=True`)
-    # 2). returing a file path from matlab to be read in python (`write_file=True`)
+    # 2). returning a file path from matlab to be read in python (`write_file=True`)
 
     if write_file:
         ml_args.insert(0, tmp_path)  # Add first argument: path to save output file
@@ -300,7 +343,14 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
         ml_res = next( mat_file[k] for k in mat_file.keys() if not k.startswith("__") )
 
         # Actually compare them
-        compare_echogram_arrays(np_res, ml_res)
+        # First check what kind of result we have...
+        if ml_res.dtype == echogram_dtype:
+            compare_echogram_arrays(np_res, ml_res)
+        elif ml_res.dtype == quantised_echogram_dtype:
+            compare_quantised_echogram_arrays(np_res, ml_res)
+        else:
+            # TODO check
+            raise TypeError
 
         # Remove used tmp file
         os.remove(tmp_file_path)

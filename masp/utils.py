@@ -64,25 +64,54 @@ def get_capsule_positions(mic_array_name):
 
 
 
-def cart2sph(x, y, z):
+# def cart2sph(x, y, z):
+#     """
+#     TODO
+#     implemented from matlab
+#     :param x:
+#     :param y:
+#     :param z:
+#     :return:
+#     """
+#     hypotxy = np.hypot(x, y)
+#     r = np.hypot(hypotxy, z)
+#     elev = np.arctan2(z, hypotxy)
+#     az = np.arctan2(y, x)
+#     return az, elev, r
+
+
+def cart2sph(cart):
     """
-    TODO
+    TODO (azi, ele, r)
     implemented from matlab
     :param x:
     :param y:
     :param z:
     :return:
     """
-    hypotxy = np.hypot(x, y)
-    r = np.hypot(hypotxy, z)
-    elev = np.arctan2(z, hypotxy)
-    az = np.arctan2(y, x)
-    return az, elev, r
+
+    _validate_ndarray('cart', cart)
+    if cart.ndim == 1:
+        _validate_ndarray_1D('cart', cart, size=C)
+        cart = cart[np.newaxis, :]
+    elif cart.ndim == 2:
+        _validate_ndarray_2D('cart', cart, shape1=C)
+    else:
+        raise ValueError('cart must be either 1D or 2D array')
+
+    sph = np.empty(cart.shape)
+    hypotxy = np.hypot(cart[:, 0], cart[:, 1])
+    sph[:, 2] = np.hypot(hypotxy, cart[:, 2])
+    sph[:, 1] = np.arctan2(cart[:, 2], hypotxy)
+    sph[:, 0] = np.arctan2(cart[:, 1], cart[:, 0])
+    if cart.ndim == 1:
+        sph = sph.squeeze()
+    return sph
 
 # TODO TEST
 def sph2cart(sph):
     """
-    TODO
+    TODO (az, ele, r)
     :param cart:
     :return:
     """

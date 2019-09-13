@@ -35,8 +35,9 @@
 
 import numpy as np
 from masp import shoebox_room_sim as srs
-from masp.utils import get_capsule_positions, c, load_sph_grid
-
+from masp import array_response_simulator as ars
+from masp.utils import get_capsule_positions, c, load_sph_grid, cart2sph, sph2cart
+import time
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # SETUP
 
@@ -94,11 +95,78 @@ R = mic_dirs_rad[-1,-1]
 arrayType = 'rigid'
 f_max = 16000
 kR_max = 2*np.pi*f_max*R/c
-array_order = np.ceil(2*kR_max)  # TODO: this formula resembles Daniel's 2006 (Eq. 14), except for the 2 factor. Why?
+array_order = int(np.ceil(2*kR_max))  # TODO: this formula resembles Daniel's 2006 (Eq. 14), except for the 2 factor. Why?
 L_resp = 1024
 
 # Define grid to simulate responses (or that's coming from measurements directly)
-grid = load_sph_grid('../../data/N040_M840_Octa.dat')  # 840 points uniformly distributed
-# grids{1} = grid.aziElev;
+grid = load_sph_grid('../../data/N040_M840_Octa.dat')  # 840 points uniformly distributed, cartesian
+grid_sph = cart2sph(grid)
+# Compute array IRs
+h_eigen = ars.simulate_sph_array(L_resp, mic_dirs_rad[:, :-1], grid_sph[:, :-1], arrayType, R, array_order, fs)
 
-# todo: continue...
+
+# Receiver 2 example: Uniform circular array of 8 omnis, radius 10cm
+print('Simulating 8ch UCA responses for grid')
+
+mic_dirs_deg = np.zeros((8, 3))
+mic_dirs_deg[:, 0] = np.arange(0, 360, 360//8)
+mic_dirs_deg[: ,1] = np.zeros(np.shape(mic_dirs_deg)[0])
+R = 0.1
+mic_dirs_deg[: ,2] = R * np.ones(np.shape(mic_dirs_deg)[0])
+mic_xyz = sph2cart(mic_dirs_deg)
+
+# Impulse response parameters
+L_resp = 256
+# Simulate array using get_array_response()
+fDirectivity = lambda angle: 1  # Response of omnidirectional microphone
+h_uca = ars.get_array_response(grid, mic_xyz, L_resp, fs, mic_dirs=None, fDir_handle=fDirectivity) #  microphone orientation irrelevant in this case
+
+
+# Receiver 3 example: Measured HRTFs (MAKE SURE THAT THEY ARE THE SAME SAMPLERATE AS THE REST OR RESAMPLE)
+print('Loading measured HRTF responses')
+# todo: WHERE ARE THOSE?
+# load('APolitis_ownsurround_sim2016.mat','hrtf_dirs','hrtf_mtx')
+# grids{3} = hrtf_dirs*pi/180;
+# array_irs{3} = hrtf_mtx;
+# clear hrtf_mtx hrtf_dirs
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# RUN SIMULATOR
+
+# Echogram
+tic = time.time()
+
+# Limit the RIR by reflection order or by time-limit
+type = 'maxTime'
+maxlim = 1.5  # just cut if it's longer than that ( or set to max(rt60) )
+limits = np.minimum(rt60, maxlim)
+
+# Compute echograms
+abs_echograms = ars.compute_echograms_array(room, src, rec, abs_wall, limits)
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# RENDERING
+
+# In the array case, for each receiver position, a grid of directions
+# should be provided, along with the corresponding multichannel IRs for the
+# elements of the array at the grid directions.
+
+# TODO: fix first matlab code...
+grids = [grid_sph, grid_sph, grid_sph]
+array_irs = [h_uca, h_uca, h_uca]
+
+array_rirs = srs.render_rirs_array(abs_echograms, band_centerfreqs, fs, grids, array_irs)
+
+# toc
+#
+# %% Generate sound scenes
+# % Each source is convolved with the respective array IRs, and summed with
+# % the rest of the sources to create the microphone mixed signals
+#
+# sourcepath = '4src_samples_voice_handclaps_fountain_piano.wav';
+# [src_sigs, fs_src] = audioread(sourcepath);
+# if (fs_src~=fs), resample(src_sigs, fs, fs_src); end % resample if it doesn't match the project's fs
+#
+# array_sigs = apply_source_signals(array_rirs, src_sigs);
+#

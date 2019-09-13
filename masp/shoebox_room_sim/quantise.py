@@ -100,7 +100,7 @@ def quantise_echogram(echogram, nGrid, echo2gridMap):
 
     Returns
     -------
-    q_echogram : ndarray, dtype: QuantisedEchogrma
+    q_echogram : ndarray, dtype: QuantisedEchogram
         Quantised echograms. Dimension = (nGrid)
 
     Raises

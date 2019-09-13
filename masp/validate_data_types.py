@@ -34,7 +34,8 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import numpy as np
-from masp.shoebox_room_sim.echogram import Echogram
+from masp.shoebox_room_sim.echogram import Echogram, QuantisedEchogram
+
 
 def _validate_boolean(name, boolean):
 
@@ -101,6 +102,13 @@ def _validate_number(name, number, norm=False, positive=False, limit=None):
     else:
         raise TypeError(name + ' must be an integer, float or 1-D ndarray')
 
+def _validate_list(name, arg, size=None):
+
+    if not isinstance(arg, list):
+        raise TypeError(name + ' must be an instance of list')
+    if size is not None:
+        if len(arg) != size:
+            raise ValueError(name + ' must have size ' + str(size))
 
 def _validate_ndarray(name, ndarray):
 
@@ -214,45 +222,6 @@ def _validate_string(name, string, choices=None):
         raise ValueError(name + ' must be one of the following: ' + str(choices))
 
 
-#
-# def _validate_room(room):
-#     if not isinstance(room, np.ndarray):
-#         raise TypeError('room must be an instance of ndarray')
-#     elif room.ndim != 1 or room.size != 3:
-#         raise ValueError('room must have dimension (3)')
-#     elif np.any(room < 0):
-#         raise ValueError('room coordinates must be positive')
-#
-# def _validate_rt60_target(rt60_target):
-#     if not isinstance(rt60_target, np.ndarray):
-#         raise TypeError('rt60_target must be an instance of ndarray')
-#     elif rt60_target.ndim != 1:
-#         raise ValueError('rt60_target must have dimension (nBands)')
-#     elif np.any(rt60_target < 0):
-#         raise ValueError('rt60_target values must be positive')
-#
-# def _validate_abs_wall_ratios(abs_wall_ratios, force_normalized=False):
-#     if not isinstance(abs_wall_ratios, np.ndarray):
-#         raise TypeError('abs_wall_ratios must be an instance of ndarray, or None')
-#     elif abs_wall_ratios.ndim != 1 or abs_wall_ratios.size != 6:
-#         raise ValueError('abs_wall_ratios must have dimension (6)')
-#     if force_normalized:
-#         if np.any(abs_wall_ratios < 0) or np.any(abs_wall_ratios > 1):
-#             raise ValueError('abs_wall_ratios must be in the interval [0,1]')
-#
-# def _validate_alpha(alpha):
-#
-#     if isinstance(alpha, (int, float)):
-#         if alpha < 0 or alpha > 1:
-#             raise ValueError('alpha must be in the interval [0,1]')
-#     elif isinstance(alpha, np.ndarray):
-#         if alpha.shape != (1,):
-#             raise TypeError('if alpha is ndarray, it must be unidimensional')
-#         elif np.any(alpha < 0) or np.any(alpha > 1):
-#             raise ValueError('alpha must be in the interval [0,1]')
-#     else:
-#         raise TypeError('alpha must be an integer, float or 1-D ndarray')
-
 def _validate_echogram(echogram):
     from masp.utils import C
 
@@ -266,6 +235,19 @@ def _validate_echogram(echogram):
 
     if echogram.value.shape[0] != echogram.time.shape[0] != echogram.order.shape[0] != echogram.coords.shape[0]:
         raise ValueError('echogram shape mismatch')
+
+def _validate_quantised_echogram(qechogram):
+    from masp.utils import C
+
+    if not isinstance(qechogram, QuantisedEchogram):
+        raise TypeError('quantised echogram must be an instance of QuantisedEchogram')
+
+    _validate_ndarray_2D('qechogram.value', qechogram.value)
+    _validate_ndarray_1D('qechogram.time', qechogram.time, positive=True)
+    _validate_boolean('qechogram.isActive', qechogram.isActive)
+
+    if qechogram.value.shape[0] != qechogram.time.shape[0]:
+        raise ValueError('quantised echogram shape mismatch')
 
 def _validate_echogram_array(ndarray, shape0=None, shape1=None, shape2=None):
     """
@@ -288,6 +270,23 @@ def _validate_echogram_array(ndarray, shape0=None, shape1=None, shape2=None):
         raise ValueError('Echogram array dtype must be Echogram')
     for idx in np.ndindex(ndarray.shape):
         _validate_echogram(ndarray[idx])
+
+
+def _validate_quantised_echogram_array(ndarray, size=None):
+    """
+    specific case of 1D ndarray with dtype=QuantisedEchogram
+    """
+    if not isinstance(ndarray, np.ndarray):
+        raise TypeError('Quantised Echogram array must be an instance of ndarray')
+    if ndarray.ndim != 1:
+        raise ValueError('Quantised Echogram array must be 1D')
+    if size is not None:
+        if ndarray.size != size:
+            raise ValueError('Quantised Echogram array must have size=' + str(size))
+    if ndarray.dtype != QuantisedEchogram:
+        raise ValueError('Quantised Echogram array dtype must be Echogram')
+    for idx in np.ndindex(ndarray.shape):
+        _validate_quantised_echogram(ndarray[idx])
 
 # def _validate_alpha_walls_per_band(alpha):
 #     if not isinstance(alpha, np.ndarray):

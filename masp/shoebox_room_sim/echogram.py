@@ -43,3 +43,12 @@ class Echogram:
         self.time = time
         self.order = order
         self.coords = coords
+
+class QuantisedEchogram:
+    """
+    TODO
+    """
+    def __init__(self, value, time, isActive):
+        self.value = value
+        self.time = time
+        self.isActive = isActive

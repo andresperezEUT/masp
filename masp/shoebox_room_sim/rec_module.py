@@ -133,13 +133,11 @@ def rec_module_sh(echograms, sh_orders):
     if not np.all(sh_orders == 0):
         for ns in range(nSrc):
             for nr in range(nRec):
-
                 # Get vectors from source to receiver
-                rec_vecs = echograms[ns, nr].coords
-                azi, elev, _ = cart2sph(rec_vecs[:, 0], rec_vecs[:, 1], rec_vecs[:, 2])
-                polar = np.pi / 2 - elev
+                sph = cart2sph(echograms[ns, nr].coords)
+                azi = sph[:, 0]
+                polar = np.pi / 2 - sph[:, 1]
 
-                nSH = int(np.power(sh_orders[nr] + 1, 2))
                 sh_gains = get_sh(int(sh_orders[nr]), np.asarray([azi, polar]).transpose(), 'real')
                 # rec_echograms[ns, nr].value = sh_gains * echograms[ns, nr].value[:,np.newaxis]
                 rec_echograms[ns, nr].value = sh_gains * echograms[ns, nr].value

@@ -35,9 +35,14 @@
 
 import numpy as np
 import scipy.signal
+import copy
+
+from masp.shoebox_room_sim.echogram import Echogram
+from masp.shoebox_room_sim.quantise import get_echo2gridMap, quantise_echogram
 from masp.utils import lagrange
 from masp.validate_data_types import _validate_echogram, _validate_float, _validate_int, _validate_boolean, \
-    _validate_ndarray_2D, _validate_ndarray_1D, _validate_echogram_array
+    _validate_ndarray_2D, _validate_ndarray_1D, _validate_echogram_array, _validate_list, \
+    _validate_quantised_echogram_array
 
 
 def render_rirs_array(echograms, band_centerfreqs, fs, grids, array_irs):
@@ -50,7 +55,48 @@ def render_rirs_array(echograms, band_centerfreqs, fs, grids, array_irs):
     :param array_irs:
     :return:
     """
-    raise NotImplementedError
+
+    nSrc = echograms.shape[0]
+    nRec = echograms.shape[1]
+    nBands = echograms.shape[2]
+    _validate_echogram_array(echograms)
+    _validate_int('fs', fs, positive=True)
+    _validate_ndarray_1D('f_center', band_centerfreqs, positive=True, size=nBands, limit=[30,fs/2])
+    _validate_list('grids', grids, size=nRec)
+    _validate_list('array_irs', array_irs, size=nRec)
+
+    # Sample echogram to a specific sampling rate with fractional interpolation
+    fractional = True
+
+    # Decide on number of samples for all RIRs
+    endtime = 0
+    for ns in range(nSrc):
+        for nr in range(nRec):
+            temptime = echograms[ns, nr, 0].time[-1]
+            if temptime > endtime:
+                endtime = temptime
+
+    L_rir = int(np.ceil(endtime * fs))
+    L_fbank = 1000 if nBands > 1 else 0
+
+    array_rirs = [None] * nRec
+    for nr in range(nRec):
+        grid_dirs_rad = grids[nr]
+        nGrid = np.shape(grid_dirs_rad)[0]
+        mic_irs = array_irs[nr] ## TODO: should be nsamples x nmics x ngrid
+        L_resp = np.shape(mic_irs)[0]
+        nMics = np.shape(mic_irs)[1]
+        array_rirs[nr] = np.zeros((L_rir + L_fbank + L_resp - 1, nMics, nSrc))
+        for ns in range(nSrc):
+            print('Rendering echogram: Source ' + str(ns) + ' - Receiver ' + str(nr) )
+            print('      Quantize echograms to receiver grid')
+            echo2gridMap = get_echo2gridMap(echograms[ns, nr], grid_dirs_rad)
+            tempRIR = np.zeros((L_rir, nGrid, nBands))
+            for nb in range(nBands):
+                # First step: reflections are quantized to the grid directions
+                q_echograms = quantise_echogram(echograms[ns, nr, nb], nGrid, echo2gridMap)
+                # Second step: render quantized echograms
+                tempRIR[:,:, nb] = render_quantised(q_echograms, endtime, fs, fractional)
 
 
 
@@ -247,6 +293,10 @@ def render_rirs(echogram, endtime, fs, fractional=True):
     # Number of reflections inside the time limit
     idx_trans = echogram.time[echogram.time < endtime].size
 
+    # TODO CONTINUE HERE
+    if echogram.value.shape == 0:
+        print("!!!!!!!!!!")
+
     if fractional:
         # Get lagrange interpolating filter of order 100 (filter length 101)
         order = 100
@@ -278,23 +328,64 @@ def render_rirs(echogram, endtime, fs, fractional=True):
     return ir
 
 
-def render_quantized(echogram, endtime, fs, FRACTIONAL):
-    '''
-    TODO
-    %RENDER_HRTF Samples the echogram using HRTFs.
-%   qechogram:      the quantized echogram structure array
-%   endtime:        time in secs for desired length of the impulse response
-%   fs:             sampling rate
-%   FRACTIONAL:     flag for using fractional delay filters (1) for non-integer
-%                   sample reflection times (more accurate), or just
-%                   quantise (0) to the closest sample (faster)
-    :param qechogram:
-    :param endtime:
-    :param fs:
-    :param FRACTIONAL:
-    :return:
-    '''
-    raise NotImplementedError
+def render_quantised(qechogram, endtime, fs, fractional):
+    """
+    Render a quantised echogram array into a quantised impulse response matrix.
+
+    Parameters
+    ----------
+    qechograms : ndarray, dtype = QuantisedEchogram
+        Target quantised echograms. Dimension = (nDirs).
+    endtime: float
+        Maximum time of rendered reflections, in seconds.
+    fs: int
+        Target sampling rate
+    fractional: bool, optional
+        Use fractional or integer (round) delay. Default to True.
+
+    Returns
+    -------
+    qIR : ndarray
+        Rendered quantised echograms. Dimension = (ceil(endtime * fs), nChannels)
+    idx_nonzero: 1D ndarray
+        Indices of non-zero elements.
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    TODO: expose fractional as parameter?
+    """
+
+    _validate_quantised_echogram_array(qechogram)
+    _validate_float('edntime', endtime, positive=True)
+    _validate_int('fs', fs, positive=True)
+    _validate_boolean('fractional', fractional)
+
+    # Number of grid directions of the quantization
+    nDirs = qechogram.size
+
+    # Render echograms
+    L_rir = int(np.ceil(endtime * fs))
+    qIR = np.zeros((L_rir, nDirs))
+    idx_nonzero = []
+    for nq in range(nDirs):
+        tempgram = Echogram(
+            time=qechogram[nq].time,
+            value=qechogram[nq].value,
+            order=np.zeros((1, 3), dtype=int),  # whatever to pass the size validation
+            coords=np.zeros((1, 3)))            # whatever to pass the size validation
+        # Omit if there are no echoes in the specific one
+        if qechogram[nq].isActive:
+            idx_nonzero.append(nq)
+            # Number of reflections inside the time limit')
+            idx_limit = tempgram.time[tempgram.time < endtime].size
+            tempgram.time = tempgram.time[:idx_limit+1]
+            tempgram.value = tempgram.value[:idx_limit+1]
+
+            qIR[:, nq] = render_rirs(tempgram, endtime, fs, fractional).squeeze()
+
+    return qIR, np.asarray(idx_nonzero)
 
 
 def filter_rirs(rir, f_center, fs):

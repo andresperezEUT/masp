@@ -32,13 +32,13 @@
 #   @date   30/07/2019
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+from masp.shoebox_room_sim import quantise_echogram
 from masp.tests.convenience_test_methods import *
 import random
 
 
 def test_render_rirs():
-    num_tests = 10
+    num_tests = 5
     params = {
         'echogram':
         [generate_random_echogram() for i in range(num_tests)],
@@ -58,7 +58,7 @@ def test_render_rirs():
                        namespace='srs')
 
 def test_filter_rirs():
-    num_tests = 10
+    num_tests = 5
     nBands = [np.random.randint(1, 10) for i in range(num_tests)]
     band_centerfreqs = [[np.random.randint(30,100)] for i in range(num_tests)]
     [[band_centerfreqs[i].append(2 * band_centerfreqs[i][b]) for b in range(nBands[i] - 1)] for i in range(num_tests)]
@@ -82,7 +82,7 @@ def test_filter_rirs():
 
 
 def test_render_rirs_mic():
-    num_tests = 3
+    num_tests = 5
     nSrc = [np.random.randint(1, 5) for i in range(num_tests)]
     nRec = [np.random.randint(1, 5) for i in range(num_tests)]
     nBands = [np.random.randint(1, 5) for i in range(num_tests)]
@@ -107,7 +107,7 @@ def test_render_rirs_mic():
                        namespace='srs')
 
 def test_render_rirs_sh():
-    num_tests = 3
+    num_tests = 5
     nSrc = [np.random.randint(1, 5) for i in range(num_tests)]
     nRec = [np.random.randint(1, 5) for i in range(num_tests)]
     nBands = [np.random.randint(1, 5) for i in range(num_tests)]
@@ -129,4 +129,49 @@ def test_render_rirs_sh():
                        "render_rirs_sh",
                        *p,
                        nargout=1,
+                       namespace='srs')
+
+    # TODO: sometimes gives an error:
+#     Index in position
+#     1
+#     exceeds
+#     array
+#     bounds.
+#
+#     Error in render_rir(line
+#     47)
+#     h_frac * echogram.value(i,:);
+#
+#     Error in render_sh_rirs(line
+#     41)
+#     r = render_rir(echograms(ns, nr, nb), endtime, fs, FRACTIONAL);
+#
+#
+# Error in render_sh_rirs_test(line
+# 5)
+# rirs = render_sh_rirs(echograms, band_centerfreqs, fs);
+
+
+def test_render_quantised():
+    num_tests = 10
+    echograms = [generate_random_echogram() for i in range(num_tests)]
+    nGrids = [np.random.randint(1, 10) for i in range(num_tests)]
+    echo2GridMaps = [np.random.randint(0,100, echograms[i].time.size+1) for i in range(num_tests)]
+
+    params = {
+        'qechogram':
+        [quantise_echogram(echograms[i], nGrids[i], echo2GridMaps[i]) for i in range(num_tests)],
+        'endtime':
+        [np.random.rand() + 0.01 for i in range(num_tests)],
+        'fs':
+        [np.random.randint(100000) + 100 for i in range(num_tests)],
+        'fractional':
+        [random.choice([True, False]) for i in range(num_tests)]
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("render_quantized",
+                       "render_quantised",
+                       *p,
+                       nargout=2,
                        namespace='srs')
