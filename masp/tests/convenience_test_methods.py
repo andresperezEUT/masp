@@ -164,6 +164,16 @@ def validate_result(ml_res, np_res):
         if not m.shape == n.shape: raise_error()
         if not np.allclose(m, n): raise_error()
 
+    elif isinstance(np_res, list):
+        # Matlab cell -> python list
+        # List elements should be ndarrays
+        if not len(np_res) == len(ml_res): raise_error()
+        for i in range(len(np_res)):
+            m = np.asarray(ml_res[i]).squeeze()
+            n = np_res[i].squeeze()
+            if not m.shape == n.shape: raise_error()
+            if not np.allclose(m, n): raise_error()
+
     elif isinstance(np_res, float):
         if ml_res != np_res: raise_error()
 
@@ -172,6 +182,7 @@ def validate_result(ml_res, np_res):
 
     elif isinstance(np_res, masp.srs.QuantisedEchogram):
         compare_quantised_echograms(np_res, ml_res)
+
     else:
         print(type(np_res))
         raise_error(NotImplementedError)
@@ -229,13 +240,24 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
     for arg in args:
 
         if isinstance(arg, list):
-            # 1D arrays to matlab column
-            if np.asarray(arg).ndim == 1:
-                # ml_args.append(matlab.double(((np.asarray(arg)[:,np.newaxis]).T).tolist()))
-                ml_args.append(matlab.double((np.asarray(arg)[:,np.newaxis]).tolist()))
-            else:
-                ml_args.append(matlab.double(arg))
-            np_args.append(np.array(arg))
+            # cast lists to matlab doubles (matrices)
+            if np.asarray(arg).dtype != np.dtype('O'):
+                # 1D arrays to matlab column
+                if np.asarray(arg).ndim == 1:
+                    # ml_args.append(matlab.double(((np.asarray(arg)[:,np.newaxis]).T).tolist()))
+                    ml_args.append(matlab.double((np.asarray(arg)[:,np.newaxis]).tolist()))
+                else:
+                    ml_args.append(matlab.double(arg))
+                np_args.append(np.array(arg))
+
+        elif isinstance(arg, tuple):
+            # automatic tuple->cell conversion in matlab API
+            ml_args.append(arg)
+            # in python, that should be a list in the top dimension, and ndarray in the rest
+            list_arg = list(arg)
+            for l in range(len(list_arg)):
+                list_arg[l] = np.asarray(list_arg[l])
+            np_args.append(list_arg)
 
         elif isinstance(arg, (int, float)):
             ml_args.append(np.float(arg))
@@ -326,6 +348,7 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
         if ml_path_arg:
             ml_method += '_test'
         ml_res = getattr(eng, ml_method)(*ml_args, nargout=nargout)
+
 
     # VALIDATE OUTPUT --------------------------------------------------------
 

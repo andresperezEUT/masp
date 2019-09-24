@@ -38,6 +38,7 @@ from masp import shoebox_room_sim as srs
 from masp import array_response_simulator as ars
 from masp.utils import get_capsule_positions, c, load_sph_grid, cart2sph, sph2cart
 import time
+import librosa
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # SETUP
 
@@ -143,7 +144,7 @@ maxlim = 1.5  # just cut if it's longer than that ( or set to max(rt60) )
 limits = np.minimum(rt60, maxlim)
 
 # Compute echograms
-abs_echograms = ars.compute_echograms_array(room, src, rec, abs_wall, limits)
+abs_echograms = srs.compute_echograms_array(room, src, rec, abs_wall, limits)
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # RENDERING
@@ -169,4 +170,9 @@ array_rirs = srs.render_rirs_array(abs_echograms, band_centerfreqs, fs, grids, a
 # if (fs_src~=fs), resample(src_sigs, fs, fs_src); end % resample if it doesn't match the project's fs
 #
 # array_sigs = apply_source_signals(array_rirs, src_sigs);
-#
+
+sourcepath = '../../data/milk_cow_blues_4src.wav'
+src_sigs = librosa.core.load(sourcepath, sr=None, mono=False)[:3].T[:,:nSrc]
+
+mic_sigs = srs.apply_source_signals(array_rirs, src_sigs)
+

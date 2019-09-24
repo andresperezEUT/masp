@@ -39,13 +39,49 @@ import copy
 
 from masp.shoebox_room_sim.echogram import Echogram
 from masp.shoebox_room_sim.quantise import get_echo2gridMap, quantise_echogram
-from masp.utils import lagrange
+from masp.utils import lagrange, C
 from masp.validate_data_types import _validate_echogram, _validate_float, _validate_int, _validate_boolean, \
     _validate_ndarray_2D, _validate_ndarray_1D, _validate_echogram_array, _validate_list, \
-    _validate_quantised_echogram_array
+    _validate_quantised_echogram_array, _validate_ndarray_3D
 
 
 def render_rirs_array(echograms, band_centerfreqs, fs, grids, array_irs):
+    """
+    Render the echogram IRs of an array of mic arrays with arbitrary geometries and transfer functions.
+
+    Parameters
+    ----------
+    echograms : ndarray, dtype = Echogram
+        Target echograms. Dimension = (nSrc, nRec, nBands)
+    band_centerfreqs : ndarray
+        Center frequencies of the filterbank. Dimension = (nBands)
+    fs : int
+        Target sampling rate
+    grids : List of 2D-ndarray
+        Angular position, in (radian) azimuth-elevation pairs, for each capsule in each array element.
+    TODO: still not very sure about dimensions...
+
+    Returns
+    -------
+    ir : ndarray
+        Rendered echograms. Dimension = (M, maxSH, nRec, nSrc)
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    The number of elements in `grids` and `array_irs` must match the number of receivers as given by echgrams.shape[1].
+
+    The highest center frequency must be at most equal to fs/2, in order to avoid aliasing.
+    The lowest center frequency must be at least equal to 30 Hz.
+    Center frequencies must increase monotonically.
+
+    TODO: expose fractional, L_filterbank as parameter?
+    """
+
+
     """
     TODO
     :param echograms:
@@ -59,11 +95,16 @@ def render_rirs_array(echograms, band_centerfreqs, fs, grids, array_irs):
     nSrc = echograms.shape[0]
     nRec = echograms.shape[1]
     nBands = echograms.shape[2]
+
     _validate_echogram_array(echograms)
     _validate_int('fs', fs, positive=True)
     _validate_ndarray_1D('f_center', band_centerfreqs, positive=True, size=nBands, limit=[30,fs/2])
     _validate_list('grids', grids, size=nRec)
+    for i in range(nRec):
+        _validate_ndarray_2D('grids_'+str(i), grids[i], shape1=C-1)
     _validate_list('array_irs', array_irs, size=nRec)
+    for i in range(nRec):
+        _validate_ndarray_3D('array_irs_'+str(i), array_irs[i], shape2=grids[i].shape[0])
 
     # Sample echogram to a specific sampling rate with fractional interpolation
     fractional = True
@@ -87,17 +128,34 @@ def render_rirs_array(echograms, band_centerfreqs, fs, grids, array_irs):
         L_resp = np.shape(mic_irs)[0]
         nMics = np.shape(mic_irs)[1]
         array_rirs[nr] = np.zeros((L_rir + L_fbank + L_resp - 1, nMics, nSrc))
+
         for ns in range(nSrc):
             print('Rendering echogram: Source ' + str(ns) + ' - Receiver ' + str(nr) )
             print('      Quantize echograms to receiver grid')
-            echo2gridMap = get_echo2gridMap(echograms[ns, nr], grid_dirs_rad)
+            echo2gridMap = get_echo2gridMap(echograms[ns, nr, 0], grid_dirs_rad)
+
             tempRIR = np.zeros((L_rir, nGrid, nBands))
             for nb in range(nBands):
+
                 # First step: reflections are quantized to the grid directions
                 q_echograms = quantise_echogram(echograms[ns, nr, nb], nGrid, echo2gridMap)
                 # Second step: render quantized echograms
-                tempRIR[:,:, nb] = render_quantised(q_echograms, endtime, fs, fractional)
+                print('      Rendering quantized echograms: Band ' + str(nb))
+                tempRIR[:, :, nb], _ = render_quantised(q_echograms, endtime, fs, fractional)
 
+            tempRIR2 = np.zeros((L_rir + L_fbank, nGrid))
+            print('      Filtering and combining bands')
+            for ng in range(nGrid):
+                tempRIR2[:, ng] = filter_rirs(tempRIR[:, ng, :], band_centerfreqs, fs).squeeze()
+
+            # Third step: convolve with directional IRs at grid directions
+            idx_nonzero = [i for i in range(tempRIR2.shape[1]) if np.sum(np.power(tempRIR2[:,i], 2)) > 10e-12]   # neglect grid directions with almost no energy
+            tempRIR2 = np.row_stack((tempRIR2[:, idx_nonzero], np.zeros((L_resp - 1, len(idx_nonzero)) )))
+            for nm in range(nMics):
+                tempResp = mic_irs[:, nm, idx_nonzero]
+                array_rirs[nr][:, nm, ns] = np.sum( scipy.signal.fftconvolve(tempResp, tempRIR2, axes=0)[:tempRIR2.shape[0], :], axis=1)
+
+    return array_rirs
 
 
 def render_rirs_mic(echograms, band_centerfreqs, fs):
@@ -108,9 +166,9 @@ def render_rirs_mic(echograms, band_centerfreqs, fs):
     ----------
     echograms : ndarray, dtype = Echogram
         Target echograms. Dimension = (nSrc, nRec, nBands)
-    band_centerfreqs: ndarray
+    band_centerfreqs : ndarray
         Center frequencies of the filterbank. Dimension = (nBands)
-    fs: int
+    fs : int
         Target sampling rate
 
     Returns
@@ -177,9 +235,9 @@ def render_rirs_sh(echograms, band_centerfreqs, fs):
     ----------
     echograms : ndarray, dtype = Echogram
         Target echograms. Dimension = (nSrc, nRec, nBands)
-    band_centerfreqs: ndarray
+    band_centerfreqs : ndarray
         Center frequencies of the filterbank. Dimension = (nBands)
-    fs: int
+    fs : int
         Target sampling rate
 
     Returns
@@ -261,11 +319,11 @@ def render_rirs(echogram, endtime, fs, fractional=True):
     ----------
     echogram : Echogram
         Target Echogram.
-    endtime: float
+    endtime : float
         Maximum time of rendered reflections, in seconds.
-    fs: int
+    fs : int
         Target sampling rate
-    fractional: bool, optional
+    fractional : bool, optional
         Use fractional or integer (round) delay. Default to True.
 
     Returns
@@ -336,18 +394,18 @@ def render_quantised(qechogram, endtime, fs, fractional):
     ----------
     qechograms : ndarray, dtype = QuantisedEchogram
         Target quantised echograms. Dimension = (nDirs).
-    endtime: float
+    endtime : float
         Maximum time of rendered reflections, in seconds.
-    fs: int
+    fs : int
         Target sampling rate
-    fractional: bool, optional
+    fractional : bool, optional
         Use fractional or integer (round) delay. Default to True.
 
     Returns
     -------
     qIR : ndarray
         Rendered quantised echograms. Dimension = (ceil(endtime * fs), nChannels)
-    idx_nonzero: 1D ndarray
+    idx_nonzero : 1D ndarray
         Indices of non-zero elements.
 
     Raises
@@ -396,9 +454,9 @@ def filter_rirs(rir, f_center, fs):
     ----------
     rir : ndarray
         Impulse responses to be filtered.  Dimension = (L, nBands)
-    f_center: ndarray
+    f_center : ndarray
         Center frequencies of the filterbank. Dimension = (nBands)
-    fs: int
+    fs : int
         Target sampling rate
 
     Returns

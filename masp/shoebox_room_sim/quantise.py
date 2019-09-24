@@ -77,7 +77,7 @@ def get_echo2gridMap(echogram, grid_dirs_rad):
     refl_coords = echogram.coords
     refl_coords = refl_coords/(np.sqrt(np.sum(np.power(refl_coords, 2), axis=1)))[:,np.newaxis]
 
-    echo2gridMap = np.empty(nRefl)
+    echo2gridMap = np.empty(nRefl, dtype='int')
     for i in range(nRefl):
         nearest = np.argmin(np.sum(np.power(refl_coords[i,:] - grid_xyz, 2), axis=1))
         echo2gridMap[i] = nearest
@@ -114,12 +114,17 @@ def quantise_echogram(echogram, nGrid, echo2gridMap):
     _validate_ndarray_1D('echo2gridMap', echo2gridMap, positive=True, dtype=int)
 
     # Initialise echogram structure with each quantised echogram
+    # Adjust array length to the common minimum so that there is no index overflow
     if np.size(echo2gridMap) > np.size(echogram.time):
         echo2gridMap = echo2gridMap[:np.size(echogram.time)]
+    elif np.size(echo2gridMap) < np.size(echogram.time):
+        echogram.value = echogram.value[:np.size(echo2gridMap)]
+        echogram.time = echogram.time[:np.size(echo2gridMap)]
 
     q_echogram = np.empty(nGrid, dtype=QuantisedEchogram)
     for n in range(nGrid):
         value = echogram.value[echo2gridMap == n]
+        # print(len(echogram.value[echo2gridMap == n]))
         time = echogram.time[echo2gridMap == n]
         isActive = False if np.size(time) == 0 else True
         q_echogram[n] = QuantisedEchogram(value, time, isActive)
