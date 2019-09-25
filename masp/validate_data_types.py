@@ -43,7 +43,7 @@ def _validate_boolean(name, boolean):
 
 def _validate_int(name, number, positive=False, limit=None, parity=None):
 
-    if not isinstance(number, int):
+    if not isinstance(number, int) or isinstance(number, bool):
         raise TypeError(name + ' must be an instance of int')
     if positive:
         if number < 0:
