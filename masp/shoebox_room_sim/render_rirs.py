@@ -57,14 +57,15 @@ def render_rirs_array(echograms, band_centerfreqs, fs, grids, array_irs):
         Center frequencies of the filterbank. Dimension = (nBands)
     fs : int
         Target sampling rate
-    grids : List of 2D-ndarray
-        Angular position, in (radian) azimuth-elevation pairs, for each capsule in each array element.
-    TODO: still not very sure about dimensions...
+    grids : List
+        DoA grid for each receiver. Length = (nRec)
+    array_irs : List
+        IR of each element of the eceivers. Length = (nRec)
 
     Returns
     -------
-    ir : ndarray
-        Rendered echograms. Dimension = (M, maxSH, nRec, nSrc)
+    rirs : List
+        RIR for each receiver element. Length = (nRec)
 
     Raises
     -----
@@ -72,24 +73,21 @@ def render_rirs_array(echograms, band_centerfreqs, fs, grids, array_irs):
 
     Notes
     -----
-    The number of elements in `grids` and `array_irs` must match the number of receivers as given by echgrams.shape[1].
+    For each microphone array (receiver position), we must provide two parameters:
+    `grids` contains the angular positions, in azimuth-elevation pairs (in radians),
+        of the sampled measured/computed DoAs of the array. ndarray with dimension = (nDoa, C-1).
+    `array_irs` is the time-domain IR from each DoA measurement point to each microphone capsule.
+        It is therefore a ndarray with dimension = (L1, nMic, nDoa).
+    These parameters are independent for each receiver, but `nDoa` must macth within receiver.
+
+    Each of the elements in the algorithm output list `rirs` is a ndarray with dimension = (L2, nMic, nSrc),
+    and contains the Room Impulse Response for each capsule/source pair at each receiver (microphone array).
 
     The highest center frequency must be at most equal to fs/2, in order to avoid aliasing.
     The lowest center frequency must be at least equal to 30 Hz.
     Center frequencies must increase monotonically.
 
     TODO: expose fractional, L_filterbank as parameter?
-    """
-
-
-    """
-    TODO
-    :param echograms:
-    :param band_centerfreqs:
-    :param fs:
-    :param grids:
-    :param array_irs:
-    :return:
     """
 
     nSrc = echograms.shape[0]
@@ -124,7 +122,7 @@ def render_rirs_array(echograms, band_centerfreqs, fs, grids, array_irs):
     for nr in range(nRec):
         grid_dirs_rad = grids[nr]
         nGrid = np.shape(grid_dirs_rad)[0]
-        mic_irs = array_irs[nr] ## TODO: should be nsamples x nmics x ngrid
+        mic_irs = array_irs[nr]
         L_resp = np.shape(mic_irs)[0]
         nMics = np.shape(mic_irs)[1]
         array_rirs[nr] = np.zeros((L_rir + L_fbank + L_resp - 1, nMics, nSrc))
