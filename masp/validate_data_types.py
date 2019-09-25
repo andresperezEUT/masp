@@ -36,7 +36,6 @@
 import numpy as np
 from masp.shoebox_room_sim.echogram import Echogram, QuantisedEchogram
 
-
 def _validate_boolean(name, boolean):
 
     if not isinstance(boolean, bool):
@@ -287,18 +286,3 @@ def _validate_quantised_echogram_array(ndarray, size=None):
         raise ValueError('Quantised Echogram array dtype must be Echogram')
     for idx in np.ndindex(ndarray.shape):
         _validate_quantised_echogram(ndarray[idx])
-
-# def _validate_alpha_walls_per_band(alpha):
-#     if not isinstance(alpha, np.ndarray):
-#         raise TypeError('alpha must be an instance of ndarray')
-#     elif alpha.ndim != 2 or alpha.shape[1] != 6:
-#         raise ValueError('alpha must have dimension (nBands, 6)')
-#     elif np.any(alpha < 0) or np.any(alpha > 1):
-#         raise ValueError('alpha values must be in the interval [0,1]')
-#
-#
-# def _validate_time_limits(limits, nBands):
-#     if not isinstance(limits, np.ndarray):
-#         raise TypeError('limits must be an instance of ndarray, or None')
-#     elif limits.ndim != 1 or limits.size != nBands:
-#         raise TypeError('limits dimension must be (nBands,)')

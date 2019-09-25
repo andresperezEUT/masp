@@ -44,50 +44,71 @@ C = 3
 
 def get_capsule_positions(mic_array_name):
     """
-    TODO
-    :param mic_array_name:
-    :return:
+    Retrieve the geometry of a selected set of microphone arrays.
+
+    Parameters
+    ----------
+    mic_array_name : str
+      One of: 'eigenmike', 'ambeo'
+
+    Returns
+    -------
+    array_sigs : ndarray
+        Capsule positions, in spherical coordinates (radians). Dimension = (nMic, C)
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
     """
+
+    _validate_string('mic_array_name', mic_array_name, choices=['eigenmike', 'ambeo'])
+    capsule_positions = None
+
     if mic_array_name is 'eigenmike':
         mic_dirs_deg = np.array([[0, 32, 0, 328, 0, 45, 69, 45, 0, 315, 291, 315, 91, 90, 90, 89, 180, 212, 180, 148,
                                   180, 225, 249, 225, 180, 135, 111, 135, 269, 270, 270, 271],
                                  [21, 0, -21, 0, 58, 35, 0, -35, -58, -35, 0, 35, 69, 32, -31, -69, 21, 0, -21, 0, 58,
                                   35, 0, -35, -58, -35, 0, 35, 69, 32, -32, -69]])
-        mic_dirs_rad = mic_dirs_deg * np.pi / 180
-        R = 0.042
-        mic_dirs_rad = np.row_stack((mic_dirs_rad, R*np.ones(np.shape(mic_dirs_rad)[1])))
+        mic_dirs_rad = mic_dirs_deg * np.pi / 180.
+        r = 0.042
+        mic_dirs_rad = np.row_stack((mic_dirs_rad, r*np.ones(np.shape(mic_dirs_rad)[1])))
 
-        return mic_dirs_rad.T
+        capsule_positions = mic_dirs_rad.T
 
-    else:
-        raise NotImplementedError
+    elif mic_array_name is 'ambeo':
+        r = 0.015
+        capsule_positions = [[np.pi / 4, np.arcsin(1. / np.sqrt(3)), r],           # FLU
+                             [7 * np.pi / 4, -1 * np.arcsin(1. / np.sqrt(3)), r],  # FRD
+                             [3 * np.pi / 4, -1 * np.arcsin(1. / np.sqrt(3)), r],  # BLD
+                             [5 * np.pi / 4, np.arcsin(1. / np.sqrt(3)), r]]       # BRU
 
+    return capsule_positions
 
-
-# def cart2sph(x, y, z):
-#     """
-#     TODO
-#     implemented from matlab
-#     :param x:
-#     :param y:
-#     :param z:
-#     :return:
-#     """
-#     hypotxy = np.hypot(x, y)
-#     r = np.hypot(hypotxy, z)
-#     elev = np.arctan2(z, hypotxy)
-#     az = np.arctan2(y, x)
-#     return az, elev, r
 
 
 def cart2sph(cart):
     """
-    TODO (azi, ele, r)
-    implemented from matlab
-    :param x:
-    :param y:
-    :param z:
-    :return:
+    Cartesian to spherical coordinates transformation, in matrix form.
+
+    Parameters
+    ----------
+    cart : ndarray
+      Cartesian coordinates. Dimension = (nCoords, C)
+
+    Returns
+    -------
+    sph : ndarray
+        Spherical coordinates, in radians, aed.  Dimension = (nCoords, C)
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    As a dimensionality exception, in case the input matrix is 1D (just one point),
+    the output matrix will be as well 1D.
     """
 
     _validate_ndarray('cart', cart)
@@ -108,12 +129,30 @@ def cart2sph(cart):
         sph = sph.squeeze()
     return sph
 
-# TODO TEST
+
 def sph2cart(sph):
     """
-    TODO (az, ele, r)
-    :param cart:
-    :return:
+    Spherical to cartesian coordinates transformation, in matrix form.
+
+    Parameters
+    ----------
+    sph : ndarray
+        Spherical coordinates, in radians, aed.  Dimension = (nCoords, C)
+
+
+    Returns
+    -------
+    sph : ndarray
+        Cartesian coordinates. Dimension = (nCoords, C)
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    As a dimensionality exception, in case the input matrix is 1D (just one point),
+    the output matrix will be as well 1D.
     """
 
     _validate_ndarray('sph', sph)
@@ -133,65 +172,6 @@ def sph2cart(sph):
     if sph.ndim == 1:
         cart = cart.squeeze()
     return cart
-
-# def sph2cart(az,elev,r):
-#     """
-#     TODO
-#     input: 1d array or int
-#     implemented from matlab
-#     :param az:
-#     :param elev:
-#     :param r:
-#     :return:
-#     """
-#
-
-    # # Validate argument types
-    # az_type = type(az)
-    # if isinstance(az, float):
-    #     _validate_float('az', az)
-    # elif isinstance(az, np.ndarray):
-    #     _validate_ndarray_1D('az', az)
-    # else:
-    #     raise TypeError('az must be either Number (int or float) or 1D ndarray')
-    #
-    # elev_type = type(elev)
-    # if isinstance(elev, float):
-    #     _validate_float('elev', elev)
-    # elif isinstance(elev, np.ndarray):
-    #     _validate_ndarray_1D('elev', elev)
-    # else:
-    #     raise TypeError('elev must be either Number (int or float) or 1D ndarray')
-    #
-    # r_type = type(r)
-    # if isinstance(r, float):
-    #     _validate_float('r', r)
-    # elif isinstance(r, np.ndarray):
-    #     _validate_ndarray_1D('r', r)
-    # else:
-    #     raise TypeError('r must be either Number (int or float) or 1D ndarray')
-    #
-    # # Validate shapes, in case
-    # args = np.asarray([az, elev, r])
-    # types = np.asarray([type(az), type(elev), type(r)])
-    #
-    # if np.all(types==float):
-    #     # todo> all float, so return float
-    # pass
-    # else:
-    #     # some ndarrays, so check shape consistency ,get shape and expand dims of other stuff
-    # pass
-    #
-    # ndarray_types = types[types != float]  # ndarray types
-    # # TODO: GET INDICES OF NDARRAY TYPES INSTEAD OF MASKING THE VECTOR
-    # np.allclose(*[args[i].shape for i in range(np.size(ndarray_types))])  # shapes should match
-    # TODO
-    #
-    # z = r * np.sin(elev)
-    # rcoselev = r * np.cos(elev)
-    # x = rcoselev * np.cos(az)
-    # y = rcoselev * np.sin(az)
-    # return np.column_stack([x, y, z])
 
 
 def get_sh(N, dirs, basisType):
@@ -301,7 +281,21 @@ def lagrange(N, delays):
     return h
 
 
-def islambda(v):
+def isLambda(v):
+    """
+    Determine if a given argument is a lambda expression.
+
+    Parameters
+    ----------
+    v : arg
+        Argument to test.
+
+    Returns
+    -------
+    isLambda : boolean
+        Result.
+    """
+
     LAMBDA = lambda:0
     return isinstance(v, type(LAMBDA)) and v.__name__ == LAMBDA.__name__
 

@@ -316,12 +316,12 @@ def get_array_response(src_dirs, mic_pos, N_filt, fs=48000, mic_dirs=None, fDir_
         # Expand to vector of omni lambdas
         fDir_handle = np.asarray([lambda angle: 1 for i in range(Nmics)])
     else:
-        if masp.islambda(fDir_handle):
+        if masp.isLambda(fDir_handle):
             fDir_handle = np.asarray([fDir_handle for i in range(Nmics)])
         else:
             _validate_ndarray_1D('fDir_handle', fDir_handle, size=Nmics)
             for i in range(Nmics):
-                assert masp.islambda(fDir_handle[i])
+                assert masp.isLambda(fDir_handle[i])
 
     # Compute unit vectors of the microphone positionsT
     normR_mic = np.sqrt(np.sum(np.power(mic_pos, 2), axis=1))

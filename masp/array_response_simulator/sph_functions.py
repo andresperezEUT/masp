@@ -94,10 +94,6 @@ def sph_hankel2(n, x):
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # First derivative of spherical Hankel functions
 
-def dsph_function():
-    raise NotImplementedError
-
-
 def dsph_hankel1(n, x):
     """
     Spherical hankel function derivative of the first kind.

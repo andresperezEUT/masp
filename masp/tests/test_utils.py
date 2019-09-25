@@ -32,9 +32,65 @@
 #   @date   12/08/2019
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+from masp import cart2sph, sph2cart
 from masp.tests.convenience_test_methods import *
 import random
+
+
+
+def test_cart2sph():
+
+    cart = np.asarray([
+        [1., 0., 0.],
+        [-1., 0., 0.],
+        [0., 1., 0.],
+        [0., -1., 0.],
+        [0., 0., 1.],
+        [0., 0., -1.],
+        [1., 1., 1.],
+        [-1., -1., -1.]
+    ])
+
+    sph = np.asarray([
+        [0., 0., 1],
+        [np.pi, 0., 1.],
+        [np.pi/2, 0., 1.],
+        [-np.pi/2, 0., 1.],
+        [0., np.pi/2, 1.],
+        [0., -np.pi/2, 1.],
+        [np.pi/4, np.arcsin(1. / np.sqrt(3)), np.sqrt(3)],
+        [-3*np.pi/4, -np.arcsin(1. / np.sqrt(3)), np.sqrt(3)],
+    ])
+
+    assert np.allclose(sph, cart2sph(cart))
+
+
+def test_sph2cart():
+
+    sph = np.asarray([
+        [0., 0., 1],
+        [np.pi, 0., 1.],
+        [np.pi/2, 0., 1.],
+        [-np.pi/2, 0., 1.],
+        [0., np.pi/2, 1.],
+        [0., -np.pi/2, 1.],
+        [np.pi/4, np.arcsin(1. / np.sqrt(3)), np.sqrt(3)],
+        [-3*np.pi/4, -np.arcsin(1. / np.sqrt(3)), np.sqrt(3)],
+    ])
+
+    cart = np.asarray([
+        [1., 0., 0.],
+        [-1., 0., 0.],
+        [0., 1., 0.],
+        [0., -1., 0.],
+        [0., 0., 1.],
+        [0., 0., -1.],
+        [1., 1., 1.],
+        [-1., -1., -1.]
+    ])
+
+    assert np.allclose(cart, sph2cart(sph))
+
 
 
 def test_get_sh():
