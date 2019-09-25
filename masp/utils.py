@@ -229,6 +229,7 @@ def get_sh(N, dirs, basisType):
         return np.power(-1, np.abs(m)) * np.sqrt(2 - delta_kronecker(0, np.abs(m)))
 
     if basisType is 'complex':
+        # TODO
         raise NotImplementedError
 
     elif basisType is 'real':

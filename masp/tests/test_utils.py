@@ -94,7 +94,6 @@ def test_sph2cart():
 
 
 def test_get_sh():
-    # TODO
     num_tests = 10
     params = {
         'N':
@@ -102,7 +101,7 @@ def test_get_sh():
         'dirs':
         [(np.random.rand(np.random.randint(1,10),2)*[2*np.pi, np.pi]).tolist() for i in range(num_tests)],
         'basisType':
-        # [random.choice(['real', 'complex']) for i in range(num_tests)],
+        # [random.choice(['real', 'complex']) for i in range(num_tests)], # TODO: to be uncommented
         ['real' for i in range(num_tests)],
     }
     for t in range(num_tests):
@@ -113,7 +112,6 @@ def test_get_sh():
                        nargout=1)
 
 def test_lagrange():
-    # TODO
     num_tests = 10
     ns = [np.random.randint(1,101) for i in range(num_tests)]
     params = {

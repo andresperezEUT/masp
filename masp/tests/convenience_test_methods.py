@@ -45,7 +45,7 @@ from masp.utils import C
 
 
 # Start matlab
-# matlab session will automatically close when shoebox_room_sim properly finish,
+# matlab session will automatically close when test session properly finishes,
 # or alternatively on AssertionError handling
 
 eng = matlab.engine.start_matlab()
@@ -61,7 +61,6 @@ eng.addpath(os.path.join(matlab_path,'Spherical-Harmonic-Transform-master'))
 # Array Response Simulator library
 eng.addpath(os.path.join(matlab_path,'Array-Response-Simulator-master'))
 
-
 # Path to tmp folder for Matlab struct storage and evaluation
 tmp_path = os.path.abspath("./masp/tests/tmp")
 
@@ -71,13 +70,14 @@ quantised_echogram_dtype = np.dtype([('value', 'O'), ('time', 'O'), ('isActive',
 
 def get_parameters(params, t):
     """
-    TODO
-    get a params dictionary, with each key a parameter name,
-    and value a list of values of lenght T.
-    :param params:
-    :param t:
-    :return:
+    Convenience method for the numeric testing/validation system.
+
+    Params is a dictionary, each key being a parameter name,
+    and each value a list of values of length T (the number of trials).
+
+    The method returns a list of the argument values for test number `t` < T.
     """
+
     num_params = len(params)
     print('')
     print('-----------------------------------------------')
@@ -308,7 +308,7 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
                     ml_echo['isActive'] = echo.isActive
                     ml_echogram_array[idx] = ml_echo
             else:
-                raise TypeError  # TODO proper error check
+                raise TypeError
 
             # Save resulting array to tmp folder, and add the path to the method args
             ml_echogram_array_path = os.path.join(tmp_path, ml_method+'_arg.mat')
@@ -377,7 +377,6 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
         elif ml_res.dtype == quantised_echogram_dtype:
             compare_quantised_echogram_arrays(np_res, ml_res)
         else:
-            # TODO check
             raise TypeError
 
         # Remove used tmp file

@@ -73,20 +73,6 @@ mic_specs = np.array([  [1, 0, 0, 0.5],    # cardioid looking to the front
                         [-1, 0, 0, 0.25]]) # hypercardioid looking backwards
 
 
-# TODO: not needed?
-# % % convert source directions from listener-centric to room-centric
-# % [src_coords(:,1), src_coords(:,2), src_coords(:,3)] = sph2cart(src_dirs(:,1)*pi/180, ...
-# %     src_dirs(:,2)*pi/180, src_r);
-# % src_coords(:,2) = -src_coords(:,2);
-# % src = ones(nSrc,1)*rec(1,:) + src_coords;
-# % % check sources
-# % for n=1:nSrc
-# %     if (src(n,1)>room(1))||(src(n,2)>room(2))||(src(n,3)>room(3))
-# %         error('Source coordinates out of room boundaries')
-# %     end
-# % end
-
-
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # RUN SIMULATOR
 

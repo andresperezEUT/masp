@@ -33,6 +33,7 @@
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+import pytest
 from masp.tests.convenience_test_methods import *
 from masp.utils import C
 
@@ -64,6 +65,17 @@ def test_spherical_scatterer():
                        nargout=2,
                        namespace='ars')
 
+    # ValueError: measurement points inside sphere
+    with pytest.raises(ValueError, match='The distance of the measurement point cannot be less than the radius'):
+        mic_dirs_rad = np.asarray(p[0])
+        src_dirs_rad = np.asarray(p[1])
+        R = np.max(mic_dirs_rad[:,-1]) + 0.01  # ensure a big R
+        N_order = p[3]
+        N_filt = p[4]
+        fs = p[5]
+        masp.ars.spherical_scatterer(mic_dirs_rad, src_dirs_rad, R, N_order, N_filt, fs)
+
+
 def test_cylindrical_scatterer():
     num_tests = 10
     # The `same_radius` case will be tested when nMics=1
@@ -91,3 +103,13 @@ def test_cylindrical_scatterer():
                        *p,
                        nargout=2,
                        namespace='ars')
+
+    # ValueError: measurement points inside sphere
+    with pytest.raises(ValueError, match='The distance of the measurement point cannot be less than the radius'):
+        mic_dirs_rad = np.asarray(p[0])
+        src_dirs_rad = np.asarray(p[1])
+        R = np.max(mic_dirs_rad[:,-1]) + 0.01  # ensure a big R
+        N_order = p[3]
+        N_filt = p[4]
+        fs = p[5]
+        masp.ars.cylindrical_scatterer(mic_dirs_rad, src_dirs_rad, R, N_order, N_filt, fs)

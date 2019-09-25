@@ -69,19 +69,6 @@ nRec = rec.shape[0]
 src = np.array([ [6.2, 2.0, 1.8], [5.8, 5.0, 1.9] ])
 nSrc = rec.shape[0]
 
-# TODO: not needed?
-# % % convert source directions from listener-centric to room-centric
-# % [src_coords(:,1), src_coords(:,2), src_coords(:,3)] = sph2cart(src_dirs(:,1)*pi/180, ...
-# %     src_dirs(:,2)*pi/180, src_r);
-# % src_coords(:,2) = -src_coords(:,2);
-# % src = ones(nSrc,1)*rec(1,:) + src_coords;
-# % % check sources
-# % for n=1:nSrc
-# %     if (src(n,1)>room(1))||(src(n,2)>room(2))||(src(n,3)>room(3))
-# %         error('Source coordinates out of room boundaries')
-# %     end
-# % end
-
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # DEFINE DIRECTIONAL IRs FOR RECEIVERS
@@ -101,9 +88,10 @@ L_resp = 1024
 
 # Define grid to simulate responses (or that's coming from measurements directly)
 grid = load_sph_grid('../../data/N040_M840_Octa.dat')  # 840 points uniformly distributed, cartesian
-grid_sph = cart2sph(grid)
+grid_sph = cart2sph(grid)[:, :-1]
+mic_dirs_rad = mic_dirs_rad[:, :-1]
 # Compute array IRs
-h_eigen = ars.simulate_sph_array(L_resp, mic_dirs_rad[:, :-1], grid_sph[:, :-1], arrayType, R, array_order, fs)
+h_eigen = ars.simulate_sph_array(L_resp, mic_dirs_rad, grid_sph, arrayType, R, array_order, fs)
 
 
 # Receiver 2 example: Uniform circular array of 8 omnis, radius 10cm
@@ -120,7 +108,7 @@ mic_xyz = sph2cart(mic_dirs_deg)
 L_resp = 256
 # Simulate array using get_array_response()
 fDirectivity = lambda angle: 1  # Response of omnidirectional microphone
-h_uca = ars.get_array_response(grid, mic_xyz, L_resp, fs, mic_dirs=None, fDir_handle=fDirectivity) #  microphone orientation irrelevant in this case
+h_uca, _ = ars.get_array_response(grid, mic_xyz, L_resp, fs, mic_dirs=None, fDir_handle=fDirectivity) #  microphone orientation irrelevant in this case
 
 
 # Receiver 3 example: Measured HRTFs (MAKE SURE THAT THEY ARE THE SAME SAMPLERATE AS THE REST OR RESAMPLE)
@@ -153,26 +141,21 @@ abs_echograms = srs.compute_echograms_array(room, src, rec, abs_wall, limits)
 # should be provided, along with the corresponding multichannel IRs for the
 # elements of the array at the grid directions.
 
-# TODO: fix first matlab code...
+# TODO: use different data, once we got it...
 grids = [grid_sph, grid_sph, grid_sph]
 array_irs = [h_uca, h_uca, h_uca]
 
 array_rirs = srs.render_rirs_array(abs_echograms, band_centerfreqs, fs, grids, array_irs)
 
-# toc
-#
-# %% Generate sound scenes
-# % Each source is convolved with the respective array IRs, and summed with
-# % the rest of the sources to create the microphone mixed signals
-#
-# sourcepath = '4src_samples_voice_handclaps_fountain_piano.wav';
-# [src_sigs, fs_src] = audioread(sourcepath);
-# if (fs_src~=fs), resample(src_sigs, fs, fs_src); end % resample if it doesn't match the project's fs
-#
-# array_sigs = apply_source_signals(array_rirs, src_sigs);
+toc = time.time()
+print('Elapsed time is ' + str(toc-tic) + 'seconds.')
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# GENERATE SOUND SCENES
 
 sourcepath = '../../data/milk_cow_blues_4src.wav'
 src_sigs = librosa.core.load(sourcepath, sr=None, mono=False)[:3].T[:,:nSrc]
 
-mic_sigs = srs.apply_source_signals(array_rirs, src_sigs)
+mic_sigs = srs.apply_source_signals_array(array_rirs, src_sigs)
 

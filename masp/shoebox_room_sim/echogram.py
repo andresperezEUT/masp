@@ -36,7 +36,15 @@
 
 class Echogram:
     """
-    TODO
+    Class holding echogram information.
+
+    Parameters
+    ----------
+    value : 2D ndarray, dimension = (n, nSH)
+    time : 1D ndarray, dimension = (n), values must be positive
+    order : 2D ndarray, dimension = (n, C), dtype=int
+    coords : 2D ndarray, dimension = (n, C)
+
     """
     def __init__(self, value, time, order, coords):
         self.value = value
@@ -46,7 +54,14 @@ class Echogram:
 
 class QuantisedEchogram:
     """
-    TODO
+    Class holding quantised echogram information.
+
+    Parameters
+    ----------
+    value : 2D ndarray, dimension = (n, nSH)
+    time : 1D ndarray, dimension = (n), values must be positive
+    isActive: boolean
+
     """
     def __init__(self, value, time, isActive):
         self.value = value

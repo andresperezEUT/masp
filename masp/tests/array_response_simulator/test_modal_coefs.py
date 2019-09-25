@@ -35,6 +35,7 @@
 
 from masp.tests.convenience_test_methods import *
 import random
+import pytest
 
 def test_sph_modal_coefs():
     num_tests = 10
@@ -45,7 +46,7 @@ def test_sph_modal_coefs():
         [(np.random.rand(10)*10).tolist() for i in range(num_tests)],
         'arrayType':
         [random.choice(['open', 'rigid', 'directional']) for i in range(num_tests)],
-        'dirCoeff':
+        'dirCoef':
         [np.random.random() for i in range(num_tests)],
 
     }
@@ -56,6 +57,15 @@ def test_sph_modal_coefs():
                        *p,
                        nargout=1,
                        namespace='ars')
+
+    # ValueError: directional array, but no dirCoef defined
+    with pytest.raises(ValueError, match='dirCoef must be defined in the directional case'):
+        N = p[0]
+        kr = np.asarray(p[1])
+        arrayType = 'directional'
+        dirCoef = None
+        masp.ars.sph_modal_coefs(N, kr, arrayType, dirCoef)
+
 
 def test_cyl_modal_coefs():
     num_tests = 10

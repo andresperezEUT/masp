@@ -33,6 +33,7 @@
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+import pytest
 from masp.tests.convenience_test_methods import *
 from masp.utils import C
 import random
@@ -56,7 +57,7 @@ def test_simulate_sph_array():
         [np.random.randint(1, 10) for i in range(num_tests)],
         'fs':
         [np.random.randint(100000) + 100 for i in range(num_tests)],
-        'dirCoeff':
+        'dirCoef':
         [np.random.random() for i in range(num_tests)],
     }
     for t in range(num_tests):
@@ -66,6 +67,19 @@ def test_simulate_sph_array():
                        *p,
                        nargout=2,
                        namespace='ars')
+
+    # ValueError: directional array, but no dirCoef defined
+    with pytest.raises(ValueError, match='dirCoef must be defined in the directional case'):
+        N_filt = p[0]
+        mic_dirs_rad = np.asarray(p[1])
+        src_dirs_rad = np.asarray(p[2])
+        arrayType = 'directional'
+        R = p[4]
+        N_order = p[5]
+        fs = p[6]
+        dirCoef = None
+        masp.ars.simulate_sph_array(N_filt, mic_dirs_rad, src_dirs_rad, arrayType, R, N_order, fs, dirCoef)
+
 
 def test_simulate_cyl_array():
     num_tests = 10
@@ -94,6 +108,7 @@ def test_simulate_cyl_array():
                        *p,
                        nargout=2,
                        namespace='ars')
+
 
 def test_get_array_response():
     num_tests = 10

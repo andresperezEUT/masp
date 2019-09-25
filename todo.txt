@@ -1,0 +1,68 @@
+TODO LIST: DESIGN CHOICES
+________________________________________________________
+
+
+# TEST SCRIPTS
+
+- test_script_bin_moving.py should we finish it? (probably not interesting...)
+
+- test_script_arrays.py, l.90: `N040_M840_Octa.dat` is same as found on the internet?.
+Further utils.py::load_sph_grid(): it is a custom method for this specific file.
+should we extend it somehow, study what .dat files are, etc?
+- test_script_arrays.py, l.115: `APolitis_ownsurround_sim2016.mat` ??
+- test_script_arrays.py, l.143: continue with proper data once we solve above points
+
+- Create nice python notebooks to show library
+
+# UTILS
+
+- utils.py::get_sh(): implement complex spherical harmonic transform.
+Also, test_utils.py::test_get_sh().
+
+# SHOEBOX_ROOM_SIM
+
+- `apply_source_signals_array()`, `apply_source_signals_sh()` in apply_source_signals.py:
+decide on return values: just return final signals makes more sense for me (and it's also coherent with
+`apply_source_signals_mic()`)...
+
+- compute_echograms.py, all methods:
+Method type is hardcoded as `type = 'maxTime'`. Should we expose it as parameter?
+(even if we keep 'maxTime' as default value)
+- compute_echograms.py, all methods:
+decide on return values: again, just the final output makes more sense to me...
+
+- render_rirs.py::render_rirs_array(), render_rirs_mic(), render_rirs_sh(), render_quantised():
+expose `fracional` boolean as argument, keeping `True` as default value
+- render_rirs.py::render_rirs_array(), render_rirs_mic(), render_rirs_sh()
+expose `L_filterbank` as argument
+- render_rirs.py::render_rirs(), filter_rirs()
+expose filter order as argument
+- render_rirs.py::filter_rirs()
+expose f_min as argument
+
+
+# TEST
+
+- test_simulate_array.py::test_get_array_response(), l.134.
+How to pass lambda expressions to Matlab? cannot test 100% without it.
+
+
+
+BUGS
+________________________________________________________
+
+- render_rirs.py::render_rirs(), l.353: fix bug related with dimension missing
+(also in test_render_rirs.py, l.132)
+
+
+
+
+THEORETICAL QUESTIONS
+________________________________________________________
+
+- test_script_arrays.py, l.86: array order formula?
+
+- utils.py::get_sh(): norm?
+
+- array_response_simulator/scatter.py, l.154, 273.
+Why np.abs instead of np.real? It's not about real-valued spherical harmonics?
