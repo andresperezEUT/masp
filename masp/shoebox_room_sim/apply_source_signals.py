@@ -36,48 +36,64 @@
 import numpy as np
 import scipy.signal
 
-from masp.validate_data_types import _validate_ndarray_3D, _validate_ndarray_2D, _validate_ndarray_4D
+from masp.validate_data_types import _validate_ndarray_3D, _validate_ndarray_2D, _validate_ndarray_4D, _validate_list
 
 
 def apply_source_signals_array(array_rirs, src_sigs):
     """
-    TODO
-    :param mic_rirs:
-    :param src_sigs:
-    :return:
+    Apply room impulse responses from an array of receivers (microphone arrays) to a set of source signals.
+
+    Parameters
+    ----------
+    array_rirs : List
+      RIR for each receiver element. Length = (nRec)
+    src_sigs: ndarray
+       Matrix containing the source signals. Dimension = (L_sig, nSrc)
+
+    Returns
+    -------
+    array_sigs : List
+        Source signals subjected to the RIRs. Length = (nRec)
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    Each element in `array_rirs` should be a ndarray wit dimension = (L, nMic, nSrc).
+    All values of `nSrc` across receivers should be equal, and also match (shape[1]) in `src_sigs`.
+
+    Each element of the algorithm output `array_sigs` contains the rendering of the sources from a different receiver,
+    featuring a ndarray with dimension = (L_rir+L_sig-1, nMic).
+
+    TODO: check return values
     """
 
-    nRec = mic_rirs.shape[1]
-    nSrc = mic_rirs.shape[2]
-    _validate_ndarray_3D('mic_rirs', mic_rirs)
+    _validate_list('array_rirs', array_rirs)
+    nRec = len(array_rirs)
+    nSrcs = [array_rirs[i].shape[2] for i in range(nRec)]
+    assert nSrcs[1:] == nSrcs[:-1]  # Same number of sources for each receiver
+    nSrc = nSrcs[0]
     _validate_ndarray_2D('src_sigs', src_sigs, shape1=nSrc)
 
-#     nRec = len(array_rirs)
-#     nSrc = size(array_rirs{1}, 3);
-#     nSigs = size(src_sigs, 2);
-#     if (
-#             nSigs < nSrc), error('the number of source signals should be at least as many as the source number in the simulation'); end
-#
-#     array_sigs = cell(nRec, 1);
-#     src_array_sigs = cell(nRec, 1);
-#     L_sig = size(src_sigs, 1);
-#     for nr=1:nRec
-#     temprirs = array_rirs
-#     {nr};
-#     L_rir = size(temprirs, 1);
-#     nMics = size(temprirs, 2);
-#     tempsigs = zeros(L_sig + L_rir - 1, nMics, nSrc);
-#     for ns=1:nSrc
-#
-#
-# disp(['Convolving with source signal: Source ' num2str(ns) ' - Receiver ' num2str(nr)])
-# tempsigs(:,:, ns) = fftfilt(temprirs(:,:, ns), [src_sigs(:, ns); zeros(L_rir - 1, 1)]);
-# end
-# src_array_sigs
-# {nr} = tempsigs;
-# array_sigs
-# {nr} = sum(tempsigs, 3);
-# end
+    array_sigs = [None] * nRec      # Empty list
+    src_array_sigs = [None] * nRec  # Empty list
+    L_sig = src_sigs.shape[0]
+
+    for nr in range(nRec):
+        temprirs = array_rirs[nr]
+        L_rir = temprirs.shape[0]
+        nMics = temprirs.shape[1]
+        tempsigs = np.zeros((L_sig + L_rir - 1, nMics, nSrc))
+        for ns in range(nSrc):
+            print('Convolving with source signal: Source ' + str(ns) + ' - Receiver ' + str(nr))
+            tempsigs[:, :, ns] = scipy.signal.fftconvolve(temprirs[:, :, ns], src_sigs[:, ns, np.newaxis], axes=0)
+        src_array_sigs[nr] = tempsigs
+        array_sigs[nr] = np.sum(tempsigs, axis=2)
+
+    # return array_sigs, src_array_sigs
+    return array_sigs
 
 
 def apply_source_signals_mic(mic_rirs, src_sigs):

@@ -252,7 +252,12 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
 
         elif isinstance(arg, tuple):
             # automatic tuple->cell conversion in matlab API
-            ml_args.append(arg)
+            # but still need to convert inner lists to matlab doubles
+            list_arg = list(arg)
+            for l in range(len(list_arg)):
+                list_arg[l] = matlab.double(list_arg[l])
+            ml_args.append(tuple(list_arg))
+
             # in python, that should be a list in the top dimension, and ndarray in the rest
             list_arg = list(arg)
             for l in range(len(list_arg)):

@@ -35,6 +35,31 @@
 
 from masp.tests.convenience_test_methods import *
 
+def test_apply_source_signals_array():
+    num_tests = 10
+    L_sig = [np.random.randint(1, 10) * 1000 for i in range(num_tests)]
+    L_rir = [np.random.randint(1, 10) * 100 for i in range(num_tests)]
+    nSrc = [np.random.randint(1, 10) for i in range(num_tests)]
+    nRec = [np.random.randint(1, 10) for i in range(num_tests)]
+
+    array_rirs = []
+    for i in range(num_tests):
+        array_rir = [(np.random.rand(L_rir[i], nRec[i], nSrc[i])*2-1).tolist() for r in range(nRec[i])]
+        array_rirs.append(tuple(array_rir))
+
+    params = {
+        'array_rirs':
+        array_rirs,
+        'src_sigs':
+        [(np.random.rand(L_sig[i], nSrc[i])*2-1).tolist() for i in range(num_tests)],
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("apply_source_signals_arrays",
+                       "apply_source_signals_array",
+                       *p,
+                       nargout=1,
+                       namespace='srs')
 
 def test_apply_source_signals_mic():
     num_tests = 10
@@ -47,7 +72,6 @@ def test_apply_source_signals_mic():
         [(np.random.rand(L_rir[i], nRec[i], nSrc[i])*2-1).tolist() for i in range(num_tests)],
         'src_sigs':
         [(np.random.rand(L_sig[i], nSrc[i])*2-1).tolist() for i in range(num_tests)],
-
     }
     for t in range(num_tests):
         p = get_parameters(params, t)
@@ -69,7 +93,6 @@ def test_apply_source_signals_sh():
             [(np.random.rand(L_rir[i], nSH[i], nRec[i], nSrc[i]) * 2 - 1).tolist() for i in range(num_tests)],
         'src_sigs':
             [(np.random.rand(L_sig[i], nSrc[i]) * 2 - 1).tolist() for i in range(num_tests)],
-
     }
     for t in range(num_tests):
         p = get_parameters(params, t)
@@ -78,5 +101,3 @@ def test_apply_source_signals_sh():
                        *p,
                        nargout=1,
                        namespace='srs')
-
-test_apply_source_signals_sh()
