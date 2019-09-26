@@ -111,6 +111,7 @@ def cart2sph(cart):
     the output matrix will be as well 1D.
     """
 
+    arg = cart.copy()
     _validate_ndarray('cart', cart)
     if cart.ndim == 1:
         _validate_ndarray_1D('cart', cart, size=C)
@@ -125,7 +126,7 @@ def cart2sph(cart):
     sph[:, 2] = np.hypot(hypotxy, cart[:, 2])
     sph[:, 1] = np.arctan2(cart[:, 2], hypotxy)
     sph[:, 0] = np.arctan2(cart[:, 1], cart[:, 0])
-    if cart.ndim == 1:
+    if arg.ndim == 1:
         sph = sph.squeeze()
     return sph
 
@@ -155,6 +156,7 @@ def sph2cart(sph):
     the output matrix will be as well 1D.
     """
 
+    arg = sph.copy()
     _validate_ndarray('sph', sph)
     if sph.ndim == 1:
         _validate_ndarray_1D('sph', sph, size=C)
@@ -169,7 +171,7 @@ def sph2cart(sph):
     rcoselev = sph[:,2] * np.cos( sph[:,1])
     cart[:, 0] = rcoselev * np.cos( sph[:,0])
     cart[:, 1] = rcoselev * np.sin( sph[:,0])
-    if sph.ndim == 1:
+    if arg.ndim == 1:
         cart = cart.squeeze()
     return cart
 

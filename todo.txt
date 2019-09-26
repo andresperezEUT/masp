@@ -12,7 +12,6 @@ should we extend it somehow, study what .dat files are, etc?
 - test_script_arrays.py, l.115: `APolitis_ownsurround_sim2016.mat` ??
 - test_script_arrays.py, l.143: continue with proper data once we solve above points
 
-- Create nice python notebooks to show library
 
 # UTILS
 
@@ -66,3 +65,13 @@ ________________________________________________________
 
 - array_response_simulator/scatter.py, l.154, 273.
 Why np.abs instead of np.real? It's not about real-valued spherical harmonics?
+
+
+DOCUMENTATION
+________________________________________________________
+
+- Create nice python notebooks to show library (https://nbviewer.jupyter.org/github/LCAV/pyroomacoustics/blob/master/notebooks/pyroomacoustics_demo.ipynb)
+
+- Sphinx docs
+
+- Comparison table with pyroomacoustics!

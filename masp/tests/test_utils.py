@@ -34,12 +34,13 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 from masp import cart2sph, sph2cart
 from masp.tests.convenience_test_methods import *
-import random
+import pytest
 
 
 
 def test_cart2sph():
 
+    # Regular 2D case
     cart = np.asarray([
         [1., 0., 0.],
         [-1., 0., 0.],
@@ -63,6 +64,16 @@ def test_cart2sph():
     ])
 
     assert np.allclose(sph, cart2sph(cart))
+
+    # Specific 1D case
+    cart = np.asarray([1., 0., 0.])
+    sph = np.asarray([0., 0., 1])
+    assert cart2sph(cart).ndim == 1
+    assert np.allclose(sph, cart2sph(cart))
+
+    # Error with higher dimensions
+    with pytest.raises(ValueError):
+        cart2sph(np.ones((1, 1, 1)))
 
 
 def test_sph2cart():
@@ -91,6 +102,15 @@ def test_sph2cart():
 
     assert np.allclose(cart, sph2cart(sph))
 
+    # Specific 1D case
+    sph = np.asarray([0., 0., 1])
+    cart = np.asarray([1., 0., 0.])
+    assert sph2cart(sph).ndim == 1
+    assert np.allclose(cart, sph2cart(sph))
+
+    # Error with higher dimensions
+    with pytest.raises(ValueError):
+        sph2cart(np.ones((1, 1, 1)))
 
 
 def test_get_sh():
@@ -126,3 +146,13 @@ def test_lagrange():
                        "lagrange",
                        *p,
                        nargout=1)
+
+
+def test_isLambda():
+
+    wrong_values = [1, '1', True, 2.3, 1e4, 3j, [1], None, np.nan, np.inf, np.asarray([0.5])]
+    for wv in wrong_values:
+        assert not masp.isLambda(wv)
+
+    lambda_expr = lambda a : a + 10
+    assert masp.isLambda(lambda_expr)

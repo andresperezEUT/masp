@@ -438,11 +438,6 @@ def render_quantised(qechogram, endtime, fs, fractional):
             tempgram.order = tempgram.order[:idx_limit+1]    # whatever to pass the size validation
             tempgram.coords = tempgram.coords[:idx_limit+1]  # whatever to pass the size validation
 
-
-            try:
-                _validate_echogram(tempgram)
-            except ValueError:
-                pass
             qIR[:, nq] = render_rirs(tempgram, endtime, fs, fractional).squeeze()
 
     return qIR, np.asarray(idx_nonzero)
