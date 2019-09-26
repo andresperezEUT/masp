@@ -129,7 +129,7 @@ def generate_random_echogram_array_sh(nSrc, nRec, nBands=None):
     else:
         echogram_array = np.empty((nSrc, nRec), dtype=masp.srs.Echogram)
 
-    nSH = np.random.randint(20)
+    nSH = np.random.randint(1,10)
     for idx in np.ndindex(echogram_array.shape):
         echogram_array[idx] = generate_random_echogram_sh(nSH)
 

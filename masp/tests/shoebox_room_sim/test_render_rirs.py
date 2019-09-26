@@ -129,26 +129,6 @@ def test_render_rirs_sh():
                        nargout=1,
                        namespace='srs')
 
-    # TODO: sometimes gives an error:
-#     Index in position
-#     1
-#     exceeds
-#     array
-#     bounds.
-#
-#     Error in render_rir(line
-#     47)
-#     h_frac * echogram.value(i,:);
-#
-#     Error in render_sh_rirs(line
-#     41)
-#     r = render_rir(echograms(ns, nr, nb), endtime, fs, FRACTIONAL);
-#
-#
-# Error in render_sh_rirs_test(line
-# 5)
-# rirs = render_sh_rirs(echograms, band_centerfreqs, fs);
-
 
 def test_render_rirs():
     num_tests = 5
@@ -193,6 +173,7 @@ def test_render_quantised():
                        *p,
                        nargout=2,
                        namespace='srs')
+
 
 def test_filter_rirs():
     num_tests = 5

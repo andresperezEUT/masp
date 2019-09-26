@@ -151,7 +151,7 @@ def render_rirs_array(echograms, band_centerfreqs, fs, grids, array_irs):
             tempRIR2 = np.row_stack((tempRIR2[:, idx_nonzero], np.zeros((L_resp - 1, len(idx_nonzero)) )))
             for nm in range(nMics):
                 tempResp = mic_irs[:, nm, idx_nonzero]
-                array_rirs[nr][:, nm, ns] = np.sum( scipy.signal.fftconvolve(tempResp, tempRIR2, axes=0)[:tempRIR2.shape[0], :], axis=1)
+                array_rirs[nr][:, nm, ns] = np.sum(scipy.signal.fftconvolve(tempResp, tempRIR2, axes=0)[:tempRIR2.shape[0], :], axis=1)
 
     return array_rirs
 
@@ -349,10 +349,6 @@ def render_rirs(echogram, endtime, fs, fractional=True):
     # Number of reflections inside the time limit
     idx_trans = echogram.time[echogram.time < endtime].size
 
-    # TODO CONTINUE HERE
-    if echogram.value.shape == 0:
-        print("!!!!!!!!!!")
-
     if fractional:
         # Get lagrange interpolating filter of order 100 (filter length 101)
         order = 100
@@ -371,6 +367,7 @@ def render_rirs(echogram, endtime, fs, fractional=True):
             refl_frac = np.remainder(echogram.time[i] * fs, 1)
             filter_idx = np.argmin(np.abs(refl_frac - fractions))
             h_frac = H_frac[:, filter_idx]
+
             tmp_ir[h_offset+refl_idx+h_idx-1, :] += h_frac[:, np.newaxis] * echogram.value[i]
 
         ir = tmp_ir[h_offset:-h_offset, :]
@@ -429,8 +426,8 @@ def render_quantised(qechogram, endtime, fs, fractional):
         tempgram = Echogram(
             time=qechogram[nq].time,
             value=qechogram[nq].value,
-            order=np.zeros((1, 3), dtype=int),  # whatever to pass the size validation
-            coords=np.zeros((1, 3)))            # whatever to pass the size validation
+            order=np.zeros((qechogram[nq].time.size, 3), dtype=int),  # whatever to pass the size validation
+            coords=np.zeros((qechogram[nq].time.size, 3)))            # whatever to pass the size validation
         # Omit if there are no echoes in the specific one
         if qechogram[nq].isActive:
             idx_nonzero.append(nq)
@@ -438,7 +435,14 @@ def render_quantised(qechogram, endtime, fs, fractional):
             idx_limit = tempgram.time[tempgram.time < endtime].size
             tempgram.time = tempgram.time[:idx_limit+1]
             tempgram.value = tempgram.value[:idx_limit+1]
+            tempgram.order = tempgram.order[:idx_limit+1]    # whatever to pass the size validation
+            tempgram.coords = tempgram.coords[:idx_limit+1]  # whatever to pass the size validation
 
+
+            try:
+                _validate_echogram(tempgram)
+            except ValueError:
+                pass
             qIR[:, nq] = render_rirs(tempgram, endtime, fs, fractional).squeeze()
 
     return qIR, np.asarray(idx_nonzero)
