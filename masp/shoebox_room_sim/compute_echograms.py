@@ -223,7 +223,8 @@ def compute_echograms_mic(room, src, rec, abs_wall, limits, mic_specs):
 
 def compute_echograms_sh(room, src, rec, abs_wall, limits, sh_orders):
     """
-    Compute the echogram response of individual microphones for a given acoustic scenario.
+    Compute the echogram response of individual microphones for a given acoustic scenario,
+    in the spherical harmonic domain.
 
     Parameters
     ----------

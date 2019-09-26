@@ -74,4 +74,6 @@ ________________________________________________________
 
 - Sphinx docs
 
-- Comparison table with pyroomacoustics!
+- Decide on name...
+
+- Create pip package
