@@ -160,12 +160,12 @@ def raise_error(e=None):
     else:
         raise e
 
-def validate_result(ml_res, np_res):
+def validate_result(ml_res, np_res, rtol):
     if isinstance(np_res, np.ndarray):
         m = np.asarray(ml_res).squeeze()
         n = np_res.squeeze()
         if not m.shape == n.shape: raise_error()
-        if not np.allclose(m, n): raise_error()
+        if not np.allclose(m, n, rtol=rtol): raise_error()
 
     elif isinstance(np_res, list):
         # Matlab cell -> python list
@@ -175,7 +175,7 @@ def validate_result(ml_res, np_res):
             m = np.asarray(ml_res[i]).squeeze()
             n = np_res[i].squeeze()
             if not m.shape == n.shape: raise_error()
-            if not np.allclose(m, n): raise_error()
+            if not np.allclose(m, n, rtol=rtol): raise_error()
 
     elif isinstance(np_res, float):
         if ml_res != np_res: raise_error()
@@ -232,7 +232,7 @@ def compare_quantised_echogram_arrays(np_res, ml_res):
         if not np.allclose(ml_res['value'][idx], np_res[idx].value): raise_error()
         if ml_res['isActive'][idx] != np_res[idx].isActive: raise_error()
 
-def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, namespace=None):
+def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, namespace=None, rtol=1e-5):
 
     # PREPROCESS ARGS --------------------------------------------------------
 
@@ -388,10 +388,10 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
     # Regular check: matlab result data is saved into ml_res
     else:
         if nargout == 1:
-            validate_result(ml_res, np_res)
+            validate_result(ml_res, np_res, rtol)
         else:
             for arg_idx in range(nargout):
-                validate_result(ml_res[arg_idx], np_res[arg_idx])
+                validate_result(ml_res[arg_idx], np_res[arg_idx], rtol)
 
     # Remove matlab arg file, in case
     if 'ml_echogram_array_path' in locals():

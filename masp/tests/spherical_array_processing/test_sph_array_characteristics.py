@@ -83,4 +83,29 @@ def test_sph_array_noise_threshold():
                        *p,
                        nargout=1,
                        namespace='sap')
-test_sph_array_noise_threshold()
+
+
+def test_sph_array_alias_lim():
+    num_tests = 10
+    nMics = [np.random.randint(1, 10) for i in range(num_tests)]
+    params = {
+        'R':
+        [np.random.random() for i in range(num_tests)],
+        'Nmic':
+        nMics,
+        'maxN':
+        [np.random.randint(1,10) for i in range(num_tests)],
+        'mic_dirs_rad':
+        [(np.random.rand(np.random.randint(1,10),C-1)*[2*np.pi, np.pi]).tolist() for i in range(num_tests)],
+        'mic_weights':
+        [None for i in range(num_tests)]  # TODO not implemented
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("sphArrayAliasLim",
+                       "sph_array_alias_lim",
+                       *p,
+                       nargout=1,
+                       namespace='sap')
+
+test_sph_array_alias_lim()

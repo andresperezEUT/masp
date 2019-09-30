@@ -210,7 +210,7 @@ def get_sh(N, dirs, basisType):
     """
 
     _validate_int('order', N, positive=True)
-    _validate_ndarray_2D('dirs', dirs, shape1=2)
+    _validate_ndarray_2D('dirs', dirs, shape1=C-1)
     _validate_string('basisType', basisType, choices=['complex', 'real'])
 
     nDirs = dirs.shape[0]
@@ -320,3 +320,59 @@ def load_sph_grid(file_path):
     assert np.shape(sph_grid) == (dim0, dim1)
     return sph_grid
 
+
+def check_cond_number_sht(N, dirs, basisType, W=None):
+    """
+    Computes the condition number for a least-squares SHT.
+
+    Parameters
+    ----------
+    N : int
+        Maximum order to be tested for the given set of points.
+   dirs : ndarray
+        Evaluation directions. Dimension = (nDirs, 2).
+        Directions are expected in radians, expressed in pairs [azimuth, inclination].
+    basisType : str
+        Type of spherical harmonics. Either 'complex' or 'real'.
+    W : ndarray, optional.
+        Weights for each measurement point to condition the inversion,
+        in case of a weighted least-squares. Dimension = (nDirs)
+
+    Returns
+    -------
+    cond_N : ndarray
+        Condition number for each order. Dimension = (N+1)
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    Inclination is defined as the angle from zenith: inclination = pi/2-elevation
+
+    TODO: implement complex basis?
+    TODO: implement W
+    """
+
+    _validate_int('N', N, positive=True)
+    _validate_ndarray_2D('dirs', dirs, shape1=C-1)
+    _validate_string('basisType', basisType, choices=['complex', 'real'])
+    if W is not None:
+        _validate_ndarray_1D('W', W, size=dirs.shape[0])
+
+    # Compute the harmonic coefficients
+    Y_N = get_sh(N, dirs, basisType)
+
+    # Compute condition number for progressively increasing order up to N
+    cond_N = np.zeros(N + 1)
+    for n in range(N+1):
+        Y_n = Y_N[:, :np.power(n + 1, 2)]
+        if W is None:
+            YY_n = np.dot(Y_n.T, Y_n)
+        else:
+            # YY_n = Y_n.T * np.diag(W) * Y_n
+            raise NotImplementedError
+        cond_N[n] = np.linalg.cond(YY_n)
+
+    return cond_N

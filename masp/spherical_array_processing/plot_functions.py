@@ -62,7 +62,6 @@ def plot_mic_array(capsule_positions):
     nMic = capsule_positions.shape[0]
     R = capsule_positions[-0,-1]
     cart = sph2cart(capsule_positions)
-    print(cart)
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')

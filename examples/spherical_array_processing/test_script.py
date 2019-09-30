@@ -190,6 +190,7 @@ R = capsule_positions[0, -1]
 sap.plot_mic_array(capsule_positions)
 plt.show()
 
+# ###########################################################
 # Type and order of expansion for modeling the array response
 arrayType = 'rigid'
 f_max = 20000
@@ -217,35 +218,18 @@ plt.xlabel('Frequency (Hz)')
 plt.ylabel('$10log_{10}(G_n^2)$'),
 plt.xlim(50,20000)
 plt.legend(lines, [str(i) for i in range(sht_order+1)])
+
+# Find limiting frequencies for the specified threshold
+maxG_db = 10.0
+f_lim = sap.sph_array_noise_threshold(R, nMics, maxG_db, sht_order, arrayType)
+plt.axhline(y=maxG_db, xmin=0, xmax=f_lim[-1], c='k', linewidth=0.5)
+plt.scatter(f_lim, [maxG_db]*sht_order)
 plt.show()
 
-# Findlimiting frequencies for the specified threshold
-maxG_db = 10
-f_lim = sap.sph_array_noise_threshold(R, nMics, maxG_db, sht_order, arrayType);
-# # plot frequencies
-# semilogx([f(2) f_lim(end)]', ones(2,1)*maxG_db, 'color','k')
-# for n=1:sht_order
-# semilogx([f_lim(n) f_lim(n)], [0 maxG_db], 'k')
-# end
-# ht = title(['Noise amplification curves of equalized SH components, ' char(10)
-#             'and respective frequencies for max. noise maplification maxG = ' num2str(maxG_db) 'dB']);
-# ht.FontSize = 14;
-# h = gcf;
-# h.Position(3) = 1.5 * h.Position(3);
-# h.Position(4) = 1.5 * h.Position(4);
-#
-# # #
-#
-# # get
-# spatial
-# aliasing
-# estimates, by
-# SHT
-# order, number
-# of
-# microphone or condition
-# number
-# f_alias = sphArrayAliasLim(R, nMics, sht_order, mic_dirs_rad);
+# ###########################################################
+# Get spatial aliasing estimates, by SHT order, number of
+# microphone or condition number
+f_alias = sphArrayAliasLim(R, nMics, sht_order, mic_dirs_rad);
 # # plot
 # orthogonality
 # matrix

@@ -117,7 +117,7 @@ def test_get_sh():
     num_tests = 10
     params = {
         'N':
-        [np.random.randint(10) for i in range(num_tests)],
+        [np.random.randint(1,10) for i in range(num_tests)],
         'dirs':
         [(np.random.rand(np.random.randint(1,10),2)*[2*np.pi, np.pi]).tolist() for i in range(num_tests)],
         'basisType':
@@ -156,3 +156,25 @@ def test_isLambda():
 
     lambda_expr = lambda a : a + 10
     assert masp.isLambda(lambda_expr)
+
+
+def test_check_cond_number():
+    num_tests = 10
+    params = {
+        'N':
+        [np.random.randint(1,10) for i in range(num_tests)],
+        'dirs':
+        [(np.random.rand(np.random.randint(1,10),C-1)*[2*np.pi, np.pi]).tolist() for i in range(num_tests)],
+        'basisType':
+        # [random.choice(['real', 'complex']) for i in range(num_tests)], # TODO: to be uncommented
+        ['real' for i in range(num_tests)],
+        'W':
+        [None for i in range(num_tests)]  # TODO not implemented
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("checkCondNumberSHT",
+                       "check_cond_number_sht",
+                       *p,
+                       nargout=1,
+                       rtol=1e2)  # Big rtol due to numeric errors in matrix condition computation

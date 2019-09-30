@@ -34,9 +34,10 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import numpy as np
-from masp.utils import c
+from masp.utils import c, C, check_cond_number_sht
 from masp.array_response_simulator import sph_modal_coefs
-from masp.validate_data_types import _validate_float, _validate_int, _validate_string, _validate_ndarray_1D
+from masp.validate_data_types import _validate_float, _validate_int, _validate_string, _validate_ndarray_1D, \
+    _validate_ndarray_2D
 
 
 def sph_array_noise(R, nMic, maxN, arrayType, f):
@@ -155,6 +156,7 @@ def sph_array_noise_threshold(R, nMic, maxG_db, maxN, arrayType, dirCoef=None):
         Sector-based Parametric Sound Field Reproduction in the Spherical Harmonic Domain
         A Politis, J Vilkamo, V Pulkki
         IEEE Journal of Selected Topics in Signal Processing 9 (5), 852 - 866
+
     """
 
     _validate_float('R', R, positive=True)
@@ -176,3 +178,74 @@ def sph_array_noise_threshold(R, nMic, maxG_db, maxN, arrayType, dirCoef=None):
         f_lim[n-1] = kR_lim * c / (2 * np.pi * R)
 
     return f_lim
+
+
+def sph_array_alias_lim(R, nMic, maxN, mic_dirs_rad, mic_weights=None):
+    """
+    Get estimates of the aliasing limit of a spherical array, in three different ways.
+
+    Parameters
+    ----------
+    R : float
+        Microphone array radius, in meter.
+    nMic : int
+        Number of microphone capsules.
+    maxN : int
+        Maximum spherical harmonic expansion order.
+    mic_dirs_rad : ndarray
+        Evaluation directions. Dimension = (nDirs, 2).
+        Directions are expected in radians, expressed in pairs [azimuth, elevation].
+    dirCoef: ndarray, optional
+       Vector of weights used to improve orthogonality of the SH transform. Dimension = (nDirs)
+
+    Returns
+    -------
+    f_alias : ndarray
+       the alising limit estimates. Dimension = (3).
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    First estimate takes into account only the radius and a nominal order
+    that the array is expected to support, it is the simplest one and it
+    expresses the kR = maxN rule.
+    The second estimate is based on the number of microphones, and it can
+    be more relaxed than the first, if the nominal supported order is less
+    than maxN<floor(sqrt(Nmic)-1).
+    The third takes into account microphone numbers and directions, and it
+    is based on the orthogonality of the SH matrix for the microphone
+    positions expressed through the condition number.
+
+    # todo check RETURN VALUES (need for very big rtol if cond_N returned)
+    """
+
+    _validate_float('R', R, positive=True)
+    _validate_int('nMic', nMic, positive=True)
+    _validate_int('maxN', maxN, positive=True)
+    _validate_ndarray_2D('mic_dirs_rad', mic_dirs_rad, shape1=C-1)
+    if mic_weights is not None:
+        _validate_ndarray_1D('mic_weights', mic_weights, size=mic_dirs_rad.shape[0])
+
+    f_alias = np.zeros(3)
+
+    # Conventional kR = N assumption
+    f_alias[0] = c * maxN / (2 * np.pi * R)
+
+    # Based on the floor of the number of microphones, uniform arrangement
+    f_alias[1] = c * np.floor(np.sqrt(nMic) - 1) / (2 * np.pi * R)
+
+    # Based on condition number of the SHT matrix
+    aziElev2aziIncl = lambda dirs: np.asarray([dirs[:, 0], np.pi / 2 - dirs[:, 1]]).T
+
+    maxOrder = int(np.ceil(np.sqrt(nMic) - 1))
+
+    cond_N = check_cond_number_sht(maxOrder, aziElev2aziIncl(mic_dirs_rad), 'real', mic_weights)
+    trueMaxOrder = np.flatnonzero(cond_N<np.power(10,4))[-1]  # biggest element passing the condition
+    f_alias[2] = c * trueMaxOrder / (2 * np.pi * R)
+
+    return f_alias
+
+
