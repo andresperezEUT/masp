@@ -67,7 +67,7 @@ def sph_modal_coefs(N, kr, arrayType, dirCoef=None):
     The `arrayType` options are:
     - 'open' for open array of omnidirectional sensors,
     - 'rigid' for sensors mounted on a rigid baffle,
-    = 'directional' for an open array of first-order directional microphones determined by `dirCoef`.
+    - 'directional' for an open array of first-order directional microphones determined by `dirCoef`.
 
     `dirCoef` is relevant (and required) only in the 'directional' type.
     `dirCoef` ranges from 0 (omni) to 1 (dipole), where for example 0.5 is a cardioid sensor.
@@ -76,7 +76,7 @@ def sph_modal_coefs(N, kr, arrayType, dirCoef=None):
 
     """
 
-    _validate_int('N', N)
+    _validate_int('N', N, positive=True)
     _validate_ndarray_1D('kr', kr, positive=True)
     _validate_string('arrayType', arrayType, choices=['open', 'rigid', 'directional'])
     if arrayType is 'directional':

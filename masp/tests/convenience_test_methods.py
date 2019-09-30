@@ -56,10 +56,13 @@ eng.addpath(matlab_path)
 # Shoebox library
 eng.addpath(os.path.join(matlab_path,'shoebox-roomsim-master'))
 eng.addpath(os.path.join(matlab_path,'shoebox-roomsim-master', 'test'))
+
 # Spherical Harmonic Transform library
 eng.addpath(os.path.join(matlab_path,'Spherical-Harmonic-Transform-master'))
 # Array Response Simulator library
 eng.addpath(os.path.join(matlab_path,'Array-Response-Simulator-master'))
+# Spherical Array Processing library
+eng.addpath(os.path.join(matlab_path,'Spherical-Array-Processing-master'))
 
 # Path to tmp folder for Matlab struct storage and evaluation
 tmp_path = os.path.abspath("./masp/tests/tmp")
