@@ -58,4 +58,29 @@ def test_sph_array_noise():
                        *p,
                        nargout=2,
                        namespace='sap')
-test_sph_array_noise()
+
+
+def test_sph_array_noise_threshold():
+    num_tests = 10
+    params = {
+        'R':
+        [np.random.random() for i in range(num_tests)],
+        'Nmic':
+        [np.random.randint(1,10) for i in range(num_tests)],
+        'maxG_db':
+        [np.random.random()*20-10 for i in range(num_tests)],
+        'maxN':
+        [np.random.randint(1,10) for i in range(num_tests)],
+        'arrayType':
+        [random.choice(['open', 'rigid', 'directional']) for i in range(num_tests)],
+        'dirCoef':
+        [np.random.random() for i in range(num_tests)]
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("sphArrayNoiseThreshold",
+                       "sph_array_noise_threshold",
+                       *p,
+                       nargout=1,
+                       namespace='sap')
+test_sph_array_noise_threshold()

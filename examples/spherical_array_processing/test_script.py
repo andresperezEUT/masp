@@ -200,24 +200,28 @@ array_order = np.ceil(2 * kR_max)
 fs = 48000
 Lfilt = 1024
 f = np.arange(Lfilt // 2 + 1) * fs / Lfilt
-kR = 2 * np.pi * f * R / c;
+kR = 2 * np.pi * f * R / c
 nBins = Lfilt / 2 + 1
 
 # Do some array analysis of noise and spatial aliasing
-sht_order = np.floor(np.sqrt(nMics) - 1) # approximate for uniformly arranged mics
-[ampf, ampf_lin] = sphArrayNoise(R, nMics, sht_order, arrayType, f);
-# # plot noise power responses
-# figure
-# semilogx(f, 10 * log10(abs(ampf)));
-# hold on, semilogx(f, 10 * log10(abs(ampf_lin)), '--k')
-# grid, xlabel('Frequency (Hz)'), ylabel('10log_{10}(G_n^2)'), set(gca, 'xlim', [50 20000])
-# legend(num2str((0:sht_order)'))
-#                             # find
-# limiting
-# frequencies
-# for the specified threshold
-# maxG_db = 10;
-# f_lim = sphArrayNoiseThreshold(R, nMics, maxG_db, sht_order, arrayType);
+sht_order = int(np.floor(np.sqrt(nMics) - 1))  # approximate for uniformly arranged mics
+ampf, ampf_lin = sap.sph_array_noise(R, nMics, sht_order, arrayType, f)
+
+# plot noise power responses
+plt.figure()
+lines=plt.plot(f, 10 * np.log10(np.abs(ampf)))
+plt.semilogx()
+plt.semilogx(f, 10 * np.log10(np.abs(ampf_lin)), 'k--', label='')
+plt.grid()
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('$10log_{10}(G_n^2)$'),
+plt.xlim(50,20000)
+plt.legend(lines, [str(i) for i in range(sht_order+1)])
+plt.show()
+
+# Findlimiting frequencies for the specified threshold
+maxG_db = 10
+f_lim = sap.sph_array_noise_threshold(R, nMics, maxG_db, sht_order, arrayType);
 # # plot frequencies
 # semilogx([f(2) f_lim(end)]', ones(2,1)*maxG_db, 'color','k')
 # for n=1:sht_order
