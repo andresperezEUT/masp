@@ -32,7 +32,7 @@
 #   @date   12/08/2019
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-from masp import cart2sph, sph2cart
+from masp import cart2sph, sph2cart, elev2incl, incl2elev
 from masp.tests.convenience_test_methods import *
 import pytest
 
@@ -111,6 +111,102 @@ def test_sph2cart():
     # Error with higher dimensions
     with pytest.raises(ValueError):
         sph2cart(np.ones((1, 1, 1)))
+
+
+def test_elev2incl():
+
+    # shape1=2
+    elev = np.asarray([
+        [np.pi/2, np.pi/2],
+        [np.pi/4, np.pi/4],
+        [0., 0.],
+        [-np.pi/4, -np.pi/4],
+        [-np.pi/2, -np.pi/2],
+    ])
+    incl = np.asarray([
+        [np.pi/2, 0],
+        [np.pi/4, np.pi/4],
+        [0., np.pi/2],
+        [-np.pi/4, 3*np.pi/4],
+        [-np.pi/2, np.pi],
+    ])
+    assert np.allclose(incl, elev2incl(elev))
+
+    # shape1=3
+    elev = np.asarray([
+        [np.pi/2, np.pi/2, 1.],
+        [np.pi/4, np.pi/4, 1.],
+        [0., 0., 1.],
+        [-np.pi/4, -np.pi/4, 1.],
+        [-np.pi/2, -np.pi/2, 1.],
+    ])
+    incl = np.asarray([
+        [np.pi/2, 0, 1.],
+        [np.pi/4, np.pi/4, 1.],
+        [0., np.pi/2, 1.],
+        [-np.pi/4, 3*np.pi/4, 1.],
+        [-np.pi/2, np.pi, 1.],
+    ])
+    assert np.allclose(incl, elev2incl(elev))
+
+    # Error with other shapes
+    wrong_values = [
+        np.ones((1, 1, 1)),
+        np.ones(3),
+        np.zeros((5, 1)),
+        np.zeros((3, 4)),
+    ]
+    for wv in wrong_values:
+        print(wv)
+        with pytest.raises(ValueError):
+            elev2incl(wv)
+
+def test_incl2elev():
+    # shape1=2
+    incl = np.asarray([
+        [np.pi/2, 0],
+        [np.pi/4, np.pi/4],
+        [0., np.pi/2],
+        [-np.pi/4, 3*np.pi/4],
+        [-np.pi/2, np.pi],
+    ])
+    elev = np.asarray([
+        [np.pi/2, np.pi/2],
+        [np.pi/4, np.pi/4],
+        [0., 0.],
+        [-np.pi/4, -np.pi/4],
+        [-np.pi/2, -np.pi/2],
+
+    ])
+    assert np.allclose(elev, incl2elev(incl))
+
+    # shape1=3
+    incl = np.asarray([
+        [np.pi/2, 0, 1.],
+        [np.pi/4, np.pi/4, 1.],
+        [0., np.pi/2, 1.],
+        [-np.pi/4, 3*np.pi/4, 1.],
+        [-np.pi/2, np.pi, 1.],
+    ])
+    elev = np.asarray([
+        [np.pi/2, np.pi/2, 1.],
+        [np.pi/4, np.pi/4, 1.],
+        [0., 0., 1.],
+        [-np.pi/4, -np.pi/4, 1.],
+        [-np.pi/2, -np.pi/2, 1.],
+    ])
+    assert np.allclose(elev, incl2elev(incl))
+
+    # Error with other shapes
+    wrong_values = [
+        np.ones((1, 1, 1)),
+        np.ones(3),
+        np.zeros((5, 1)),
+        np.zeros((3, 4)),
+    ]
+    for wv in wrong_values:
+        with pytest.raises(ValueError):
+            incl2elev(wv)
 
 
 def test_get_sh():

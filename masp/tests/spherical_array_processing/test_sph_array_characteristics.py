@@ -33,7 +33,7 @@
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-import numpy as np
+
 import random
 from masp.tests.convenience_test_methods import *
 
@@ -107,5 +107,3 @@ def test_sph_array_alias_lim():
                        *p,
                        nargout=1,
                        namespace='sap')
-
-test_sph_array_alias_lim()

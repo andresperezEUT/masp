@@ -34,7 +34,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import numpy as np
-from masp.utils import c, C, check_cond_number_sht
+from masp.utils import c, C, check_cond_number_sht, elev2incl
 from masp.array_response_simulator import sph_modal_coefs
 from masp.validate_data_types import _validate_float, _validate_int, _validate_string, _validate_ndarray_1D, \
     _validate_ndarray_2D
@@ -238,11 +238,9 @@ def sph_array_alias_lim(R, nMic, maxN, mic_dirs_rad, mic_weights=None):
     f_alias[1] = c * np.floor(np.sqrt(nMic) - 1) / (2 * np.pi * R)
 
     # Based on condition number of the SHT matrix
-    aziElev2aziIncl = lambda dirs: np.asarray([dirs[:, 0], np.pi / 2 - dirs[:, 1]]).T
-
     maxOrder = int(np.ceil(np.sqrt(nMic) - 1))
 
-    cond_N = check_cond_number_sht(maxOrder, aziElev2aziIncl(mic_dirs_rad), 'real', mic_weights)
+    cond_N = check_cond_number_sht(maxOrder, elev2incl(mic_dirs_rad), 'real', mic_weights)
     trueMaxOrder = np.flatnonzero(cond_N<np.power(10,4))[-1]  # biggest element passing the condition
     f_alias[2] = c * trueMaxOrder / (2 * np.pi * R)
 

@@ -167,13 +167,76 @@ def sph2cart(sph):
         raise ValueError('sph must be either 1D or 2D array')
 
     cart = np.empty(sph.shape)
-    cart[:,2] = sph[:,2] * np.sin( sph[:,1])
-    rcoselev = sph[:,2] * np.cos( sph[:,1])
-    cart[:, 0] = rcoselev * np.cos( sph[:,0])
-    cart[:, 1] = rcoselev * np.sin( sph[:,0])
+    cart[:, 2] = sph[:, 2] * np.sin( sph[:, 1])
+    rcoselev = sph[:, 2] * np.cos( sph[:, 1])
+    cart[:, 0] = rcoselev * np.cos( sph[:, 0])
+    cart[:, 1] = rcoselev * np.sin( sph[:, 0])
     if arg.ndim == 1:
         cart = cart.squeeze()
     return cart
+
+
+def elev2incl(dirs):
+    """
+    Spherical coordinates: elevation to inclination reference system
+
+    Parameters
+    ----------
+    dirs : ndarray
+        Spherical coordinates, in radians, aed.  Dimension = (nCoords, {2,3})
+
+
+    Returns
+    -------
+    incl : ndarray
+       Transformed coordinates. Dimension = (nCoords, {2,3})
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    The input matrix might have dimension 1 = 2 ([azimuth, elevation]),
+    or dimension 1 = 3 ([azimuth, elevation, distance]).
+    The output matrix will propagate input dimensionality.
+    """
+
+    _validate_ndarray_2D('dirs',dirs)
+    if dirs.shape[1] == 2:
+        incl = np.column_stack((dirs[:, 0], np.pi / 2 - dirs[:, 1]))
+    elif dirs.shape[1] == 3:
+        incl = np.column_stack((dirs[:, 0], np.pi / 2 - dirs[:, 1], dirs[:, 2]))
+    else:
+        raise ValueError('dirs must have dimension 1={2,3}')
+    return incl
+
+
+def incl2elev(dirs):
+    """
+    Spherical coordinates: inclination to elevation reference system
+
+    Parameters
+    ----------
+    dirs : ndarray
+        Spherical coordinates, in radians, aid.  Dimension = (nCoords, {2,3})
+
+    Returns
+    -------
+    elev : ndarray
+       Transformed coordinates. Dimension = (nCoords, {2,3})
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    The input matrix might have dimension 1 = 2 ([azimuth, inclination]),
+    or dimension 1 = 3 ([azimuth, inclination, distance]).
+    The output matrix will propagate input dimensionality.
+    """
+    return elev2incl(dirs)
 
 
 def get_sh(N, dirs, basisType):
@@ -193,7 +256,7 @@ def get_sh(N, dirs, basisType):
     Returns
     -------
     Y : ndarray
-        Wall absorption coefficients . Dimension = (nDirs, nHarm).
+        Spherical harmonics . Dimension = (nDirs, nHarm).
 
     Raises
     -----
