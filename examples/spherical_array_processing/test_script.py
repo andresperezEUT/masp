@@ -153,10 +153,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import librosa
-from masp.utils import sph2cart, get_capsule_positions, c
+
+from masp.array_response_simulator import simulate_sph_array
+from masp.utils import *
 from masp import array_response_simulator as asr
 from masp import shoebox_room_sim as srs
 from masp import spherical_array_processing as sap
+plt.set_cmap('jet')
 
 
 # #################################################################################
@@ -190,19 +193,20 @@ R = capsule_positions[0, -1]
 sap.plot_mic_array(capsule_positions)
 plt.show()
 
+
 # ###########################################################
 # Type and order of expansion for modeling the array response
 arrayType = 'rigid'
 f_max = 20000
 kR_max = 2 * np.pi * f_max * R / c
-array_order = np.ceil(2 * kR_max)
+array_order = int(np.ceil(2 * kR_max))
 
 # Frequency vector
 fs = 48000
 Lfilt = 1024
 f = np.arange(Lfilt // 2 + 1) * fs / Lfilt
 kR = 2 * np.pi * f * R / c
-nBins = Lfilt / 2 + 1
+nBins = Lfilt // 2 + 1
 
 # Do some array analysis of noise and spatial aliasing
 sht_order = int(np.floor(np.sqrt(nMics) - 1))  # approximate for uniformly arranged mics
@@ -226,63 +230,41 @@ plt.axhline(y=maxG_db, xmin=0, xmax=f_lim[-1], c='k', linewidth=0.5)
 plt.scatter(f_lim, [maxG_db]*sht_order)
 plt.show()
 
+
 # ###########################################################
 # Get spatial aliasing estimates, by SHT order, number of
 # microphone or condition number
-f_alias = sphArrayAliasLim(R, nMics, sht_order, mic_dirs_rad);
-# # plot
-# orthogonality
-# matrix
-# of
-# the
-# microphone
-# arrangement
-# aziElev2aziPolar =
-#
-#
-# @(dirs)
-#
-#
-# [dirs(:, 1) pi / 2 - dirs(:, 2)]; # function
-# to
-# convert
-# from azimuth
-#
-# -inclination
-# to
-# azimuth - elevation
-# Y_mics = sqrt(4 * pi) * getSH(sht_order, aziElev2aziPolar(mic_dirs_rad), 'real'); # real
-# SH
-# matrix
-# for microphones
-# YY_mics = (1 / nMics) * (Y_mics'*Y_mics);
-# figure
-# imagesc(YY_mics), colorbar
-# ht = title( 'Orthogonality of array SHT $\mathbf{Y}_{mic}^H \mathbf{Y}_{mic}$', 'Interpreter', 'latex');
-# ht.FontSize = 14; h = gcf; h.Position(3) = 1.5 * h.Position(3); h.Position(4) = 1.5 * h.Position(4);
-#
-# # #
-#
-# # Obtain responses for a dense grid of directions
-# [grid_azi, grid_elev] = meshgrid(-180:5: 180, -85: 5:85);
-# grid_dirs_deg = [grid_azi(:) grid_elev(:)];
-# grid_dirs_rad = grid_dirs_deg * pi / 180;
-# [~, H_array_sim] = simulateSphArray(Lfilt, mic_dirs_rad, grid_dirs_rad, arrayType, R, array_order, fs);
-#
-# # Define
-# an
-# inline
-# function
-# for super - titles in subplots
-# supertitle = @ (title_string) annotation('textbox', [0 0.9 1 0.1], 'String', title_string, 'EdgeColor', 'none', 'HorizontalAlignment', 'center', 'FontSize', 16);
-#
-# # Apply a plain SHT on the microphone responses without equalization.
-# M_mic2sh_sht = (1 / nMics) * Y_mics';
-#
-# Y_grid = sqrt(4 * pi) * getSH(sht_order, aziElev2aziPolar(grid_dirs_rad), 'real'); # SH matrix for grid directions
-# # w_grid = getVoronoiWeights(grid_dirs_rad); # get approximate integration weights for grid points
-# # evaluateSHTfilters(repmat(M_mic2sh_sht, [1 1 nBins]), H_array_sim, fs, Y_grid, w_grid);
-# evaluateSHTfilters(repmat(M_mic2sh_sht, [1 1 nBins]), H_array_sim, fs, Y_grid);
+f_alias = sap.sph_array_alias_lim(R, nMics, sht_order, capsule_positions[:,:-1])
+# Plot orthogonality matrix of the microphone arrangement
+Y_mics = np.sqrt(4 * np.pi) * get_sh(sht_order, elev2incl(capsule_positions[:,:-1]), 'real') # real SH matrix for microphones
+YY_mics = (1 / nMics) * np.matmul(Y_mics.T, Y_mics)
+plt.figure()
+plt.imshow(YY_mics)
+plt.colorbar()
+plt.title('Orthogonality of array SHT $\mathbf{Y}_{mic}^H \mathbf{Y}_{mic}$')
+plt.show()
+
+
+# ###########################################################
+# Obtain responses for a dense grid of directions
+azi = np.arange(-180, 180+1, 5)
+ele = np.arange(-85, 85+1, 5)
+[grid_azi, grid_elev] = np.meshgrid(azi, ele)
+grid_dirs_deg = np.column_stack((grid_azi.T.flatten(), grid_elev.T.flatten()))
+grid_dirs_rad = grid_dirs_deg * np.pi / 180.
+_, H_array_sim = simulate_sph_array(Lfilt, capsule_positions[:,:-1], grid_dirs_rad, arrayType, R, array_order, fs)
+
+
+# Apply a plain SHT on the microphone responses without equalization.
+M_mic2sh_sht = (1 / nMics) * Y_mics.T
+Y_grid = np.sqrt(4 * np.pi) * get_sh(sht_order, elev2incl(grid_dirs_rad), 'real') # SH matrix for grid directions
+
+# Expand `M_mic2sh_sht_expanded` to have a copy per bin... probably there's a better way for that
+M_mic2sh_sht_expanded = np.tile(M_mic2sh_sht,(nBins,1,1)).transpose((1,2,0))
+cSH, lSH, WNG = sap.evaluate_sht_filters(M_mic2sh_sht_expanded, H_array_sim, fs, Y_grid, plot=True)
+
+
+
 # supertitle('Ideal array - Plain SHT'); h = gcf; h.Position(3) = 1.5 * h.Position(3); h.Position(4) = 1.5 * h.Position(4);
 # # #
 #

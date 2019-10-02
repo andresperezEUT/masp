@@ -245,12 +245,16 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
         if isinstance(arg, list):
             # cast lists to matlab doubles (matrices)
             if np.asarray(arg).dtype != np.dtype('O'):
+
+                # Check if complex, comparing with first element (why not?)
+                # TODO: implement in other data types, if needed...
+                complex = True if type(np.asarray(arg).flatten()[0]) == np.complex128 else False
+
                 # 1D arrays to matlab column
                 if np.asarray(arg).ndim == 1:
-                    # ml_args.append(matlab.double(((np.asarray(arg)[:,np.newaxis]).T).tolist()))
-                    ml_args.append(matlab.double((np.asarray(arg)[:,np.newaxis]).tolist()))
+                    ml_args.append( matlab.double((np.asarray(arg)[:,np.newaxis]).tolist(), is_complex=complex) )
                 else:
-                    ml_args.append(matlab.double(arg))
+                    ml_args.append(matlab.double(arg, is_complex=complex))
                 np_args.append(np.array(arg))
 
         elif isinstance(arg, tuple):
