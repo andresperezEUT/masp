@@ -51,8 +51,8 @@ def test_evaluate_sht_filters():
     print('nBins', nBins)
     print('nGrid', nGrid)
     params = {
-        'M_mic2sh':
-        [np.random.rand(n_sh[i], nMics[i], nBins[i]).tolist() for i in range(num_tests)],
+        'M_mic2sh':  # complex
+        [((np.random.rand(n_sh[i],nMics[i],nBins[i])+np.random.rand(n_sh[i],nMics[i],nBins[i])*1j)*2-1).tolist() for i in range(num_tests)],
         'H_array':  # complex
         [((np.random.rand(nBins[i],nMics[i],nGrid[i])+np.random.rand(nBins[i],nMics[i],nGrid[i])*1j)*2-1).tolist() for i in range(num_tests)],
         'fs':
@@ -69,3 +69,4 @@ def test_evaluate_sht_filters():
                        *p,
                        nargout=3,
                        namespace='sap')
+test_evaluate_sht_filters()

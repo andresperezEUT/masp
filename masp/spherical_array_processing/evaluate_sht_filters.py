@@ -157,8 +157,9 @@ def evaluate_sht_filters(M_mic2sh, H_array, fs, Y_grid, w_grid=None, plot=False)
     # Maximum noise amplification of all filters in matrix
     WNG = np.empty(nBins)
     for kk in range(nBins):
+        # TODO: Matlab implementation warns when M matrix is complex, e.g. TEST_SCRIPTS l. 191-199
         # Avoid ComplexWarning: imaginary parts appearing due to numerical precission
-        eigM = np.real(np.linalg.eigvals(np.matmul(M_mic2sh[:,:,kk].T, M_mic2sh[:,:,kk])))
+        eigM = np.real(np.linalg.eigvals(np.matmul(M_mic2sh[:,:,kk].T.conj(), M_mic2sh[:,:,kk])))
         WNG[kk] = np.max(eigM)
 
     # Plots
