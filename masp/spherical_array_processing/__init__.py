@@ -3,3 +3,4 @@ from .sph_array_characteristics import sph_array_noise
 from .sph_array_characteristics import sph_array_noise_threshold
 from .sph_array_characteristics import sph_array_alias_lim
 from .evaluate_sht_filters import evaluate_sht_filters
+from .array_sht_filters import array_sht_filters_theory_radInverse

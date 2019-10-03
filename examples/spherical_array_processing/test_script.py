@@ -264,13 +264,10 @@ M_mic2sh_sht_expanded = np.tile(M_mic2sh_sht,(nBins,1,1)).transpose((1,2,0))
 cSH, lSH, WNG = sap.evaluate_sht_filters(M_mic2sh_sht_expanded, H_array_sim, fs, Y_grid, plot=True)
 
 
-
-# supertitle('Ideal array - Plain SHT'); h = gcf; h.Position(3) = 1.5 * h.Position(3); h.Position(4) = 1.5 * h.Position(4);
-# # #
-#
-# # Apply single channel regularized inversion, as found e.g.in[ref1]
-# maxG_dB = 15; # maximum allowed amplification
-# H_filt = arraySHTfiltersTheory_radInverse(R, nMics, sht_order, Lfilt, fs, maxG_dB);
+# ###########################################################
+# Apply single channel regularized inversion, as found e.g. in [ref1]
+maxG_dB = 15  # maximum allowed amplification
+H_filt = sap.array_sht_filters_theory_radInverse(R, nMics, sht_order, Lfilt, fs, maxG_dB)
 # # combine the per-order filters with the SHT matrix for evaluation of full filter matrix
 # for kk=1:nBins
 # M_mic2sh_radinv(:,:, kk) = diag(replicatePerOrder(H_filt(kk,:), 2))*M_mic2sh_sht;
