@@ -61,7 +61,6 @@ def test_evaluate_sht_filters():
         [np.random.rand(nGrid[i], n_sh[i]).tolist() for i in range(num_tests)],
         'w_grid':
         [random.choice([None, np.random.rand(nGrid[i]).tolist()]) for i in range(num_tests)],
-
     }
     for t in range(num_tests):
         p = get_parameters(params, t)
@@ -70,5 +69,3 @@ def test_evaluate_sht_filters():
                        *p,
                        nargout=3,
                        namespace='sap')
-
-test_evaluate_sht_filters()

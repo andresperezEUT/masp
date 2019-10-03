@@ -40,10 +40,16 @@ expose filter order as argument
 expose f_min as argument
 
 
+# SPHERICAL_ARRAY_PROCESSING
+
+- array_sht_filters_theory_radInverse: check return values
+
+
 # TEST
 
 - test_simulate_array.py::test_get_array_response(), l.134.
 How to pass lambda expressions to Matlab? cannot test 100% without it.
+
 
 
 
@@ -77,3 +83,10 @@ ________________________________________________________
 - Decide on name...
 
 - Create pip package
+
+
+MATLAB
+________________________________________________________
+
+- spherical-array-processing:: evaluateSHTfilters.m: incorrect docstring in output values
+- spherical-array-processing:: arraySHTfiltersTheory_radInverse.m: incorrect docstring in output values

@@ -236,7 +236,7 @@ plt.show()
 # microphone or condition number
 f_alias = sap.sph_array_alias_lim(R, nMics, sht_order, capsule_positions[:,:-1])
 # Plot orthogonality matrix of the microphone arrangement
-Y_mics = np.sqrt(4 * np.pi) * get_sh(sht_order, elev2incl(capsule_positions[:,:-1]), 'real') # real SH matrix for microphones
+Y_mics = np.sqrt(4 * np.pi) * get_sh(sht_order, elev2incl(capsule_positions[:,:-1]), 'real')  # real SH matrix for microphones
 YY_mics = (1 / nMics) * np.matmul(Y_mics.T, Y_mics)
 plt.figure()
 plt.imshow(YY_mics)

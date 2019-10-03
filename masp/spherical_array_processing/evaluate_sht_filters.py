@@ -188,7 +188,6 @@ def evaluate_sht_filters(M_mic2sh, H_array, fs, Y_grid, w_grid=None, plot=False)
         plt.xlim([50, 20000])
         plt.title('Maximum amplification')
         plt.xlabel('Frequency (Hz)')
-        plt.show()
 
         # plt.subplot(414)
         # plt.semilogx(f, 10 * np.log10(rSH))
@@ -196,5 +195,7 @@ def evaluate_sht_filters(M_mic2sh, H_array, fs, Y_grid, w_grid=None, plot=False)
         # plt.xlim([50, 20000])
         # plt.title('MSE')
         # plt.xlabel('Frequency (Hz)')
+
+        plt.show()
 
     return cSH, lSH, WNG
