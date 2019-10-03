@@ -37,6 +37,7 @@ import numpy as np
 import warnings
 from masp.utils import c
 from masp.array_response_simulator import sph_modal_coefs
+from masp.validate_data_types import _validate_int, _validate_float
 
 def array_sht_filters_theory_radInverse(R, nMic, order_sht, Lfilt, fs, amp_threshold):
     """
@@ -87,6 +88,13 @@ def array_sht_filters_theory_radInverse(R, nMic, order_sht, Lfilt, fs, amp_thres
         In Audio Engineering Society Convention 120.
 
     """
+
+    _validate_float('R', R, positive=True)
+    _validate_int('nMic', nMic, positive=True)
+    _validate_int('order_sht', order_sht, positive=True)
+    _validate_int('Lfilt', Lfilt, positive=True, parity='even')
+    _validate_int('fs', fs, positive=True)
+    _validate_float('amp_threshold', amp_threshold)
 
     f = np.arange(Lfilt // 2 + 1) * fs / Lfilt
 
