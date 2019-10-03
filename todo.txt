@@ -18,6 +18,10 @@ should we extend it somehow, study what .dat files are, etc?
 - utils.py::get_sh(): implement complex spherical harmonic transform.
 Also, test_utils.py::test_get_sh().
 
+- separate package for spherical_harmonic_transform library?
+
+- `replicate_per_order` just 1D for the moment
+
 # SHOEBOX_ROOM_SIM
 
 - `apply_source_signals_array()`, `apply_source_signals_sh()` in apply_source_signals.py:
@@ -43,6 +47,8 @@ expose f_min as argument
 # SPHERICAL_ARRAY_PROCESSING
 
 - array_sht_filters_theory_radInverse: check return values
+
+- `evaluate_sht_filters`: complex numbers for WNG computation
 
 
 # TEST

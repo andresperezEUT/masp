@@ -36,11 +36,10 @@ import csv
 import numpy as np
 from scipy.special import sph_harm
 from masp.validate_data_types import _validate_int, _validate_ndarray_2D, _validate_string, _validate_ndarray_1D, \
-    _validate_float, _validate_ndarray
+    _validate_ndarray
 
 c = 343.
 C = 3
-
 
 def get_capsule_positions(mic_array_name):
     """
@@ -239,75 +238,6 @@ def incl2elev(dirs):
     return elev2incl(dirs)
 
 
-def get_sh(N, dirs, basisType):
-    """
-    Get spherical harmonics up to order N evaluated at given angular positions.
-
-    Parameters
-    ----------
-    N : int
-        Maximum spherical harmonic expansion order.
-    dirs : ndarray
-        Evaluation directions. Dimension = (nDirs, 2).
-        Directions are expected in radians, expressed in pairs [azimuth, inclination].
-    basisType : str
-        Type of spherical harmonics. Either 'complex' or 'real'.
-
-    Returns
-    -------
-    Y : ndarray
-        Spherical harmonics . Dimension = (nDirs, nHarm).
-
-    Raises
-    -----
-    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
-    NotImplementedError: for basisType = 'complex'
-
-    Notes
-    -----
-    Ouput dimension is given by: nHarm = (N+1)^2
-
-    Inclination is defined as the angle from zenith: inclination = pi/2-elevation
-
-    TODO: implement complex basis?
-    """
-
-    _validate_int('order', N, positive=True)
-    _validate_ndarray_2D('dirs', dirs, shape1=C-1)
-    _validate_string('basisType', basisType, choices=['complex', 'real'])
-
-    nDirs = dirs.shape[0]
-    nHarm = np.power(N+1, 2)
-    Y_N = np.zeros((nDirs, nHarm))
-
-    def delta_kronecker(q1, q2):
-        return 1 if q1 == q2 else 0
-
-    def norm(m):
-        """
-        TODO
-        SN3D FACTOR, REMOVE CONDON SHOTLEY
-        IT MUST BE MULTIPLIED BY sqrt(4PI) to be normalized to 1
-        :param m:
-        :return:
-        """
-        return np.power(-1, np.abs(m)) * np.sqrt(2 - delta_kronecker(0, np.abs(m)))
-
-    if basisType is 'complex':
-        # TODO
-        raise NotImplementedError
-
-    elif basisType is 'real':
-        harm_idx = 0
-        for l in range(N + 1):
-            for m in range(-l,0):
-                Y_N[:, harm_idx] = np.imag(sph_harm(np.abs(m), l, dirs[:, 0], dirs[:, 1])) * norm(m)
-                harm_idx += 1
-            for m in range(l + 1):
-                Y_N[:, harm_idx] = np.real(sph_harm(m, l, dirs[:, 0], dirs[:, 1])) * norm(m)
-                harm_idx += 1
-
-    return Y_N
 
 
 def lagrange(N, delays):
@@ -384,6 +314,83 @@ def load_sph_grid(file_path):
     return sph_grid
 
 
+
+#############################################################################################
+#
+# Spherical Harmonic Transform library.
+# TODO: separate package?
+
+def get_sh(N, dirs, basisType):
+    """
+    Get spherical harmonics up to order N evaluated at given angular positions.
+
+    Parameters
+    ----------
+    N : int
+        Maximum spherical harmonic expansion order.
+    dirs : ndarray
+        Evaluation directions. Dimension = (nDirs, 2).
+        Directions are expected in radians, expressed in pairs [azimuth, inclination].
+    basisType : str
+        Type of spherical harmonics. Either 'complex' or 'real'.
+
+    Returns
+    -------
+    Y : ndarray
+        Spherical harmonics . Dimension = (nDirs, nHarm).
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+    NotImplementedError: for basisType = 'complex'
+
+    Notes
+    -----
+    Ouput dimension is given by: nHarm = (N+1)^2
+
+    Inclination is defined as the angle from zenith: inclination = pi/2-elevation
+
+    TODO: implement complex basis?
+    """
+
+    _validate_int('order', N, positive=True)
+    _validate_ndarray_2D('dirs', dirs, shape1=C-1)
+    _validate_string('basisType', basisType, choices=['complex', 'real'])
+
+    nDirs = dirs.shape[0]
+    nHarm = np.power(N+1, 2)
+    Y_N = np.zeros((nDirs, nHarm))
+
+    def delta_kronecker(q1, q2):
+        return 1 if q1 == q2 else 0
+
+    def norm(m):
+        """
+        TODO
+        SN3D FACTOR, REMOVE CONDON SHOTLEY
+        IT MUST BE MULTIPLIED BY sqrt(4PI) to be normalized to 1
+        :param m:
+        :return:
+        """
+        return np.power(-1, np.abs(m)) * np.sqrt(2 - delta_kronecker(0, np.abs(m)))
+
+    if basisType is 'complex':
+        # TODO
+        raise NotImplementedError
+
+    elif basisType is 'real':
+        harm_idx = 0
+        for l in range(N + 1):
+            for m in range(-l,0):
+                Y_N[:, harm_idx] = np.imag(sph_harm(np.abs(m), l, dirs[:, 0], dirs[:, 1])) * norm(m)
+                harm_idx += 1
+            for m in range(l + 1):
+                Y_N[:, harm_idx] = np.real(sph_harm(m, l, dirs[:, 0], dirs[:, 1])) * norm(m)
+                harm_idx += 1
+
+    return Y_N
+
+
 def check_cond_number_sht(N, dirs, basisType, W=None):
     """
     Computes the condition number for a least-squares SHT.
@@ -439,3 +446,48 @@ def check_cond_number_sht(N, dirs, basisType, W=None):
         cond_N[n] = np.linalg.cond(YY_n)
 
     return cond_N
+
+
+def replicate_per_order(x):
+    """
+    Replicate l^th element 2*l+1 times across dimension
+
+    Parameters
+    ----------
+    x : ndarray
+        Array to replicate. Dimension = (l)
+
+    Returns
+    -------
+    x_rep : ndarray
+        Replicated array. Dimension = ( (l+1)^2 )
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+
+    Notes
+    -----
+    Replicates multidimensional array across dimension dim, so that the
+    l^th element of dim is replicated 2*l+1 times. that effectively has the
+    effect that the dimension grows from L to L^2 elements. This can be useful
+    in some spherical harmonic operations.
+
+    TODO: FOR THE MOMENT JUST 1D
+    TODO: optimize
+    """
+
+    _validate_ndarray_1D('x', x)
+
+    order = np.size(x) - 1
+    n_sh = np.power(order+1, 2)
+    x_rep = np.zeros(n_sh, dtype=x.dtype)
+    sh_idx = 0
+
+    for m in range(order+1):
+        n_sh_order = 2 * m + 1  # number of spherical harmonics at the given order m
+        for n in range(n_sh_order):
+            x_rep[sh_idx] = x[m]
+            sh_idx += 1
+
+    return x_rep

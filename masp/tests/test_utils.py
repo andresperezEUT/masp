@@ -32,7 +32,7 @@
 #   @date   12/08/2019
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-from masp import cart2sph, sph2cart, elev2incl, incl2elev
+from masp import cart2sph, sph2cart, elev2incl, incl2elev, replicate_per_order
 from masp.tests.convenience_test_methods import *
 import pytest
 
@@ -274,3 +274,9 @@ def test_check_cond_number():
                        *p,
                        nargout=1,
                        rtol=1e2)  # Big rtol due to numeric errors in matrix condition computation
+
+
+def test_replicate_per_order():
+    x = np.asarray([0, 1, 2])
+    rep_x = np.asarray([0, 1, 1, 1, 2, 2, 2, 2, 2])
+    assert np.allclose(rep_x, replicate_per_order(x))
