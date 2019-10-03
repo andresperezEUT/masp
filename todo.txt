@@ -46,7 +46,7 @@ expose f_min as argument
 
 # SPHERICAL_ARRAY_PROCESSING
 
-- array_sht_filters_theory_radInverse: check return values
+- array_sht_filters.py: check return values (ordering)
 
 - `evaluate_sht_filters`: complex numbers for WNG computation
 

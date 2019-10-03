@@ -61,3 +61,26 @@ def test_array_sht_filters_theory_radInverse():
                        nargout=2,
                        namespace='sap')
 
+def test_array_sht_filters_theory_softLim():
+    num_tests = 10
+    params = {
+        'R':
+        [np.random.random() for i in range(num_tests)],
+        'Nmic':
+        [np.random.randint(1,10) for i in range(num_tests)],
+        'order_sht':
+        [np.random.randint(10) for i in range(num_tests)],
+        'Lfilt':  # even
+        [np.random.randint(10, 100) * 2 for i in range(num_tests)],
+        'fs':
+        [np.random.randint(100000) + 100 for i in range(num_tests)],
+        'amp_threshold':
+        [(np.random.random()*2-1)*20 for i in range(num_tests)],
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("arraySHTfiltersTheory_softLim",
+                       "array_sht_filters_theory_softLim",
+                       *p,
+                       nargout=2,
+                       namespace='sap')

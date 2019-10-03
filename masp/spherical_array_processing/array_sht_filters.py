@@ -39,6 +39,7 @@ from masp.utils import c
 from masp.array_response_simulator import sph_modal_coefs
 from masp.validate_data_types import _validate_int, _validate_float
 
+
 def array_sht_filters_theory_radInverse(R, nMic, order_sht, Lfilt, fs, amp_threshold):
     """
     Generate SHT filters based on theoretical responses (regularized radial inversion)
@@ -120,6 +121,93 @@ def array_sht_filters_theory_radInverse(R, nMic, order_sht, Lfilt, fs, amp_thres
     # Create the symmetric conjugate negative frequency response for a real time-domain signal
     h_filt = np.real(np.fft.fftshift(np.fft.ifft(np.append(temp, np.conj(temp[-2:0:-1,:]), axis=0), axis=0), axes=0))
 
+    # TODO: check return ordering
     return h_filt, H_filt
+
+
+
+def array_sht_filters_theory_softLim(R, nMic, order_sht, Lfilt, fs, amp_threshold):
+    """
+    Generate SHT filters based on theoretical responses (soft-limiting)
+
+    Parameters
+    ----------
+    R : float
+        Microphone array radius, in meter.
+    nMic : int
+        Number of microphone capsules.
+    order_sht : int
+        Spherical harmonic transform order.
+    Lfilt : int
+        Number of FFT points for the output filters. It must be even.
+    fs : int
+        Sample rate for the output filters.
+    amp_threshold : float
+         Max allowed amplification for filters, in dB.
+
+    Returns
+    -------
+    h_filt : ndarray
+        Impulse responses of the filters. Dimension = (Lfilt, order_sht+1).
+    H_filt: ndarray
+        Frequency-domain filters. Dimension = (Lfilt//2+1, order_sht+1).
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+    UserWarning: if `nMic` not big enough for the required sht order.
+
+    Notes
+    -----
+    Generate the filters to convert microphone signals from a spherical
+    microphone array to SH signals, based on an ideal theoretical model of
+    the array. The filters are generated from an inversion of the radial
+    components of the response, neglecting spatial aliasing effects and
+    non-ideal arrangements of the microphones. One filter is shared by all
+    SH signals of the same order in this case.
+    Here this single channel inversion problem is done through a
+    thresholding approach on the inversion, limited to a max allowed
+    amplification. The limiting follows the approach of
+
+        Bernschutz, B., Porschmann, C., Spors, S., Weinzierl, S., Versterkung, B., 2011.
+        Soft-limiting der modalen amplitudenverst?rkung bei sph?rischen mikrofonarrays im plane wave decomposition verfahren.
+        Proceedings of the 37. Deutsche Jahrestagung fur Akustik (DAGA 2011)
+
+
+    """
+
+    _validate_float('R', R, positive=True)
+    _validate_int('nMic', nMic, positive=True)
+    _validate_int('order_sht', order_sht, positive=True)
+    _validate_int('Lfilt', Lfilt, positive=True, parity='even')
+    _validate_int('fs', fs, positive=True)
+    _validate_float('amp_threshold', amp_threshold)
+
+    f = np.arange(Lfilt // 2 + 1) * fs / Lfilt
+
+    # Adequate sht order to the number of microphones
+    if order_sht > np.sqrt(nMic) - 1:
+        order_sht = int(np.floor(np.sqrt(nMic) - 1))
+        warnings.warn("Set order too high for the number of microphones, should be N<=np.sqrt(Q)-1. Auto set to "+str(order_sht), UserWarning)
+
+    # Modal responses
+    kR = 2 * np.pi * f * R / c
+    bN = sph_modal_coefs(order_sht, kR, 'rigid') / (4 * np.pi)  #   due to modified SHs, the 4pi term disappears from the plane wave expansion
+    # Single channel equalization filters per order
+    inv_bN = 1. / bN
+    inv_bN[0, 1:] = 0.
+
+    # Encoding matrix with regularization
+    a_dB = amp_threshold
+    alpha = complex(np.sqrt(nMic) * np.power(10, a_dB / 20))  # Explicit casting to allow negative sqrt (a_dB < 0)
+    # Regularized single channel equalization filters per order
+    H_filt = (2*alpha/np.pi) * (np.abs(bN) * inv_bN) * np.arctan((np.pi / (2 * alpha))* np.abs(inv_bN))
+
+    # Time domain filters
+    temp = H_filt.copy()
+    temp[-1,:] = np.real(temp[-1,:])
+    # Create the symmetric conjugate negative frequency response for a real time-domain signal
+    h_filt = np.real(np.fft.fftshift(np.fft.ifft(np.append(temp, np.conj(temp[-2:0:-1,:]), axis=0), axis=0), axes=0))
+
     # TODO: check return order
-    # return H_filt, h_filt
+    return h_filt, H_filt

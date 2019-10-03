@@ -267,39 +267,33 @@ cSH, lSH, WNG = sap.evaluate_sht_filters(M_mic2sh_sht_expanded, H_array_sim, fs,
 # ###########################################################
 # Apply single channel regularized inversion, as found e.g. in [ref1]
 maxG_dB = 15.  # maximum allowed amplification
-_, H_filt = sap.array_sht_filters_theory_radInverse(R, nMics, sht_order, Lfilt, fs, maxG_dB)
-# Combine the per-order filters with the SHT matrix for evaluation of full filter matrix
-
 n_sh = np.power(sht_order+1, 2)
+_, H_filt = sap.array_sht_filters_theory_radInverse(R, nMics, sht_order, Lfilt, fs, maxG_dB)
+
+# Combine the per-order filters with the SHT matrix for evaluation of full filter matrix
 M_mic2sh_radinv = np.empty((n_sh, nMics, nBins), dtype='complex')
 for kk in range(nBins):
     M_mic2sh_radinv[:, :, kk] = np.matmul(np.diag(replicate_per_order(H_filt[kk, :])), M_mic2sh_sht)
 
 sap.evaluate_sht_filters(M_mic2sh_radinv, H_array_sim, fs, Y_grid, plot=True)
-# supertitle('Ideal array - Regularized inversion of radial response');
 
-import scipy.io
-s = scipy.io.loadmat('/Users/andres.perez/source/MATLAB/polarch/M_mic2sh_radinv.mat')
-m = s['M_mic2sh_radinv']
-assert np.allclose(m, M_mic2sh_radinv)
-# # #
-#
-# # Apply
-# single
-# channel
-# inversion
-# with soft - limiting, as proposed in [ref3]
-# H_filt = arraySHTfiltersTheory_softLim(R, nMics, sht_order, Lfilt, fs, maxG_dB);
-# # combine the per-order filters with the SHT matrix for evaluation of full filter matrix
-# for kk=1:nBins
-# M_mic2sh_softlim(:,:, kk) = diag(replicatePerOrder(H_filt(kk,:), 2))*M_mic2sh_sht;
-# end
-# evaluateSHTfilters(M_mic2sh_softlim, H_array_sim, fs, Y_grid);
-# supertitle('Ideal array - Soft-limited inversion of radial response');
-# h = gcf;
-# h.Position(3) = 1.5 * h.Position(3);
-# h.Position(4) = 1.5 * h.Position(4);
-# # #
+
+# ###########################################################
+# Apply single channel inversion with soft-limiting, as proposed in [ref3]
+_, H_filt = sap.array_sht_filters_theory_softLim(R, nMics, sht_order, Lfilt, fs, maxG_dB)
+
+# Combine the per-order filters with the SHT matrix for evaluation of full filter matrix
+M_mic2sh_softlim = np.empty((n_sh, nMics, nBins), dtype='complex')
+for kk in range(nBins):
+    M_mic2sh_softlim[:,:, kk] = np.matmul(np.diag(replicate_per_order(H_filt[kk,:])), M_mic2sh_sht)
+
+sap.evaluate_sht_filters(M_mic2sh_softlim, H_array_sim, fs, Y_grid, plot=True)
+
+
+
+
+
+
 #
 # # Invert
 # the
