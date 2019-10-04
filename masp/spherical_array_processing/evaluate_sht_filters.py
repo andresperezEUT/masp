@@ -164,8 +164,8 @@ def evaluate_sht_filters(M_mic2sh, H_array, fs, Y_grid, w_grid=None, plot=False)
 
     # Plots
     if plot:
-        str_legend = [None]*order_sht
-        for n in range(order_sht):
+        str_legend = [None]*(order_sht+1)
+        for n in range(order_sht+1):
             str_legend[n] = str(n)
 
         plt.figure()

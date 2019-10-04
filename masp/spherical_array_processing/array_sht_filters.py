@@ -35,9 +35,9 @@
 
 import numpy as np
 import warnings
-from masp.utils import c
+from masp.utils import c, C, elev2incl, get_sh, replicate_per_order
 from masp.array_response_simulator import sph_modal_coefs
-from masp.validate_data_types import _validate_int, _validate_float
+from masp.validate_data_types import _validate_int, _validate_float, _validate_ndarray_2D
 
 
 def array_sht_filters_theory_radInverse(R, nMic, order_sht, Lfilt, fs, amp_threshold):
@@ -125,7 +125,6 @@ def array_sht_filters_theory_radInverse(R, nMic, order_sht, Lfilt, fs, amp_thres
     return h_filt, H_filt
 
 
-
 def array_sht_filters_theory_softLim(R, nMic, order_sht, Lfilt, fs, amp_threshold):
     """
     Generate SHT filters based on theoretical responses (soft-limiting)
@@ -173,7 +172,6 @@ def array_sht_filters_theory_softLim(R, nMic, order_sht, Lfilt, fs, amp_threshol
         Soft-limiting der modalen amplitudenverst?rkung bei sph?rischen mikrofonarrays im plane wave decomposition verfahren.
         Proceedings of the 37. Deutsche Jahrestagung fur Akustik (DAGA 2011)
 
-
     """
 
     _validate_float('R', R, positive=True)
@@ -192,7 +190,7 @@ def array_sht_filters_theory_softLim(R, nMic, order_sht, Lfilt, fs, amp_threshol
 
     # Modal responses
     kR = 2 * np.pi * f * R / c
-    bN = sph_modal_coefs(order_sht, kR, 'rigid') / (4 * np.pi)  #   due to modified SHs, the 4pi term disappears from the plane wave expansion
+    bN = sph_modal_coefs(order_sht, kR, 'rigid') / (4 * np.pi)  # due to modified SHs, the 4pi term disappears from the plane wave expansion
     # Single channel equalization filters per order
     inv_bN = 1. / bN
     inv_bN[0, 1:] = 0.
@@ -210,4 +208,110 @@ def array_sht_filters_theory_softLim(R, nMic, order_sht, Lfilt, fs, amp_threshol
     h_filt = np.real(np.fft.fftshift(np.fft.ifft(np.append(temp, np.conj(temp[-2:0:-1,:]), axis=0), axis=0), axes=0))
 
     # TODO: check return order
+    return h_filt, H_filt
+
+
+def array_sht_filters_theory_regLS(R, mic_dirsAziElev, order_sht, Lfilt, fs, amp_threshold):
+    """
+    Generate SHT filters based on theoretical responses (regularized least-squares)
+
+    Parameters
+    ----------
+    R : float
+        Microphone array radius, in meter.
+    mic_dirsAziElev : ndarray
+        Evaluation directions. Dimension = (nDirs, 2).
+        Directions are expected in radians, expressed in pairs [azimuth, elevation].
+    order_sht : int
+        Spherical harmonic transform order.
+    Lfilt : int
+        Number of FFT points for the output filters. It must be even.
+    fs : int
+        Sample rate for the output filters.
+    amp_threshold : float
+         Max allowed amplification for filters, in dB.
+
+    Returns
+    -------
+    h_filt : ndarray
+        Impulse responses of the filters. Dimension = ( nMic, (order_sht+1)^2, Lfilt ).
+    H_filt: ndarray
+        Frequency-domain filters. Dimension = ( nMic, (order_sht+1)^2, Lfilt//2+1 ).
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+    UserWarning: if `nMic` not big enough for the required sht order.
+    TODO: ValueError: if the array order is not big enough.
+
+    Notes
+    -----
+    Generate the filters to convert microphone signals from a spherical
+    microphone array to SH signals, based on an ideal theoretical model of 
+    the array. The filters are generated as a least-squares
+    solution with a constraint on filter amplification, using Tikhonov
+    regularization. The method formulates the LS problem in the spherical
+    harmonic domain, by expressing the array response to an order-limited
+    series of SH coefficients, similar to
+
+        Jin, C.T., Epain, N. and Parthy, A., 2014.
+        Design, optimization and evaluation of a dual-radius spherical microphone array.
+        IEEE/ACM Transactions on Audio, Speech, and Language Processing, 22(1), pp.193-204.
+
+    """
+
+    _validate_float('R', R, positive=True)
+    _validate_ndarray_2D('mic_dirsAziElev', mic_dirsAziElev, shape1=C-1)
+    _validate_int('order_sht', order_sht, positive=True)
+    _validate_int('Lfilt', Lfilt, positive=True, parity='even')
+    _validate_int('fs', fs, positive=True)
+    _validate_float('amp_threshold', amp_threshold)
+
+    f = np.arange(Lfilt // 2 + 1) * fs / Lfilt
+    num_f = f.size
+    kR = 2 * np.pi * f * R / c
+    kR_max = kR[-1]
+
+    nMic = mic_dirsAziElev.shape[0]
+    # Adequate sht order to the number of microphones
+    if order_sht > np.sqrt(nMic) - 1:
+        order_sht = int(np.floor(np.sqrt(nMic) - 1))
+        warnings.warn("Set order too high for the number of microphones, should be N<=np.sqrt(Q)-1. Auto set to "+str(order_sht), UserWarning)
+
+    mic_dirsAziIncl = elev2incl(mic_dirsAziElev)
+    order_array = int(np.floor(2 * kR_max))
+
+    # TODO: check validity of the approach
+    if order_array <= 1:
+        raise ValueError("Order array <= 1. Consider increasing R or fs.")
+
+    Y_array = np.sqrt(4 * np.pi) * get_sh(order_array, mic_dirsAziIncl, 'real')
+
+    # Modal responses
+    bN = sph_modal_coefs(order_array, kR, 'rigid') / (4 * np.pi)  # due to modified SHs, the 4pi term disappears from the plane wave expansion
+
+    # Array response in the SHD
+    H_array = np.zeros((nMic, np.power(order_array+1, 2), num_f), dtype='complex')
+    for kk in range(num_f):
+        temp_b = bN[kk, :].T
+        B = np.diag(replicate_per_order(temp_b))
+        H_array[:, :, kk] = np.matmul(Y_array, B)
+
+    a_dB = amp_threshold
+    alpha = complex(np.power(10, a_dB / 20))  # Explicit casting to allow negative sqrt (a_dB < 0)
+    beta = 1 / (2 * alpha)
+    H_filt = np.zeros((np.power(order_sht+1,2), nMic, num_f), dtype='complex')
+    for kk in range(num_f):
+        tempH_N = H_array[:, :, kk]
+        tempH_N_trunc = tempH_N[:, :np.power(order_sht+1,2)]
+        H_filt[:, :, kk] = np.matmul(tempH_N_trunc.T.conj(), np.linalg.inv(np.matmul(tempH_N, tempH_N.T.conj()) + np.power(beta, 2) * np.eye(nMic)))
+
+    # Time domain filters
+    h_filt = H_filt.copy()
+    h_filt[:, :, -1] = np.abs(h_filt[:, :, -1])
+    h_filt = np.concatenate((h_filt, np.conj(h_filt[:, :, -2:0:-1])), axis=2)
+    h_filt = np.real(np.fft.ifft(h_filt, axis=2))
+    h_filt = np.fft.fftshift(h_filt, axes=2)
+
+    # TODO: check return ordering
     return h_filt, H_filt

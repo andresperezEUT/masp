@@ -84,3 +84,29 @@ def test_array_sht_filters_theory_softLim():
                        *p,
                        nargout=2,
                        namespace='sap')
+
+def test_array_sht_filters_theory_regLS():
+    num_tests = 10
+    nMics = [np.random.randint(1,10) for i in range(num_tests)]
+    params = {
+        'R':  # array_order should be at least 2, which means that for a fs_min=100, R >= 1.091802909610402
+        [np.random.random()+1.1 for i in range(num_tests)],
+        'mic_dirs_rad':
+        [(np.random.rand(nMics[i], C - 1) * [2 * np.pi, np.pi]).tolist() for i in range(num_tests)],
+        'order_sht':
+        [np.random.randint(10) for i in range(num_tests)],
+        'Lfilt':  # even
+        [np.random.randint(10,100) * 2 for i in range(num_tests)],
+        'fs':
+        [np.random.randint(1000) + 100 for i in range(num_tests)],
+        'amp_threshold':
+        [(np.random.random()*2-1)*20 for i in range(num_tests)],
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("arraySHTfiltersTheory_regLS",
+                       "array_sht_filters_theory_regLS",
+                       *p,
+                       nargout=2,
+                       namespace='sap',
+                       atol=1e-2)

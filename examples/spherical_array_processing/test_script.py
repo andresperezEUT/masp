@@ -71,7 +71,7 @@
 # work.
 #
 # For any questions, comments, corrections, or general feedback, please
-# contact archontis.politis @ aalto.fi
+# contact archontis.politis@aalto.fi
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
@@ -162,7 +162,7 @@ from masp import spherical_array_processing as sap
 plt.set_cmap('jet')
 
 
-# #################################################################################
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #  MICROPHONE SIGNALS TO SH SIGNALS
 #
 # The first operation is to obtain the SH signals from the microphone
@@ -290,24 +290,13 @@ for kk in range(nBins):
 sap.evaluate_sht_filters(M_mic2sh_softlim, H_array_sim, fs, Y_grid, plot=True)
 
 
+# ###########################################################
+# Invert the full theoretical array response matrix, as proposed in [ref4]
+_, M_mic2sh_regLS = sap.array_sht_filters_theory_regLS(R, capsule_positions[:,:-1], sht_order, Lfilt, fs, maxG_dB)
+sap.evaluate_sht_filters(M_mic2sh_regLS, H_array_sim, fs, Y_grid, plot=True)
 
 
 
-
-#
-# # Invert
-# the
-# full
-# theoretical
-# array
-# response
-# matrix, as proposed in [ref4]
-# M_mic2sh_regLS = arraySHTfiltersTheory_regLS(R, mic_dirs_rad, sht_order, Lfilt, fs, maxG_dB);
-# evaluateSHTfilters(M_mic2sh_regLS, H_array_sim, fs, Y_grid);
-# supertitle('Ideal array - Regularized array response matrix inversion');
-# h = gcf;
-# h.Position(3) = 1.5 * h.Position(3);
-# h.Position(4) = 1.5 * h.Position(4);
 # # #
 #
 # # # # ---Measurement

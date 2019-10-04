@@ -48,6 +48,9 @@ expose f_min as argument
 
 - array_sht_filters.py: check return values (ordering)
 
+- array_sht_filters.py::array_sht_filters_theory_regLS
+check solution for crash when array_order <= 1
+
 - `evaluate_sht_filters`: complex numbers for WNG computation
 
 
@@ -71,7 +74,7 @@ ________________________________________________________
 THEORETICAL QUESTIONS
 ________________________________________________________
 
-- test_script_arrays.py, l.86: array order formula?
+- test_script_arrays.py, l.86: array order formula? e.g. also in array_sht_filters.py, l.280
 
 - utils.py::get_sh(): norm?
 

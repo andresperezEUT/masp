@@ -160,12 +160,17 @@ def raise_error(e=None):
     else:
         raise e
 
-def validate_result(ml_res, np_res, rtol):
+def validate_result(ml_res, np_res, rtol, atol):
     if isinstance(np_res, np.ndarray):
         m = np.asarray(ml_res).squeeze()
         n = np_res.squeeze()
         if not m.shape == n.shape: raise_error()
-        if not np.allclose(m, n, rtol=rtol): raise_error()
+        if not np.allclose(m, n, rtol=rtol, atol=atol): raise_error()
+        # print('shape---')
+        # print(m.shape)
+        # print(n.shape)
+        # print('---')
+
 
     elif isinstance(np_res, list):
         # Matlab cell -> python list
@@ -175,7 +180,7 @@ def validate_result(ml_res, np_res, rtol):
             m = np.asarray(ml_res[i]).squeeze()
             n = np_res[i].squeeze()
             if not m.shape == n.shape: raise_error()
-            if not np.allclose(m, n, rtol=rtol): raise_error()
+            if not np.allclose(m, n, rtol=rtol, atol=atol): raise_error()
 
     elif isinstance(np_res, float):
         if ml_res != np_res: raise_error()
@@ -232,7 +237,7 @@ def compare_quantised_echogram_arrays(np_res, ml_res):
         if not np.allclose(ml_res['value'][idx], np_res[idx].value): raise_error()
         if ml_res['isActive'][idx] != np_res[idx].isActive: raise_error()
 
-def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, namespace=None, rtol=1e-5):
+def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, namespace=None, rtol=1e-5, atol=1e-8):
 
     # PREPROCESS ARGS --------------------------------------------------------
 
@@ -339,13 +344,14 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
             print(type(arg))
             raise NotImplementedError
 
+
     # RUN METHODS --------------------------------------------------------
 
-    # Run python method
-    if namespace is None:
-        np_res = getattr(masp, np_method)(*np_args)
-    else:
-        np_res = getattr(getattr(masp, namespace), np_method)(*np_args)
+    # # Run python method
+    # if namespace is None:
+    #     np_res = getattr(masp, np_method)(*np_args)
+    # else:
+    #     np_res = getattr(getattr(masp, namespace), np_method)(*np_args)
 
     # Run matlab method.
     # Specific matlab test file exists when :
@@ -360,6 +366,12 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
         if ml_path_arg:
             ml_method += '_test'
         ml_res = getattr(eng, ml_method)(*ml_args, nargout=nargout)
+
+    # Run python method
+    if namespace is None:
+        np_res = getattr(masp, np_method)(*np_args)
+    else:
+        np_res = getattr(getattr(masp, namespace), np_method)(*np_args)
 
 
     # VALIDATE OUTPUT --------------------------------------------------------
@@ -392,10 +404,10 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
     # Regular check: matlab result data is saved into ml_res
     else:
         if nargout == 1:
-            validate_result(ml_res, np_res, rtol)
+            validate_result(ml_res, np_res, rtol, atol)
         else:
             for arg_idx in range(nargout):
-                validate_result(ml_res[arg_idx], np_res[arg_idx], rtol)
+                validate_result(ml_res[arg_idx], np_res[arg_idx], rtol, atol)
 
     # Remove matlab arg file, in case
     if 'ml_echogram_array_path' in locals():
