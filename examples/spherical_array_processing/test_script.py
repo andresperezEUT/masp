@@ -149,15 +149,11 @@
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-import numpy as np
 import matplotlib.pyplot as plt
-import time
-import librosa
+import scipy.io
 
 from masp.array_response_simulator import simulate_sph_array
 from masp.utils import *
-from masp import array_response_simulator as asr
-from masp import shoebox_room_sim as srs
 from masp import spherical_array_processing as sap
 plt.set_cmap('jet')
 
@@ -275,7 +271,7 @@ M_mic2sh_radinv = np.empty((n_sh, nMics, nBins), dtype='complex')
 for kk in range(nBins):
     M_mic2sh_radinv[:, :, kk] = np.matmul(np.diag(replicate_per_order(H_filt[kk, :])), M_mic2sh_sht)
 
-sap.evaluate_sht_filters(M_mic2sh_radinv, H_array_sim, fs, Y_grid, plot=True)
+_ = sap.evaluate_sht_filters(M_mic2sh_radinv, H_array_sim, fs, Y_grid, plot=True)
 
 
 # ###########################################################
@@ -287,144 +283,60 @@ M_mic2sh_softlim = np.empty((n_sh, nMics, nBins), dtype='complex')
 for kk in range(nBins):
     M_mic2sh_softlim[:,:, kk] = np.matmul(np.diag(replicate_per_order(H_filt[kk,:])), M_mic2sh_sht)
 
-sap.evaluate_sht_filters(M_mic2sh_softlim, H_array_sim, fs, Y_grid, plot=True)
+_ = sap.evaluate_sht_filters(M_mic2sh_softlim, H_array_sim, fs, Y_grid, plot=True)
 
 
 # ###########################################################
 # Invert the full theoretical array response matrix, as proposed in [ref4]
 _, M_mic2sh_regLS = sap.array_sht_filters_theory_regLS(R, capsule_positions[:,:-1], sht_order, Lfilt, fs, maxG_dB)
-sap.evaluate_sht_filters(M_mic2sh_regLS, H_array_sim, fs, Y_grid, plot=True)
+_ = sap.evaluate_sht_filters(M_mic2sh_regLS, H_array_sim, fs, Y_grid, plot=True)
 
 
+# # # ---Measurement based-filters
+#
+# When calibration measurements of the array response exist, it is
+# advantageous to create the filters based onthem, to take into account
+# any deviations of the actual array from the theoretical model. In the
+# example below, measured responses of an Eigenmike array are used, and the
+# filters are evaluated with respect to that.
 
-# # #
-#
-# # # # ---Measurement
-# based - filters
-# #
-# # When
-# calibration
-# measurements
-# of
-# the
-# array
-# response
-# exist, it is
-# # advantageous
-# to
-# create
-# the
-# filters
-# based
-# on
-# them, to
-# take
-# into
-# account
-# # any
-# deviations
-# of
-# the
-# actual
-# array
-# from the theoretical
-#
-# model.In
-# the
-# # example
-# below
-# measured
-# responses
-# of
-# an
-# Egenmike
-# array
-# are
-# used, and the
-#           # filters
-# are
-# evaluated
-# with respect to that.
-#
-# load('Eigenmike_IRs.mat', 'fs', 'h_mics', 'measurement_dirs_aziElev', 'measurement_area_weights');
-# grid_dirs_rad = measurement_dirs_aziElev; clear measurement_dirs_aziElev
-# w_grid = measurement_area_weights; clear measurement_area_weights
-# Y_grid = sqrt(4 * pi) * getSH(sht_order, aziElev2aziPolar(grid_dirs_rad), 'real'); # SH matrix for grid directions
-# nGrid = length(w_grid);
-# H_array_meas = fft(h_mics, Lfilt);
-# H_array_meas = H_array_meas(1:nBins,:,:);
-#
-# # normalize
-# measured
-# responses
-# close
-# to
-# unity
-# using
-# the
-# mean
-# of
-# responses
-# # (equivalent to the diffuse omni power)
-# for kk=1:nBins
-# H_kk = squeeze(H_array_meas(kk,:,:));
-# tempH = (1 / nMics) * sum(H_kk, 1).
-# ';
-# H_mean(kk) = sqrt(real((tempH. * w_grid)
-# '*tempH) );
-# end
-# # normalize
-# responses
-# norm_diff = max(H_mean);
-# H_array_meas = H_array_meas / norm_diff;
-#
-# # first
-# show
-# results
-# when
-# applying
-# the
-# theory - devised
-# filters
-# to
-# the
-# # real
-# Eigenmike
-# array
-# evaluateSHTfilters(M_mic2sh_radinv, H_array_meas, fs, Y_grid, w_grid);
-# supertitle('Measured array - Theoretical regularized inversion of radial response');
-# h = gcf;
-# h.Position(3) = 1.5 * h.Position(3);
-# h.Position(4) = 1.5 * h.Position(4);
-# evaluateSHTfilters(M_mic2sh_softlim, H_array_meas, fs, Y_grid, w_grid);
-# supertitle('Measured array - Theoretical soft-limited inversion of radial response');
-# h = gcf;
-# h.Position(3) = 1.5 * h.Position(3);
-# h.Position(4) = 1.5 * h.Position(4);
-# evaluateSHTfilters(M_mic2sh_regLS, H_array_meas, fs, Y_grid, w_grid);
-# supertitle('Measured array - Theoretical regularized array response matrix inversion');
-# h = gcf;
-# h.Position(3) = 1.5 * h.Position(3);
-# h.Position(4) = 1.5 * h.Position(4);
-#
-# # #
-#
-# # Compute
-# measurement - based
-# filters and show
-# results
-# # Invert
-# the
-# measured
-# array
-# response
-# matrix, as proposed in [ref1]
-# E_mic2sh_regLS = arraySHTfiltersMeas_regLS(H_array_meas, sht_order, grid_dirs_rad, w_grid, Lfilt, maxG_dB);
-# evaluateSHTfilters(E_mic2sh_regLS, H_array_meas, fs, Y_grid, w_grid);
-# supertitle('Measured array - Regularized inversion of measured array response matrix');
-# h = gcf;
-# h.Position(3) = 1.5 * h.Position(3);
-# h.Position(4) = 1.5 * h.Position(4);
+# a = scipy.io.loadmat('Eigenmike_IRs.mat', 'fs', 'h_mics', 'measurement_dirs_aziElev', 'measurement_area_weights')
+eigenmike_IRs_file = scipy.io.loadmat('../../data/Eigenmike_IRs.mat')
+fs = int(eigenmike_IRs_file['fs'].flatten()[0])
+h_mics = eigenmike_IRs_file['h_mics']
+w_grid = eigenmike_IRs_file['measurement_area_weights'].flatten()
+grid_dirs_rad = eigenmike_IRs_file['measurement_dirs_aziElev']
+
+Y_grid = np.sqrt(4 * np.pi) * get_sh(sht_order, elev2incl(grid_dirs_rad), 'real') # SH matrix for grid directions
+nGrid = w_grid.size
+H_array_meas = np.fft.rfft(h_mics, Lfilt, axis=0)
+H_array_meas = H_array_meas[:nBins,:,:]
+
+# Normalize measured responses close to unity using the mean of responses
+# (equivalent to the diffuse omni power)
+H_mean = np.empty(nBins)
+for kk in range(nBins):
+    H_kk = H_array_meas[kk,:,:].squeeze()
+    tempH = (1. / nMics) * np.sum(H_kk, axis=0)
+    H_mean[kk] = np.sqrt( np.real( np.matmul((tempH * w_grid).T.conj(), tempH) ) )
+
+# Normalize responses
+norm_diff = np.max(H_mean)
+H_array_meas = H_array_meas / norm_diff
+
+# First show results when applying the theory-devised filters to the
+# real Eigenmike array
+_ = sap.evaluate_sht_filters(M_mic2sh_radinv, H_array_meas, fs, Y_grid, w_grid, plot=True)
+_ = sap.evaluate_sht_filters(M_mic2sh_softlim, H_array_meas, fs, Y_grid, w_grid, plot=True)
+_ = sap.evaluate_sht_filters(M_mic2sh_regLS, H_array_meas, fs, Y_grid, w_grid, plot=True)
+
+# ###########################################################
+# Compute measurement-based filters and show results
+
+# Invert the measured array response matrix, as proposed in [ref1]
+e_mic2sh_regLS, E_mic2sh_regLS = sap.array_sht_filters_measure_regLS(H_array_meas, sht_order, grid_dirs_rad, w_grid, Lfilt, maxG_dB)
+_ = sap.evaluate_sht_filters(E_mic2sh_regLS, H_array_meas, fs, Y_grid, w_grid, plot=True)
+
 #
 # # Invert
 # the

@@ -109,4 +109,36 @@ def test_array_sht_filters_theory_regLS():
                        *p,
                        nargout=2,
                        namespace='sap',
-                       atol=1e-2)
+                       atol=1e-2)  # For some reason related with ifft, TODO check
+
+def test_array_sht_filters_measure_regLS():
+    num_tests = 10
+    nMics = [np.random.randint(2,10) for i in range(num_tests)]
+    nGrid = [np.random.randint(2,10) for i in range(num_tests)]
+    nFFT = [np.random.randint(10, 100) * 2 for i in range(num_tests)]
+    nBins = [nFFT[i]//2+1 for i in range(num_tests)]
+    print('nMics', nMics)
+    print('nBins', nBins)
+    print('nFFT', nFFT)
+    print('nGrid', nGrid)
+    params = {
+        'H_array':  # complex
+        [((np.random.rand(nBins[i],nMics[i],nGrid[i])+np.random.rand(nBins[i],nMics[i],nGrid[i])*1j)*2-1).tolist() for i in range(num_tests)],
+        'order_sht':
+        [np.random.randint(10) for i in range(num_tests)],
+        'grid_dirs_rad':
+        [(np.random.random((nGrid[i], C - 1)) * [2 * np.pi, np.pi]).tolist() for i in range(num_tests)],
+        'w_grid':
+        [np.random.rand(nGrid[i]).tolist() for i in range(num_tests)],
+        'nFFT':  # even
+        nFFT,
+        'amp_threshold':
+        [(np.random.random()*2-1)*20 for i in range(num_tests)],
+    }
+    for t in range(num_tests):
+        p = get_parameters(params, t)
+        numeric_assert("arraySHTfiltersMeas_regLS",
+                       "array_sht_filters_measure_regLS",
+                       *p,
+                       nargout=2,
+                       namespace='sap')

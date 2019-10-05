@@ -6,3 +6,4 @@ from .evaluate_sht_filters import evaluate_sht_filters
 from .array_sht_filters import array_sht_filters_theory_radInverse
 from .array_sht_filters import array_sht_filters_theory_softLim
 from .array_sht_filters import array_sht_filters_theory_regLS
+from .array_sht_filters import array_sht_filters_measure_regLS

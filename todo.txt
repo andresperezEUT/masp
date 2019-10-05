@@ -49,7 +49,8 @@ expose f_min as argument
 - array_sht_filters.py: check return values (ordering)
 
 - array_sht_filters.py::array_sht_filters_theory_regLS
-check solution for crash when array_order <= 1
+check solution for crash when array_order <= 1,
+check atol=1e-1
 
 - `evaluate_sht_filters`: complex numbers for WNG computation
 
@@ -99,3 +100,7 @@ ________________________________________________________
 
 - spherical-array-processing:: evaluateSHTfilters.m: incorrect docstring in output values
 - spherical-array-processing:: arraySHTfiltersTheory_radInverse.m: incorrect docstring in output values
+- spherical-array-processing:: arraySHTfiltersMeas_regLS.m: l.42, fixed length/size bug
+- spherical-array-processing:: arraySHTfiltersMeas_regLS.m: nFFT argument is redundant
+- spherical-array-processing:: arraySHTfiltersMeas_regLS.m: fixed error in H_array docstring `(nFFT/2+1)` instead of `nFFT`
+
