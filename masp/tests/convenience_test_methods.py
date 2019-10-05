@@ -166,11 +166,6 @@ def validate_result(ml_res, np_res, rtol, atol):
         n = np_res.squeeze()
         if not m.shape == n.shape: raise_error()
         if not np.allclose(m, n, rtol=rtol, atol=atol): raise_error()
-        # print('shape---')
-        # print(m.shape)
-        # print(n.shape)
-        # print('---')
-
 
     elif isinstance(np_res, list):
         # Matlab cell -> python list

@@ -57,7 +57,7 @@ def evaluate_sht_filters(M_mic2sh, H_array, fs, Y_grid, w_grid=None, plot=False)
         Spherical harmonics matrix for the `nGrid` directions of the evaluation grid.
         Dimension = ( nGrid, (order+1)^2 ).
     w_grid : ndarray, optional
-        Vector of integration weights for the grid  points.
+        Vector of integration weights for the grid points.
         Dimension = ( nGrid ).
     plot : bool, optional
         Plot responses. Default to false.

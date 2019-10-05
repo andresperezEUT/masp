@@ -49,7 +49,7 @@ def get_echo2gridMap(echogram, grid_dirs_rad):
     echogram : Echogram
         Target Echogram
         Number of grid points where to render reflections.
-    grid_dirs_rad: ndarray, dtype: float
+    grid_dirs_rad: ndarray
         Grid positions in [azimuth, elevation] pairs (in radians). Dimension = (nRefl, 2).
 
     Returns
