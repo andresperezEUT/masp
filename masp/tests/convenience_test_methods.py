@@ -71,7 +71,7 @@ tmp_path = os.path.abspath("./masp/tests/tmp")
 echogram_dtype = np.dtype([('time', 'O'), ('value', 'O'), ('order', 'O'), ('coords', 'O')])
 quantised_echogram_dtype = np.dtype([('value', 'O'), ('time', 'O'), ('isActive', 'O')])
 
-def get_parameters(params, t):
+def get_parameters(params, t, verbose=True):
     """
     Convenience method for the numeric testing/validation system.
 
@@ -81,18 +81,23 @@ def get_parameters(params, t):
     The method returns a list of the argument values for test number `t` < T.
     """
 
+    def print_v(str):
+        if verbose:
+            print(str)
+
     num_params = len(params)
-    print('')
-    print('-----------------------------------------------')
-    print('                  t='+str(t))
+    print_v('')
+    print_v('-----------------------------------------------')
+    print_v('                  t='+str(t))
     p = []
     for p_idx in range(num_params):
         dict_tuple = list(params.items())[p_idx]
         key = dict_tuple[0]
         value = dict_tuple[1]
         p.append(value[t])
-        print(key, value[t])
-    print('-----------------------------------------------')
+        if verbose:
+            print(key, value[t])
+    print_v('-----------------------------------------------')
     return p
 
 

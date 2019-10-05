@@ -330,13 +330,6 @@ def array_sht_filters_measure_regLS(H_array, order_sht, grid_dirs_rad, w_grid=No
         Spherical harmonic transform order.
     grid_dirs_rad: ndarray,
         Grid positions in [azimuth, elevation] pairs (in radians). Dimension = (nGrid, 2).
-
-    Lfilt : int
-        Number of FFT points for the output filters. It must be even.
-    fs : int
-        Sample rate for the output filters.
-    amp_threshold : float
-         Max allowed amplification for filters, in dB.
     w_grid : ndarray, optional
         Weights for weighted-least square solution, based on the importance or area
         around each measurement point (leave empty if not known, or not important)
@@ -360,7 +353,7 @@ def array_sht_filters_measure_regLS(H_array, order_sht, grid_dirs_rad, w_grid=No
 
     Notes
     -----
-    Generate the filters to convert micorphone signals from a spherical
+    Generate the filters to convert microphone signals from a spherical
     microphone array to SH signals, based on a least-squares solution with
     a constraint on noise amplification, using Tikhonov regularization. The
     method formulates the LS problem in the space domain, using the
@@ -371,6 +364,8 @@ def array_sht_filters_measure_regLS(H_array, order_sht, grid_dirs_rad, w_grid=No
         measurements and validation of spherical microphone.
         In Audio Engineering Society Convention 120.
 
+    Due to the matrix nature of computations,
+    the minimum valid value for `nMic` and `nGrid` is 2.
     # TODO: nFFT argument is redundant!!!
     """
 
@@ -401,7 +396,7 @@ def array_sht_filters_measure_regLS(H_array, order_sht, grid_dirs_rad, w_grid=No
 
 
     # SH matrix at grid directions
-    Y_grid = np.sqrt(4 * np.pi) * get_sh(order_sht, elev2incl(grid_dirs_rad), 'real').T
+    Y_grid = np.sqrt(4 * np.pi) * get_sh(order_sht, elev2incl(grid_dirs_rad), 'real').T  # SH matrix for grid directions
 
     # Compute inverse matrix
     a_dB = amp_threshold
@@ -425,3 +420,118 @@ def array_sht_filters_measure_regLS(H_array, order_sht, grid_dirs_rad, w_grid=No
     # TODO: check return ordering
     return h_filt, H_filt
 
+
+def array_sht_filters_measure_regLSHD(H_array, order_sht, grid_dirs_rad, w_grid=None, nFFT=1024, amp_threshold=10.):
+    """
+    Generate SHT filters based on measured responses  (regularized least-squares in the SHD)
+
+    Parameters
+    ----------
+    H_array : ndarray, dtype=complex
+        Frequency domain measured array responses. Dimension = ( nFFT//2+1, nMics, nGrids )
+    order_sht : int
+        Spherical harmonic transform order.
+    grid_dirs_rad: ndarray,
+        Grid positions in [azimuth, elevation] pairs (in radians). Dimension = (nGrid, 2).
+    w_grid : ndarray, optional
+        Weights for weighted-least square solution, based on the importance or area
+        around each measurement point (leave empty if not known, or not important)
+        Dimension = ( nGrid ).
+    nFFT : int, optional
+        Number of points for the FFT.
+    amp_threshold : float
+        Max allowed amplification for filters, in dB.
+
+    Returns
+    -------
+    h_filt : ndarray
+        Impulse responses of the filters. Dimension = ( (order_sht+1)^2, nMics, nFFT ).
+    H_filt: ndarray
+        Frequency-domain filters. Dimension = ( (order_sht+1)^2, nMics, nFFT//2+1 ).
+
+    Raises
+    -----
+    TypeError, ValueError: if method arguments mismatch in type, dimension or value.
+    UserWarning: if `nMic` not big enough for the required sht order.
+    TODO: ValueError: if the array order is not big enough.
+
+    Notes
+    -----
+    Generate the filters to convert micorphone signals from a spherical
+    microphone array to SH signals, based on a least-squares solution with
+    a constraint on noise amplification, using Tikhonov regularization. The
+    method formulates the LS problem in the space domain, using the
+    directional measurements of the array response, similar to e.g.
+
+        Moreau, S., Daniel, J., Bertet, S., 2006,
+        3D sound field recording with higher order ambisonics-objective
+        measurements and validation of spherical microphone.
+        In Audio Engineering Society Convention 120.
+
+    # TODO: nFFT argument is redundant!!!
+    Due to the matrix nature of computations,
+    the minimum valid value for `nMics` and `nGrid` is 2 and 16 respectively.
+    """
+
+    _validate_int('nFFT', nFFT, positive=True, parity='even')
+    nBins = nFFT // 2 + 1
+
+    _validate_ndarray_3D('H_array', H_array, shape0=nBins)
+    nMic = H_array.shape[1]
+    _validate_number('nMic', nMic, limit=[2, np.inf])
+    nGrid = H_array.shape[2]
+    _validate_number('nGrid', nGrid, limit=[16, np.inf])
+
+    _validate_int('order_sht', order_sht, positive=True)
+    _validate_ndarray_2D('grid_dirs_rad', grid_dirs_rad, shape1=C-1)
+
+    if w_grid is None:
+        w_grid = 1/nGrid*np.ones(nGrid)
+    _validate_ndarray_1D('w_grid', w_grid, size=nGrid)
+
+    _validate_float('amp_threshold', amp_threshold)
+
+    # Adequate sht order to the number of microphones
+    if order_sht > np.sqrt(nMic) - 1:
+        order_sht = int(np.floor(np.sqrt(nMic) - 1))
+        warnings.warn(
+            "Set order too high for the number of microphones, should be N<=np.sqrt(Q)-1. Auto set to " + str(
+                order_sht), UserWarning)
+
+    order_array = int(np.floor(np.sqrt(nGrid) / 2 - 1))
+    # TODO: check validity of the approach
+    # order_array must be greater or equal than requested order_sht ( nGrid > (2*(order_sht+1))^2 )
+    if order_array < order_sht:
+        raise ValueError("Order array < Order SHT. Consider increasing nGrid")
+
+    # SH matrix at grid directions
+    Y_grid = np.sqrt(4 * np.pi) * get_sh(order_array, elev2incl(grid_dirs_rad), 'real').T  # SH matrix for grid directions
+
+    # Compute inverse matrix
+    a_dB = amp_threshold
+    alpha = complex(np.power(10, a_dB / 20))  # Explicit casting to allow negative sqrt (a_dB < 0)
+    beta = 1 / (2 * alpha)
+    W_grid = np.diag(w_grid)
+    H_nm = np.zeros(( nBins, nMic, np.power(order_array+1,2) ), dtype='complex')
+    for kk in range(nBins):
+        tempH = H_array[kk, :, :]
+        H_nm[kk, :, :] = np.matmul(np.matmul(np.matmul(tempH, W_grid), Y_grid.T),
+                                   np.linalg.inv( np.matmul(np.matmul(Y_grid, W_grid), Y_grid.T)))
+
+    # Compute the inverse matrix in the SHD with regularization
+    H_filt = np.zeros((np.power(order_sht+1,2), nMic, nBins), dtype='complex')
+    for kk in range(nBins):
+        tempH_N = H_nm[kk, :, :]
+        tempH_N_trunc = tempH_N[:, :np.power(order_sht+1, 2)]
+        H_filt[:, :, kk] = np.matmul(tempH_N_trunc.T.conj(),
+                                     np.linalg.inv(np.matmul(tempH_N, tempH_N.T.conj()) + np.power(beta, 2) * np.eye(nMic)))
+
+    # Time domain filters
+    h_filt = H_filt.copy()
+    h_filt[:, :, -1] = np.abs(h_filt[:, :, -1])
+    h_filt = np.concatenate((h_filt, np.conj(h_filt[:, :, -2:0:-1])), axis=2)
+    h_filt = np.real(np.fft.ifft(h_filt, axis=2))
+    h_filt = np.fft.fftshift(h_filt, axes=2)
+
+    # TODO: check return ordering
+    return h_filt, H_filt

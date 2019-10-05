@@ -69,4 +69,3 @@ def test_evaluate_sht_filters():
                        *p,
                        nargout=3,
                        namespace='sap')
-test_evaluate_sht_filters()

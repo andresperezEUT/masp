@@ -337,23 +337,17 @@ _ = sap.evaluate_sht_filters(M_mic2sh_regLS, H_array_meas, fs, Y_grid, w_grid, p
 e_mic2sh_regLS, E_mic2sh_regLS = sap.array_sht_filters_measure_regLS(H_array_meas, sht_order, grid_dirs_rad, w_grid, Lfilt, maxG_dB)
 _ = sap.evaluate_sht_filters(E_mic2sh_regLS, H_array_meas, fs, Y_grid, w_grid, plot=True)
 
-#
-# # Invert
-# the
-# SH
-# coefficients
-# of
-# the
-# array
-# response
-# matrix, as proposed in [ref4]
-# E_mic2sh_regLSHD = arraySHTfiltersMeas_regLSHD(H_array_meas, sht_order, grid_dirs_rad, w_grid, Lfilt, maxG_dB);
-# evaluateSHTfilters(E_mic2sh_regLSHD, H_array_meas, fs, Y_grid, w_grid);
-# supertitle('Measured array - Regularized inversion of SH transformed measured array response matrix');
-# h = gcf;
-# h.Position(3) = 1.5 * h.Position(3);
-# h.Position(4) = 1.5 * h.Position(4);
-#
+# Invert the SH coefficients of the array response matrix, as proposed in [ref4]
+e_mic2sh_regLSHD, E_mic2sh_regLSHD = sap.array_sht_filters_measure_regLSHD(H_array_meas, sht_order, grid_dirs_rad, w_grid, Lfilt, maxG_dB)
+_ = sap.evaluate_sht_filters(E_mic2sh_regLSHD, H_array_meas, fs, Y_grid, w_grid, plot=True)
+
+
+
+
+
+
+
+
 # # # SIGNAL - INDEPENDENT
 # BEAMFORMING
 # IN

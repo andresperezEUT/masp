@@ -100,7 +100,7 @@ ________________________________________________________
 
 - spherical-array-processing:: evaluateSHTfilters.m: incorrect docstring in output values
 - spherical-array-processing:: arraySHTfiltersTheory_radInverse.m: incorrect docstring in output values
-- spherical-array-processing:: arraySHTfiltersMeas_regLS.m: l.42, fixed length/size bug
-- spherical-array-processing:: arraySHTfiltersMeas_regLS.m: nFFT argument is redundant
-- spherical-array-processing:: arraySHTfiltersMeas_regLS.m: fixed error in H_array docstring `(nFFT/2+1)` instead of `nFFT`
+- spherical-array-processing:: arraySHTfiltersMeas_regLS.m, arraySHTfiltersMeas_regLSHD.m: l.42, fixed length/size bug
+- spherical-array-processing:: arraySHTfiltersMeas_regLS.m, arraySHTfiltersMeas_regLSHD.m: nFFT argument is redundant
+- spherical-array-processing:: arraySHTfiltersMeas_regLS.m, arraySHTfiltersMeas_regLSHD.m: fixed error in H_array docstring `(nFFT/2+1)` instead of `nFFT`
 

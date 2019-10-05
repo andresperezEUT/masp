@@ -101,7 +101,6 @@ def evaluate_sht_filters(M_mic2sh, H_array, fs, Y_grid, w_grid=None, plot=False)
 
     Due to the matrix nature of computations,
     the minimum valid value for `nMics` and `nGrid` is 2.
-
     """
 
     _validate_ndarray_3D('M_mic2sh', M_mic2sh)
