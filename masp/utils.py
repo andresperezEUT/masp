@@ -364,6 +364,10 @@ def get_sh(N, dirs, basisType):
     def delta_kronecker(q1, q2):
         return 1 if q1 == q2 else 0
 
+    # TODO
+    # it looks like the output of shs is N3d (max 1, sqrt(3)!3)
+    # so it needs to be scaled as * np.sqrt(4*np.pi) * [1, 1./np.sqrt(3), 1./np.sqrt(3), 1./np.sqrt(3)]
+
     def norm(m):
         """
         TODO
