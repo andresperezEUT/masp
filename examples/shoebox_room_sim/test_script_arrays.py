@@ -34,9 +34,9 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import numpy as np
-from masp import shoebox_room_sim as srs
-from masp import array_response_simulator as ars
-from masp.utils import get_capsule_positions, c, load_sph_grid, cart2sph, sph2cart
+from asma import shoebox_room_sim as srs
+from asma import array_response_simulator as ars
+from asma.utils import get_capsule_positions, c, load_sph_grid, cart2sph, sph2cart
 import time
 import librosa
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

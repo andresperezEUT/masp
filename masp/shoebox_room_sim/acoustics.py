@@ -36,14 +36,14 @@
 import numpy as np
 import scipy.optimize
 
-# from masp.shoebox_room_sim.validate_data_types import _validate_room
-# from masp.shoebox_room_sim.validate_data_types import _validate_rt60_target
-# from masp.shoebox_room_sim.validate_data_types import _validate_abs_wall_ratios
-# from masp.shoebox_room_sim.validate_data_types import _validate_alpha
-# from masp.shoebox_room_sim.validate_data_types import _validate_alpha_walls_per_band
+# from asma.shoebox_room_sim.validate_data_types import _validate_room
+# from asma.shoebox_room_sim.validate_data_types import _validate_rt60_target
+# from asma.shoebox_room_sim.validate_data_types import _validate_abs_wall_ratios
+# from asma.shoebox_room_sim.validate_data_types import _validate_alpha
+# from asma.shoebox_room_sim.validate_data_types import _validate_alpha_walls_per_band
 
-from masp.validate_data_types import _validate_ndarray_1D, _validate_number, _validate_ndarray_2D
-from masp.utils import C, c
+from asma.validate_data_types import _validate_ndarray_1D, _validate_number, _validate_ndarray_2D
+from asma.utils import C, c
 
 def find_abs_coeffs_from_rt(room, rt60_target, abs_wall_ratios=None):
     """

@@ -36,22 +36,22 @@
 import pytest
 import numpy as np
 
-from masp import Echogram, QuantisedEchogram, C
-from masp.validate_data_types import _validate_boolean
-from masp.validate_data_types import _validate_int
-from masp.validate_data_types import _validate_float
-from masp.validate_data_types import _validate_number
-from masp.validate_data_types import _validate_list
-from masp.validate_data_types import _validate_ndarray
-from masp.validate_data_types import _validate_ndarray_1D
-from masp.validate_data_types import _validate_ndarray_2D
-from masp.validate_data_types import _validate_ndarray_3D
-from masp.validate_data_types import _validate_ndarray_4D
-from masp.validate_data_types import _validate_string
-from masp.validate_data_types import _validate_echogram
-from masp.validate_data_types import _validate_quantised_echogram
-from masp.validate_data_types import _validate_echogram_array
-from masp.validate_data_types import _validate_quantised_echogram_array
+from asma import Echogram, QuantisedEchogram, C
+from asma.validate_data_types import _validate_boolean
+from asma.validate_data_types import _validate_int
+from asma.validate_data_types import _validate_float
+from asma.validate_data_types import _validate_number
+from asma.validate_data_types import _validate_list
+from asma.validate_data_types import _validate_ndarray
+from asma.validate_data_types import _validate_ndarray_1D
+from asma.validate_data_types import _validate_ndarray_2D
+from asma.validate_data_types import _validate_ndarray_3D
+from asma.validate_data_types import _validate_ndarray_4D
+from asma.validate_data_types import _validate_string
+from asma.validate_data_types import _validate_echogram
+from asma.validate_data_types import _validate_quantised_echogram
+from asma.validate_data_types import _validate_echogram_array
+from asma.validate_data_types import _validate_quantised_echogram_array
 
 
 def test_validate_boolean():

@@ -35,7 +35,7 @@
 
 import numpy as np
 import random
-from masp.tests.convenience_test_methods import *
+from asma.tests.convenience_test_methods import *
 
 
 def test_evaluate_sht_filters():

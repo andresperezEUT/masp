@@ -34,9 +34,9 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import numpy as np
-from masp.utils import c, C, check_cond_number_sht, elev2incl
-from masp.array_response_simulator import sph_modal_coefs
-from masp.validate_data_types import _validate_float, _validate_int, _validate_string, _validate_ndarray_1D, \
+from asma.utils import c, C, check_cond_number_sht, elev2incl
+from asma.array_response_simulator import sph_modal_coefs
+from asma.validate_data_types import _validate_float, _validate_int, _validate_string, _validate_ndarray_1D, \
     _validate_ndarray_2D
 
 

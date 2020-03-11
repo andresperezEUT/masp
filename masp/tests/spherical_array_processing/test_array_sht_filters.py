@@ -34,7 +34,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import random
-from masp.tests.convenience_test_methods import *
+from asma.tests.convenience_test_methods import *
 
 
 def test_array_sht_filters_theory_radInverse():

@@ -34,8 +34,8 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import pytest
-from masp.tests.convenience_test_methods import *
-from masp.utils import C
+from asma.tests.convenience_test_methods import *
+from asma.utils import C
 
 def test_spherical_scatterer():
     num_tests = 10
@@ -73,7 +73,7 @@ def test_spherical_scatterer():
         N_order = p[3]
         N_filt = p[4]
         fs = p[5]
-        masp.ars.spherical_scatterer(mic_dirs_rad, src_dirs_rad, R, N_order, N_filt, fs)
+        asma.ars.spherical_scatterer(mic_dirs_rad, src_dirs_rad, R, N_order, N_filt, fs)
 
 
 def test_cylindrical_scatterer():
@@ -112,4 +112,4 @@ def test_cylindrical_scatterer():
         N_order = p[3]
         N_filt = p[4]
         fs = p[5]
-        masp.ars.cylindrical_scatterer(mic_dirs_rad, src_dirs_rad, R, N_order, N_filt, fs)
+        asma.ars.cylindrical_scatterer(mic_dirs_rad, src_dirs_rad, R, N_order, N_filt, fs)

@@ -35,7 +35,7 @@
 
 import numpy as np
 from scipy.special import spherical_jn, spherical_yn
-from masp.validate_data_types import _validate_int, _validate_ndarray_1D
+from asma.validate_data_types import _validate_int, _validate_ndarray_1D
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Spherical Hankel functions

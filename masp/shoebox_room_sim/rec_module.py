@@ -35,8 +35,8 @@
 import copy
 
 import numpy as np
-from masp.utils import cart2sph, get_sh, C
-from masp.validate_data_types import _validate_echogram_array, _validate_ndarray_2D, _validate_int, _validate_ndarray_1D
+from asma.utils import cart2sph, get_sh, C
+from asma.validate_data_types import _validate_echogram_array, _validate_ndarray_2D, _validate_int, _validate_ndarray_1D
 
 
 def rec_module_mic(echograms, mic_specs):

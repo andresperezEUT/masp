@@ -34,25 +34,28 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import numpy as np
-from masp import shoebox_room_sim as srs
+from asma import shoebox_room_sim as srs
 import time
 import librosa
-
+import sys
+import scipy.signal
+pp = "/Users/andres.perez/source/parametric_spatial_audio_processing"
+sys.path.append(pp)
+import parametric_spatial_audio_processing as psa
+import matplotlib.pyplot as plt
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # SETUP
 
 # Room definition
-room = np.array([10.2, 7.1, 3.2])
+room = np.array([10, 10, 10])
 
 # Desired RT per octave band, and time to truncate the responses
-rt60 = np.array([1., 0.8, 0.7, 0.6, 0.5, 0.4])
+rt60 = np.array([0.5])
 nBands = len(rt60)
 
 # Generate octave bands
 band_centerfreqs = np.empty(nBands)
-band_centerfreqs[0] = 125
-for nb in range(1, nBands):
-    band_centerfreqs[nb] = 2 * band_centerfreqs[nb-1]
+band_centerfreqs[0] = 1000
 
 # Absorption for approximately achieving the RT60 above - row per band
 abs_wall = srs.find_abs_coeffs_from_rt(room, rt60)[0]
@@ -61,15 +64,15 @@ abs_wall = srs.find_abs_coeffs_from_rt(room, rt60)[0]
 _, d_critical, _ = srs.room_stats(room, abs_wall)
 
 # Receiver position
-rec = np.array([ [4.5, 3.4, 1.5], [2.0, 3.1, 1.4] ])
+rec = np.array([ [5, 5, 5] ])
 nRec = rec.shape[0]
 
 # Source positions
-src = np.array([ [6.2, 2.0, 1.8], [7.9, 3.3, 1.75], [5.8, 5.0, 1.9] ])
+src = np.array([ [5, 5, 6] ])
 nSrc = src.shape[0]
 
 # SH orders for receivers
-rec_orders = np.array([1, 3]) # rec1: first order(4ch), rec2: 3rd order (16ch)
+rec_orders = np.array([1]) # rec1: first order(4ch), rec2: 3rd order (16ch)
 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -87,23 +90,40 @@ abs_echograms = srs.compute_echograms_sh(room, src, rec, abs_wall, limits, rec_o
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # RENDERING
-
+ 
 # In this case all the information (e.g. SH directivities) are already
 # encoded in the echograms, hence they are rendered directly to discrete RIRs
 fs = 48000
-sh_rirs = srs.render_rirs_sh(abs_echograms, band_centerfreqs, fs)
-
-toc = time.time()
-print('Elapsed time is ' + str(toc-tic) + 'seconds.')
-
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# GENERATE SOUND SCENES
-# Each source is convolved with the respective mic IR, and summed with
-# the rest of the sources to create the microphone mixed signals
+sh_rirs = srs.render_rirs_sh(abs_echograms, band_centerfreqs, fs).squeeze()
+sh_rirs = sh_rirs * np.sqrt(4*np.pi) * [1, 1./np.sqrt(3), 1./np.sqrt(3), 1./np.sqrt(3)]  # SN3D norm
+plt.figure()
+plt.plot(sh_rirs)
+plt.show()
 
 
-sourcepath = '../../data/milk_cow_blues_4src.wav'
-src_sigs = librosa.core.load(sourcepath, sr=None, mono=False)[0].T[:,:nSrc]
+signal_len_samples = int(np.floor(1. * fs))
+signal = np.random.randn(signal_len_samples)
 
-sh_sigs = srs.apply_source_signals_sh(sh_rirs, src_sigs)
+reverberant_signal = np.zeros((signal_len_samples, 4))
+for i in range(4):
+    reverberant_signal[:,i] = scipy.signal.fftconvolve(signal, sh_rirs[:,i].squeeze())[:signal_len_samples]
+x = psa.Signal(reverberant_signal.T, fs, 'acn', 'sn3d')
+psa.plot_signal(x,title='waveform')
+
+analysis_window_size = 512
+window_overlap = analysis_window_size // 2
+fft_size = analysis_window_size
+stft = psa.Stft.fromSignal(x,
+                           window_size=analysis_window_size,
+                           window_overlap=window_overlap,
+                           nfft=fft_size)
+psa.plot_magnitude_spectrogram(stft,title='magnitude spectrogram')
+doa = psa.compute_DOA(stft)
+psa.plot_doa(doa,title='doa')
+
+plt.show()
+
+i = psa.compute_intensity_vector(stft)
+
+psa.plot_magnitude_spectrogram(i)
+plt.show()

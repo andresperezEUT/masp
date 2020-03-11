@@ -35,10 +35,10 @@
 
 import numpy as np
 
-from masp.validate_data_types import _validate_ndarray_1D, _validate_int, _validate_number, \
+from asma.validate_data_types import _validate_ndarray_1D, _validate_int, _validate_number, \
     _validate_echogram, _validate_string
 from .echogram import Echogram
-from masp.utils import C, c
+from asma.utils import C, c
 
 
 def ims_coreMtx(room, source, receiver, type, typeValue):

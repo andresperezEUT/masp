@@ -67,18 +67,18 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
 
-masp/__pycache__/*
-masp/tests/__pycache__/*
+asma/__pycache__/*
+asma/tests/__pycache__/*
 
-masp/shoebox_room_sim/__pycache__/*
-masp/tests/shoebox_room_sim/__pycache__/*
+asma/shoebox_room_sim/__pycache__/*
+asma/tests/shoebox_room_sim/__pycache__/*
 
-masp/array_response_simulator/__pycache__/*
-masp/tests/array_response_simulator/__pycache__/*
+asma/array_response_simulator/__pycache__/*
+asma/tests/array_response_simulator/__pycache__/*
 
-masp/spherical_array_processing/__pycache__/*
-masp/tests/spherical_array_processing/__pycache__/*
+asma/spherical_array_processing/__pycache__/*
+asma/tests/spherical_array_processing/__pycache__/*
 
 .coverage
-masp/shoebox_room_sim/deleteme.py
-masp/array_response_simulator/deleteme.py
+asma/shoebox_room_sim/deleteme.py
+asma/array_response_simulator/deleteme.py

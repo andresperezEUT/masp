@@ -35,9 +35,9 @@
 
 from scipy.special import jv, jvp, hankel2, h2vp, spherical_jn, lpmn
 import numpy as np
-import masp.utils
-import masp.array_response_simulator as asr
-from masp.validate_data_types import _validate_ndarray_2D, _validate_float, _validate_int, _validate_ndarray_1D
+import asma.utils
+import asma.array_response_simulator as asr
+from asma.validate_data_types import _validate_ndarray_2D, _validate_float, _validate_int, _validate_ndarray_1D
 
 
 def spherical_scatterer(mic_dirs_rad, src_dirs_rad, R, N_order, N_filt, fs):
@@ -78,8 +78,8 @@ def spherical_scatterer(mic_dirs_rad, src_dirs_rad, R, N_order, N_filt, fs):
 
     """
 
-    _validate_ndarray_2D('mic_dirs_rad', mic_dirs_rad, shape1=masp.C)
-    _validate_ndarray_2D('src_dirs_rad', src_dirs_rad, shape1=masp.C-1)
+    _validate_ndarray_2D('mic_dirs_rad', mic_dirs_rad, shape1=asma.C)
+    _validate_ndarray_2D('src_dirs_rad', src_dirs_rad, shape1=asma.C-1)
     _validate_float('R', R, positive=True)
     _validate_int('N_order', N_order, positive=True)
     _validate_int('N_filt', N_filt, positive=True, parity='even')
@@ -90,7 +90,7 @@ def spherical_scatterer(mic_dirs_rad, src_dirs_rad, R, N_order, N_filt, fs):
     # Compute the frequency-dependent part of the microphone responses (radial dependence)
     K = N_filt // 2 + 1
     f = np.arange(K) * fs / N_filt
-    kR = 2*np.pi*f*R/masp.c
+    kR = 2*np.pi*f*R/asma.c
     N_mic = mic_dirs_rad.shape[0]
     N_doa = src_dirs_rad.shape[0]
 
@@ -100,7 +100,7 @@ def spherical_scatterer(mic_dirs_rad, src_dirs_rad, R, N_order, N_filt, fs):
         # Spherical modal coefs for rigid sphere
         b_N = np.zeros((K, N_order + 1), dtype='complex')
         r = mic_dirs_rad[0, 2]
-        kr = 2 * np.pi * f * r / masp.c
+        kr = 2 * np.pi * f * r / asma.c
 
         # Similar to the sph_modal_coefs for the rigid case
         for n in range(N_order + 1):
@@ -114,7 +114,7 @@ def spherical_scatterer(mic_dirs_rad, src_dirs_rad, R, N_order, N_filt, fs):
         b_N = np.zeros((K, N_order + 1, N_mic), dtype='complex')
         for nm in range(N_mic):
             r = mic_dirs_rad[nm, 2]
-            kr = 2 * np.pi * f * r / masp.c
+            kr = 2 * np.pi * f * r / asma.c
 
             # Similar to the sph_modal_coefs for the rigid case
             for n in range(N_order+1):
@@ -197,7 +197,7 @@ def cylindrical_scatterer(mic_dirs_rad, src_dirs_rad, R, N_order, N_filt, fs):
 
     """
 
-    _validate_ndarray_2D('mic_dirs_rad', mic_dirs_rad, shape1=masp.C-1)
+    _validate_ndarray_2D('mic_dirs_rad', mic_dirs_rad, shape1=asma.C-1)
     _validate_ndarray_1D('src_dirs_rad', src_dirs_rad)
     _validate_float('R', R, positive=True)
     _validate_int('N_order', N_order, positive=True)
@@ -208,7 +208,7 @@ def cylindrical_scatterer(mic_dirs_rad, src_dirs_rad, R, N_order, N_filt, fs):
 
     K = N_filt // 2 + 1
     f = np.arange(K) * fs / N_filt
-    kR = 2 * np.pi * f * R / masp.c
+    kR = 2 * np.pi * f * R / asma.c
     N_mic = mic_dirs_rad.shape[0]
     N_doa = src_dirs_rad.size
 
@@ -218,7 +218,7 @@ def cylindrical_scatterer(mic_dirs_rad, src_dirs_rad, R, N_order, N_filt, fs):
         # Cylindrical modal coefs for rigid sphere
         b_N = np.zeros((K, N_order + 1), dtype='complex')
         r = mic_dirs_rad[0, 1]
-        kr = 2 * np.pi * f * r / masp.c
+        kr = 2 * np.pi * f * r / asma.c
 
         # Similar to the cyl_modal_coefs for the rigid case
         for n in range(N_order + 1):
@@ -233,7 +233,7 @@ def cylindrical_scatterer(mic_dirs_rad, src_dirs_rad, R, N_order, N_filt, fs):
         b_N = np.zeros((K, N_order + 1, N_mic), dtype='complex')
         for nm in range(N_mic):
             r = mic_dirs_rad[nm, 1]
-            kr = 2 * np.pi * f * r / masp.c
+            kr = 2 * np.pi * f * r / asma.c
 
             # Similar to the sph_modal_coefs for the rigid case
             for n in range(N_order+1):

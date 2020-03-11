@@ -34,7 +34,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-from masp.tests.convenience_test_methods import *
+from asma.tests.convenience_test_methods import *
 import random
 
 

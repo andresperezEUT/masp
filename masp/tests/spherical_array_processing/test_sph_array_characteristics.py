@@ -35,7 +35,7 @@
 
 
 import random
-from masp.tests.convenience_test_methods import *
+from asma.tests.convenience_test_methods import *
 
 def test_sph_array_noise():
     num_tests = 10

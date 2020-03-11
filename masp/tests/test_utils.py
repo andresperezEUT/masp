@@ -32,8 +32,8 @@
 #   @date   12/08/2019
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-from masp import cart2sph, sph2cart, elev2incl, incl2elev, replicate_per_order
-from masp.tests.convenience_test_methods import *
+from asma import cart2sph, sph2cart, elev2incl, incl2elev, replicate_per_order
+from asma.tests.convenience_test_methods import *
 import pytest
 
 
@@ -248,10 +248,10 @@ def test_isLambda():
 
     wrong_values = [1, '1', True, 2.3, 1e4, 3j, [1], None, np.nan, np.inf, np.asarray([0.5])]
     for wv in wrong_values:
-        assert not masp.isLambda(wv)
+        assert not asma.isLambda(wv)
 
     lambda_expr = lambda a : a + 10
-    assert masp.isLambda(lambda_expr)
+    assert asma.isLambda(lambda_expr)
 
 
 def test_check_cond_number():

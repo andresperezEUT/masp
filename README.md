@@ -14,11 +14,11 @@ __________________
 Comparison with pyroomacoustics
 
 
-| Feature 	                                        | masp | pra |	
+| Feature 	                                        | asma | pra |	
 |---	                                            |:---: |:---:|
 |                                                   |      |  	 | 
 |                                                   |      |  	 | 
-| masp.shoebox_room_model                           |      |  	 | 
+| asma.shoebox_room_model                           |      |  	 | 
 | --------------------------------------------------|      |  	 | 
 | Convex 3D room 	                                | ☑    | ☑ 	 | 
 | Non-convex 3D room                                | -    | ☑ 	 | 
@@ -37,7 +37,7 @@ Comparison with pyroomacoustics
 | RIR Spherical Harmonic Expansion                  | ☑    | - 	 | 
 |                                                   |      |  	 | 
 |                                                   |      |  	 | 
-| masp.array_response_simulator                     |      |  	 | 
+| asma.array_response_simulator                     |      |  	 | 
 | --------------------------------------------------|      |  	 | 
 | Rigid microphone arrays                           | ☑    | - 	 | 
 | Scattering simulation                             | ☑    | - 	 | 
@@ -45,7 +45,7 @@ Comparison with pyroomacoustics
 | Custom/measured array IRs into room simulation    | ☑    | - 	 | 
 |                                                   |      |  	 | 
 |                                                   |      |  	 | 
-| masp.spherical_array_processing                   |      |  	 | 
+| asma.spherical_array_processing                   |      |  	 | 
 | --------------------------------------------------|      |  	 | 
 | A2B theoretical conversion                        | ☑    | - 	 | 
 | A2B measurement-based conversion                  | ☑    | - 	 | 

@@ -1,4 +1,4 @@
-from masp import shoebox_room_sim as srs
+from asma import shoebox_room_sim as srs
 import numpy as np
 import time
 
@@ -14,14 +14,14 @@ import time
 # print(np.size(r.value))
 
 
-import masp
+import asma
 import os.path
 from scipy.io import loadmat, savemat
-from masp.utils import C
+from asma.utils import C
 from numpy.core.records import fromarrays
 
 
-tmp_path = os.path.abspath("/Users/andres.perez/source/masp/masp/tests/tmp")
+tmp_path = os.path.abspath("/Users/andres.perez/source/asma/asma/tests/tmp")
 
 
 ### 1x1 STRUCT
@@ -31,7 +31,7 @@ room = np.random.random(C) * 5 + 5
 src = np.random.random(C) * 5 - 2.5
 rec = np.random.random(C) * 5 - 2.5
 N = np.random.randint(20)
-echo = masp.srs.ims_coreN(room, src, rec, N)
+echo = asma.srs.ims_coreN(room, src, rec, N)
 
 
 ## METHOD 1
@@ -95,7 +95,7 @@ def generate_random_echogram():
     rec = np.random.random(C) * 5 - 2.5
     # N = np.random.randint(20)
     N = 1
-    echo = masp.srs.ims_coreN(room, src, rec, N)
+    echo = asma.srs.ims_coreN(room, src, rec, N)
 
     ml_echo = {}
     ml_echo['time'] = echo.time[:, np.newaxis]
@@ -107,7 +107,7 @@ def generate_random_echogram():
     return ml_echo
 
 def generate_random_echogram_array(nSrc, nRec):
-    echogram_array = np.empty((nSrc, nRec), dtype=masp.srs.Echogram)
+    echogram_array = np.empty((nSrc, nRec), dtype=asma.srs.Echogram)
     for src in range(nSrc):
         for rec in range(nRec):
             echogram_array[src, rec] = generate_random_echogram()

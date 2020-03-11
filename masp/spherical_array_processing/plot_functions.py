@@ -36,8 +36,8 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
-from masp.utils import sph2cart, C
-from masp.validate_data_types import _validate_ndarray_2D
+from asma.utils import sph2cart, C
+from asma.validate_data_types import _validate_ndarray_2D
 
 
 def plot_mic_array(capsule_positions):

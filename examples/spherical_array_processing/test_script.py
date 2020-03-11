@@ -152,9 +152,9 @@
 import matplotlib.pyplot as plt
 import scipy.io
 
-from masp.array_response_simulator import simulate_sph_array
-from masp.utils import *
-from masp import spherical_array_processing as sap
+from asma.array_response_simulator import simulate_sph_array
+from asma.utils import *
+from asma import spherical_array_processing as sap
 plt.set_cmap('jet')
 
 

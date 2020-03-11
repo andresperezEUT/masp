@@ -35,7 +35,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from masp.validate_data_types import _validate_int, _validate_ndarray_1D, \
+from asma.validate_data_types import _validate_int, _validate_ndarray_1D, \
     _validate_ndarray_2D, _validate_ndarray_3D, _validate_boolean, _validate_number
 
 

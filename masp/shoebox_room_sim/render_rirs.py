@@ -37,10 +37,10 @@ import numpy as np
 import scipy.signal
 import copy
 
-from masp.shoebox_room_sim.echogram import Echogram
-from masp.shoebox_room_sim.quantise import get_echo2gridMap, quantise_echogram
-from masp.utils import lagrange, C
-from masp.validate_data_types import _validate_echogram, _validate_float, _validate_int, _validate_boolean, \
+from asma.shoebox_room_sim.echogram import Echogram
+from asma.shoebox_room_sim.quantise import get_echo2gridMap, quantise_echogram
+from asma.utils import lagrange, C
+from asma.validate_data_types import _validate_echogram, _validate_float, _validate_int, _validate_boolean, \
     _validate_ndarray_2D, _validate_ndarray_1D, _validate_echogram_array, _validate_list, \
     _validate_quantised_echogram_array, _validate_ndarray_3D
 

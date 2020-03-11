@@ -34,8 +34,8 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 from scipy.special import jv, jvp, hankel2, h2vp
 
-from masp.array_response_simulator.sph_functions import *
-from masp.validate_data_types import _validate_int, _validate_ndarray_1D, _validate_string, _validate_float
+from asma.array_response_simulator.sph_functions import *
+from asma.validate_data_types import _validate_int, _validate_ndarray_1D, _validate_string, _validate_float
 
 
 def sph_modal_coefs(N, kr, arrayType, dirCoef=None):
