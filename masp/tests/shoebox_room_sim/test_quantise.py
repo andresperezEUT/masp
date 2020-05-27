@@ -35,8 +35,8 @@
 
 
 import numpy as np
-from asma.tests.convenience_test_methods import *
-from asma.utils import C
+from masp.tests.convenience_test_methods import *
+from masp.utils import C
 
 def test_get_echo2gridMap():
     num_tests = 10

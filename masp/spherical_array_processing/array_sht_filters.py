@@ -35,9 +35,9 @@
 
 import numpy as np
 import warnings
-from asma.utils import c, C, elev2incl, get_sh, replicate_per_order
-from asma.array_response_simulator import sph_modal_coefs
-from asma.validate_data_types import _validate_int, _validate_float, _validate_ndarray_2D, _validate_ndarray_1D, \
+from masp.utils import c, C, elev2incl, get_sh, replicate_per_order
+from masp.array_response_simulator import sph_modal_coefs
+from masp.validate_data_types import _validate_int, _validate_float, _validate_ndarray_2D, _validate_ndarray_1D, \
     _validate_ndarray_3D, _validate_number
 
 

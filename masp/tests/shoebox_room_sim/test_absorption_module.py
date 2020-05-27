@@ -34,9 +34,9 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-from asma.tests.convenience_test_methods import *
-from asma.utils import C
-from asma.validate_data_types import _validate_echogram
+from masp.tests.convenience_test_methods import *
+from masp.utils import C
+from masp.validate_data_types import _validate_echogram
 import random
 
 

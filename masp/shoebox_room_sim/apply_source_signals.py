@@ -36,7 +36,7 @@
 import numpy as np
 import scipy.signal
 
-from asma.validate_data_types import _validate_ndarray_3D, _validate_ndarray_2D, _validate_ndarray_4D, _validate_list
+from masp.validate_data_types import _validate_ndarray_3D, _validate_ndarray_2D, _validate_ndarray_4D, _validate_list
 
 
 def apply_source_signals_array(array_rirs, src_sigs):

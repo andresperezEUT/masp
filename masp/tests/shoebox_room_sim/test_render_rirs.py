@@ -32,8 +32,8 @@
 #   @date   30/07/2019
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-from asma.shoebox_room_sim import quantise_echogram
-from asma.tests.convenience_test_methods import *
+from masp.shoebox_room_sim import quantise_echogram
+from masp.tests.convenience_test_methods import *
 import random
 
 def test_render_rirs_array():

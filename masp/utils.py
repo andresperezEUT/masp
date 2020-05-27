@@ -35,7 +35,7 @@
 import csv
 import numpy as np
 from scipy.special import sph_harm
-from asma.validate_data_types import _validate_int, _validate_ndarray_2D, _validate_string, _validate_ndarray_1D, \
+from masp.validate_data_types import _validate_int, _validate_ndarray_2D, _validate_string, _validate_ndarray_1D, \
     _validate_ndarray
 
 c = 343.

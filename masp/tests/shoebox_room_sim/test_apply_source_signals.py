@@ -33,7 +33,7 @@
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-from asma.tests.convenience_test_methods import *
+from masp.tests.convenience_test_methods import *
 
 def test_apply_source_signals_array():
     num_tests = 10

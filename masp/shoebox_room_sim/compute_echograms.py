@@ -35,8 +35,8 @@
 
 import numpy as np
 
-from asma.utils import C
-from asma.validate_data_types import _validate_ndarray_2D, _validate_ndarray_1D, _validate_int
+from masp.utils import C
+from masp.validate_data_types import _validate_ndarray_2D, _validate_ndarray_1D, _validate_int
 from .echogram import Echogram
 from .image_source_method import ims_coreMtx
 from .rec_module import rec_module_mic, rec_module_sh

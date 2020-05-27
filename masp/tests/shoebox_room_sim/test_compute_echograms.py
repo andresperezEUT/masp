@@ -33,8 +33,8 @@
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-from asma.tests.convenience_test_methods import *
-from asma.utils import C
+from masp.tests.convenience_test_methods import *
+from masp.utils import C
 import random
 
 def test_compute_echograms_array():

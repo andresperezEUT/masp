@@ -35,9 +35,9 @@
 
 import numpy as np
 
-from asma.shoebox_room_sim.echogram import QuantisedEchogram
-from asma.utils import sph2cart, C
-from asma.validate_data_types import _validate_echogram, _validate_ndarray_2D, _validate_int, _validate_ndarray_1D
+from masp.shoebox_room_sim.echogram import QuantisedEchogram
+from masp.utils import sph2cart, C
+from masp.validate_data_types import _validate_echogram, _validate_ndarray_2D, _validate_int, _validate_ndarray_1D
 
 
 def get_echo2gridMap(echogram, grid_dirs_rad):

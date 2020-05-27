@@ -34,7 +34,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import numpy as np
-from asma.shoebox_room_sim.echogram import Echogram, QuantisedEchogram
+from masp.shoebox_room_sim.echogram import Echogram, QuantisedEchogram
 
 def _validate_boolean(name, boolean):
 
@@ -237,7 +237,7 @@ def _validate_string(name, string, choices=None):
 
 
 def _validate_echogram(echogram):
-    from asma.utils import C
+    from masp.utils import C
 
     if not isinstance(echogram, Echogram):
         raise TypeError('echogram must be an instance of Echogram')
@@ -253,7 +253,7 @@ def _validate_echogram(echogram):
 
 
 def _validate_quantised_echogram(qechogram):
-    from asma.utils import C
+    from masp.utils import C
 
     if not isinstance(qechogram, QuantisedEchogram):
         raise TypeError('quantised echogram must be an instance of QuantisedEchogram')

@@ -78,8 +78,8 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import numpy as np
-from asma.utils import sph2cart, get_capsule_positions
-from asma import array_response_simulator as asr
+from masp.utils import sph2cart, get_capsule_positions
+from masp import array_response_simulator as asr
 import matplotlib.pyplot as plt
 plt.set_cmap('jet')
 

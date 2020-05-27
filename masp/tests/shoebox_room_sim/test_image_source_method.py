@@ -34,9 +34,9 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-from asma.tests.convenience_test_methods import *
+from masp.tests.convenience_test_methods import *
 import random
-from asma.utils import C
+from masp.utils import C
 
 def test_ims_coreMtx():
     num_tests = 10

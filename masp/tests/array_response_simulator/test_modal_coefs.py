@@ -33,7 +33,7 @@
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-from asma.tests.convenience_test_methods import *
+from masp.tests.convenience_test_methods import *
 import random
 import pytest
 
@@ -64,7 +64,7 @@ def test_sph_modal_coefs():
         kr = np.asarray(p[1])
         arrayType = 'directional'
         dirCoef = None
-        asma.ars.sph_modal_coefs(N, kr, arrayType, dirCoef)
+        masp.ars.sph_modal_coefs(N, kr, arrayType, dirCoef)
 
 
 def test_cyl_modal_coefs():

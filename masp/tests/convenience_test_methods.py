@@ -31,17 +31,17 @@
 #   @author Andrés Pérez-López
 #   @date   31/07/2019
 #
-#   run it with `python3 -m pytest --cov-report term-missing --cov=asma -v -s -x asma/tests/`
+#   run it with `python3 -m pytest --cov-report term-missing --cov=masp -v -s -x masp/tests/`
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import matlab.engine
-import asma
+import masp
 import numpy as np
 import os.path
 from scipy.io import loadmat, savemat
-from asma.validate_data_types import _validate_echogram, _validate_echogram_array
-from asma.utils import C
+from masp.validate_data_types import _validate_echogram, _validate_echogram_array
+from masp.utils import C
 
 
 # Start matlab
@@ -65,7 +65,7 @@ eng.addpath(os.path.join(matlab_path,'Array-Response-Simulator-master'))
 eng.addpath(os.path.join(matlab_path,'Spherical-Array-Processing-master'))
 
 # Path to tmp folder for Matlab struct storage and evaluation
-tmp_path = os.path.abspath("./asma/tests/tmp")
+tmp_path = os.path.abspath("./masp/tests/tmp")
 
 # Define echogram dtypes...
 echogram_dtype = np.dtype([('time', 'O'), ('value', 'O'), ('order', 'O'), ('coords', 'O')])
@@ -106,7 +106,7 @@ def generate_random_echogram():
     src = np.random.random(C) * 2.5
     rec = np.random.random(C) * 2.5
     N = np.random.randint(20)+3
-    echo = asma.srs.ims_coreMtx(room, src, rec, 'maxOrder', N)
+    echo = masp.srs.ims_coreMtx(room, src, rec, 'maxOrder', N)
     return echo
 
 def generate_random_echogram_sh(nSH=4):
@@ -114,16 +114,16 @@ def generate_random_echogram_sh(nSH=4):
     src = np.random.random(C) * 2.5
     rec = np.random.random(C) * 2.5
     N = np.random.randint(20)+3
-    echo = asma.srs.ims_coreMtx(room, src, rec, 'maxOrder', N)
+    echo = masp.srs.ims_coreMtx(room, src, rec, 'maxOrder', N)
     # Expand the value dimension simulating sh echograms
     echo.value = echo.value*np.random.rand(nSH)
     return echo
 
 def generate_random_echogram_array(nSrc, nRec, nBands=None):
     if nBands:
-        echogram_array = np.empty((nSrc, nRec, nBands), dtype=asma.srs.Echogram)
+        echogram_array = np.empty((nSrc, nRec, nBands), dtype=masp.srs.Echogram)
     else:
-        echogram_array = np.empty((nSrc, nRec), dtype=asma.srs.Echogram)
+        echogram_array = np.empty((nSrc, nRec), dtype=masp.srs.Echogram)
 
     for idx in np.ndindex(echogram_array.shape):
         echogram_array[idx] = generate_random_echogram()
@@ -133,9 +133,9 @@ def generate_random_echogram_array(nSrc, nRec, nBands=None):
 
 def generate_random_echogram_array_sh(nSrc, nRec, nBands=None):
     if nBands:
-        echogram_array = np.empty((nSrc, nRec, nBands), dtype=asma.srs.Echogram)
+        echogram_array = np.empty((nSrc, nRec, nBands), dtype=masp.srs.Echogram)
     else:
-        echogram_array = np.empty((nSrc, nRec), dtype=asma.srs.Echogram)
+        echogram_array = np.empty((nSrc, nRec), dtype=masp.srs.Echogram)
 
     nSH = np.random.randint(1,10)
     for idx in np.ndindex(echogram_array.shape):
@@ -185,10 +185,10 @@ def validate_result(ml_res, np_res, rtol, atol):
     elif isinstance(np_res, float):
         if ml_res != np_res: raise_error()
 
-    elif isinstance(np_res, asma.srs.Echogram):
+    elif isinstance(np_res, masp.srs.Echogram):
         compare_echograms(np_res, ml_res)
 
-    elif isinstance(np_res, asma.srs.QuantisedEchogram):
+    elif isinstance(np_res, masp.srs.QuantisedEchogram):
         compare_quantised_echograms(np_res, ml_res)
 
     else:
@@ -280,7 +280,7 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
             ml_args.append(np.float(arg))
             np_args.append(arg)
 
-        elif isinstance(arg, asma.srs.Echogram):
+        elif isinstance(arg, masp.srs.Echogram):
             ml_echo = {}
             ml_echo['time'] = matlab.double(arg.time[:,np.newaxis].tolist())
             ml_echo['value'] = matlab.double(arg.value[:,np.newaxis].tolist())
@@ -289,7 +289,7 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
             ml_args.append(ml_echo)
             np_args.append(arg)
 
-        elif isinstance(arg, asma.srs.QuantisedEchogram):
+        elif isinstance(arg, masp.srs.QuantisedEchogram):
             ml_echo = {}
             ml_echo['time'] = matlab.double(arg.time[:,np.newaxis].tolist())
             ml_echo['value'] = matlab.double(arg.value[:,np.newaxis].tolist())
@@ -300,8 +300,8 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
         # Array of echograms: write to file and append path to read
         elif isinstance(arg, np.ndarray) and arg.dtype == np.dtype('O'):
             # Parse array and convert to array of dicts
-            if type(arg.flat[0]) == asma.srs.Echogram:  # Check array type
-                ml_echogram_array = np.empty(arg.shape, dtype=asma.srs.Echogram)
+            if type(arg.flat[0]) == masp.srs.Echogram:  # Check array type
+                ml_echogram_array = np.empty(arg.shape, dtype=masp.srs.Echogram)
                 for idx in np.ndindex(arg.shape):
                     echo = arg[idx]
                     ml_echo = {}
@@ -310,8 +310,8 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
                     ml_echo['order'] = echo.order.tolist()
                     ml_echo['coords'] = echo.coords.tolist()
                     ml_echogram_array[idx] = ml_echo
-            elif type(arg.flat[0]) == asma.srs.QuantisedEchogram:  # Check array type
-                ml_echogram_array = np.empty(arg.shape, dtype=asma.srs.QuantisedEchogram)
+            elif type(arg.flat[0]) == masp.srs.QuantisedEchogram:  # Check array type
+                ml_echogram_array = np.empty(arg.shape, dtype=masp.srs.QuantisedEchogram)
                 for idx in np.ndindex(arg.shape):
                     echo = arg[idx]
                     ml_echo = {}
@@ -349,9 +349,9 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
 
     # # Run python method
     # if namespace is None:
-    #     np_res = getattr(asma, np_method)(*np_args)
+    #     np_res = getattr(masp, np_method)(*np_args)
     # else:
-    #     np_res = getattr(getattr(asma, namespace), np_method)(*np_args)
+    #     np_res = getattr(getattr(masp, namespace), np_method)(*np_args)
 
     # Run matlab method.
     # Specific matlab test file exists when :
@@ -369,9 +369,9 @@ def numeric_assert(ml_method, np_method, *args, nargout=0, write_file=False, nam
 
     # Run python method
     if namespace is None:
-        np_res = getattr(asma, np_method)(*np_args)
+        np_res = getattr(masp, np_method)(*np_args)
     else:
-        np_res = getattr(getattr(asma, namespace), np_method)(*np_args)
+        np_res = getattr(getattr(masp, namespace), np_method)(*np_args)
 
 
     # VALIDATE OUTPUT --------------------------------------------------------

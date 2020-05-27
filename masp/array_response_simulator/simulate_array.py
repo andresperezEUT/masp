@@ -35,9 +35,9 @@
 
 import numpy as np
 import scipy.special
-import asma.array_response_simulator as asr
-import asma.utils
-from asma.validate_data_types import _validate_int, _validate_ndarray_2D, _validate_string, _validate_float, \
+import masp.array_response_simulator as asr
+import masp.utils
+from masp.validate_data_types import _validate_int, _validate_ndarray_2D, _validate_string, _validate_float, \
     _validate_ndarray_1D, _validate_ndarray
 
 
@@ -89,8 +89,8 @@ def simulate_sph_array(N_filt, mic_dirs_rad, src_dirs_rad, arrayType, R, N_order
     """
 
     _validate_int('N_filt', N_filt, positive=True, parity='even')
-    _validate_ndarray_2D('mic_dirs_rad', mic_dirs_rad, shape1=asma.C-1)
-    _validate_ndarray_2D('src_dirs_rad', src_dirs_rad, shape1=asma.C-1)
+    _validate_ndarray_2D('mic_dirs_rad', mic_dirs_rad, shape1=masp.C-1)
+    _validate_ndarray_2D('src_dirs_rad', src_dirs_rad, shape1=masp.C-1)
     _validate_string('arrayType', arrayType, choices=['open', 'rigid', 'directional'])
     _validate_float('R', R, positive=True)
     _validate_int('N_order', N_order, positive=True)
@@ -102,7 +102,7 @@ def simulate_sph_array(N_filt, mic_dirs_rad, src_dirs_rad, arrayType, R, N_order
 
     # Compute the frequency-dependent part of the microphone responses (radial dependence)
     f = np.arange(N_filt//2+1) * fs / N_filt
-    kR = 2*np.pi*f*R/asma.c
+    kR = 2*np.pi*f*R/masp.c
     b_N = asr.sph_modal_coefs(N_order, kR, arrayType, dirCoef)
 
     # Handle Nyquist for real impulse response
@@ -115,8 +115,8 @@ def simulate_sph_array(N_filt, mic_dirs_rad, src_dirs_rad, arrayType, R, N_order
     # Unit vectors of DOAs and microphones
     N_doa = src_dirs_rad.shape[0]
     N_mic = mic_dirs_rad.shape[0]
-    U_doa = asma.sph2cart(np.column_stack((src_dirs_rad[:, 0], src_dirs_rad[:, 1], np.ones(N_doa))))
-    U_mic = asma.sph2cart(np.column_stack((mic_dirs_rad[:, 0], mic_dirs_rad[:, 1], np.ones(N_mic))))
+    U_doa = masp.sph2cart(np.column_stack((src_dirs_rad[:, 0], src_dirs_rad[:, 1], np.ones(N_doa))))
+    U_mic = masp.sph2cart(np.column_stack((mic_dirs_rad[:, 0], mic_dirs_rad[:, 1], np.ones(N_mic))))
 
     h_mic = np.zeros((N_filt, N_mic, N_doa))
     H_mic = np.zeros((N_filt // 2 + 1, N_mic, N_doa), dtype='complex')
@@ -187,7 +187,7 @@ def simulate_cyl_array(N_filt, mic_dirs_rad, src_dirs_rad, arrayType, R, N_order
 
     # Compute the frequency-dependent part of the microphone responses (radial dependence)
     f = np.arange(N_filt//2+1) * fs / N_filt
-    kR = 2*np.pi*f*R/asma.c
+    kR = 2*np.pi*f*R/masp.c
     b_N = asr.cyl_modal_coefs(N_order, kR, arrayType)
 
     # Handle Nyquist for real impulse response
@@ -305,8 +305,8 @@ def get_array_response(src_dirs, mic_pos, N_filt, fs=48000, mic_dirs=None, fDir_
 
     Ndoa = src_dirs.shape[0]
     Nmics = mic_pos.shape[0]
-    _validate_ndarray_2D('src_dirs', src_dirs, shape1=asma.C)
-    _validate_ndarray_2D('mic_pos', mic_pos, shape1=asma.C)
+    _validate_ndarray_2D('src_dirs', src_dirs, shape1=masp.C)
+    _validate_ndarray_2D('mic_pos', mic_pos, shape1=masp.C)
     _validate_int('N_filt', N_filt, positive=True, parity='even')
     _validate_int('fs', fs, positive=True)
 
@@ -316,12 +316,12 @@ def get_array_response(src_dirs, mic_pos, N_filt, fs=48000, mic_dirs=None, fDir_
         # Expand to vector of omni lambdas
         fDir_handle = np.asarray([lambda angle: 1 for i in range(Nmics)])
     else:
-        if asma.isLambda(fDir_handle):
+        if masp.isLambda(fDir_handle):
             fDir_handle = np.asarray([fDir_handle for i in range(Nmics)])
         else:
             _validate_ndarray_1D('fDir_handle', fDir_handle, size=Nmics)
             for i in range(Nmics):
-                assert asma.isLambda(fDir_handle[i])
+                assert masp.isLambda(fDir_handle[i])
 
     # Compute unit vectors of the microphone positionsT
     normR_mic = np.sqrt(np.sum(np.power(mic_pos, 2), axis=1))
@@ -334,10 +334,10 @@ def get_array_response(src_dirs, mic_pos, N_filt, fs=48000, mic_dirs=None, fDir_
     else:
         _validate_ndarray('mic_dirs', mic_dirs)
         if mic_dirs.ndim == 1:
-            _validate_ndarray_1D('mic_dirs', mic_dirs, size=asma.C)
+            _validate_ndarray_1D('mic_dirs', mic_dirs, size=masp.C)
             mic_dirs = np.tile(mic_dirs, (Nmics, 1))
         else:
-            _validate_ndarray_2D('mic_dirs', mic_dirs, shape1=asma.C)
+            _validate_ndarray_2D('mic_dirs', mic_dirs, shape1=masp.C)
 
 
     # Frequency vector
@@ -346,19 +346,19 @@ def get_array_response(src_dirs, mic_pos, N_filt, fs=48000, mic_dirs=None, fDir_
     f = np.arange(K) * fs / Nfft
 
     # Unit vectors pointing to the evaluation points
-    U_eval = np.empty((Ndoa, Nmics, asma.C))
+    U_eval = np.empty((Ndoa, Nmics, masp.C))
     U_eval[:,:,0] = np.tile(src_dirs[:, 0], (Nmics, 1)).T
     U_eval[:,:,1] = np.tile(src_dirs[:, 1], (Nmics, 1)).T
     U_eval[:,:,2] = np.tile(src_dirs[:, 2], (Nmics, 1)).T
 
     # Computation of time delays and attenuation for each evaluation point to microphone,
     # measured from the origin
-    tempR_mic = np.empty((Ndoa, Nmics, asma.C))
+    tempR_mic = np.empty((Ndoa, Nmics, masp.C))
     tempR_mic[:,:,0] = np.tile(mic_pos[:, 0], (Ndoa, 1))
     tempR_mic[:,:,1] = np.tile(mic_pos[:, 1], (Ndoa, 1))
     tempR_mic[:,:,2] = np.tile(mic_pos[:, 2], (Ndoa, 1))
 
-    tempU_orient = np.empty((Ndoa, Nmics, asma.C))
+    tempU_orient = np.empty((Ndoa, Nmics, masp.C))
     tempU_orient[:,:,0] = np.tile(mic_dirs[:, 0], (Ndoa, 1))
     tempU_orient[:,:,1] = np.tile(mic_dirs[:, 1], (Ndoa, 1))
     tempU_orient[:,:,2] = np.tile(mic_dirs[:, 2], (Ndoa, 1))
@@ -377,7 +377,7 @@ def get_array_response(src_dirs, mic_pos, N_filt, fs=48000, mic_dirs=None, fDir_
     H_mic = np.zeros((K, Nmics, Ndoa), dtype='complex')
     for kk in range(K):
         omega = 2 * np.pi * f[kk]
-        tempTF = B * np.exp(1j * (omega / asma.c) * dcosAngleU)
+        tempTF = B * np.exp(1j * (omega / masp.c) * dcosAngleU)
         H_mic[kk,:,:] = tempTF.T
 
     # Create IRs for each microphone

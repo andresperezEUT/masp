@@ -34,7 +34,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import numpy as np
-from asma import shoebox_room_sim as srs
+from masp import shoebox_room_sim as srs
 import time
 import librosa
 import sys

@@ -37,8 +37,8 @@ import copy
 import numpy as np
 from .echogram import Echogram
 
-from asma.validate_data_types import _validate_echogram, _validate_ndarray_2D, _validate_ndarray_1D
-from asma.utils import C
+from masp.validate_data_types import _validate_echogram, _validate_ndarray_2D, _validate_ndarray_1D
+from masp.utils import C
 
 def apply_absorption(echogram, alpha, limits=None):
     """
