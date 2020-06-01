@@ -1,4 +1,4 @@
-#MASP ::: Multichannel Acoustic Signal Processing Library for Python
+# MASP ::: Multichannel Acoustic Signal Processing Library for Python
 
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![PyPI](https://img.shields.io/badge/python-3.6-blue.svg)]()
